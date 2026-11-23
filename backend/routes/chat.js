@@ -23,7 +23,7 @@ const { getActivePrompt }         = require('../promptVault');
 const EthicManifest               = require('../EthicManifest');
 const { validateBody, nonempty, optional } = require('../middlewares/validateBody');
 const { MAX_MESSAGE_CHARS, normalizeText, capText, redactSecrets, fenceUntrusted, COMPANION_LIMITS, containsPhoneNumber } = require('../utils/promptSafety');
-const { detectRisk, buildSafetyReply, buildSupportNote, normalizeCountry } = require('../utils/safety');
+const { detectRisk, normalizeForRisk, buildSafetyReply, buildSupportNote, normalizeCountry } = require('../utils/safety');
 const { loadSafetyRegistry } = require('../utils/contactEntries'); // ES-193: los recursos de ayuda salen de la base (editables, con procedencia vigente)
 const { explicitPauseLanguage, PAUSE_REPLY, FALLBACK_REPLY, PHONE_FILTER_REPLY } = require('../utils/companionTone');
 const { COMPASS_KEY, validMode, composeCompassPrompt } = require('../utils/compassGuide');
@@ -138,7 +138,8 @@ router.post('/chat', validateBody({
   mode: optional(validMode), // ES-13: solo cambia el prompt de esta solicitud; no se guarda
 }), async (req, res) => {
   // ES-21: el texto se normaliza (controles e invisibles fuera) antes de usarse en cualquier parte del prompt.
-  const mensajeUsuario = normalizeText(req.body.message);
+  // ES-387: si normalizar borra los espacios que eran controles o invisibles («me[ZWSP]quiero[ZWSP]morir») y leídos como espacio SÍ activan el detector de crisis, se usa esa forma (también es la que se guarda: el historial la reevalúa igual).
+  const mensajeUsuario = normalizeForRisk(req.body.message, normalizeText);
   if (!mensajeUsuario) return res.status(400).json({ error: 'Datos de entrada inválidos. / Invalid input data.' });
   const userId = req.user.id;
   const requestId = req.body.requestId;

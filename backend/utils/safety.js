@@ -185,6 +185,17 @@ function evaluate(text) {
   return best;
 }
 
+// ES-387: normalizeText QUITA los controles y los invisibles, así que un mensaje normalizado ANTES de evaluarlo («me[ZWSP]quiero[ZWSP]morir» -> «mequieromorir») ya no se puede leer: la información de dónde había un espacio se perdió.
+// El chat normaliza el mensaje al entrar; esta función elige entre la forma normalizada de siempre y otra con esos caracteres como ESPACIO, la que tenga el nivel de riesgo MÁS ALTO (empate: la de siempre). Es la forma que se guarda,
+// así que el historial (ES-298) la vuelve a evaluar con el mismo resultado. Solo difiere de la de siempre en textos con controles o invisibles que, leídos como espacio, activan el detector.
+const RANK = { high: 2, medium: 1 };
+function normalizeForRisk(raw, normalize) {
+  const text = String(raw); const usual = normalize(text);
+  if (text.length > GAP_FORMS_MAX || !GAPS_TEST.test(text)) return usual;
+  const spaced = normalize(text.replace(GAPS, ' '));
+  return spaced !== usual && (RANK[detectRisk(spaced).level] || 0) > (RANK[detectRisk(usual).level] || 0) ? spaced : usual;
+}
+
 const normalizeCountry = (value) => (typeof value === 'string' && /^[A-Za-z]{2}$/.test(value) ? value.toUpperCase() : null);
 
 // Un recurso se publica solo con fuente, verificador y una fecha de verificación válida y vigente.
@@ -240,4 +251,4 @@ function buildSupportNote({ lang = 'es', country = null, registry = registryDefa
   return resources.length > 0 ? `${text.medium}\n${list(resources)}` : text.medium;
 }
 
-module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, memoKeys: () => [...memo.keys()], clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms, riskFormsWith, unmaskManual }, detectRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
+module.exports = { _steps: process.env.NODE_ENV === 'production' ? undefined : { flat, matchForm, FILLER_TEST, memoKeys: () => [...memo.keys()], clearMemo: () => memo.clear(), memoSize: () => memo.size, legacy: (text) => matchForm(flat(text)), unmask, decodeTags, joinSpelled, spellWords, unleet, squeeze, halve, spaceOut, riskForms, riskFormsWith, unmaskManual }, detectRisk, normalizeForRisk, buildSafetyReply, buildSupportNote, verifiedResources, normalizeCountry };
