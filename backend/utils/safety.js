@@ -104,7 +104,7 @@ function* riskFormsWith(raw, unmask, fresh, nfkc = raw.normalize('NFKC'), lowere
     const spacedOpen = unmask(raw, ' ', lowered.replace(GAPS, ' ')); const spaced = flat(spacedOpen);
     if (fresh(spaced)) yield spaced;
     // ES-390: MEZCLA (un separador entre palabras y otros DENTRO de palabras en el mismo mensaje): no se sabe cuál es cuál, así que cada racha se deja como un MARCADOR y las reglas se leen tolerantes (el marcador vale espacio o nada).
-    const marked = unmask(raw, ' ', lowered.replace(GAP_RUNS, GAP_MARK).replace(BLANK_OR_MARK, (run) => (HAS_BLANK.test(run) ? ' ' : GAP_MARK))); const markedForm = flat(marked); if (markedForm.includes(GAP_MARK) && fresh(markedForm)) yield markedForm;
+    const marked = unmask(raw, ' ', lowered.replace(GAP_RUNS, GAP_MARK).replace(BLANK_OR_MARK, (run) => (HAS_BLANK.test(run) ? ' ' : GAP_MARK))); const markedForm = flat(marked); if (markedForm.includes(GAP_MARK) && fresh('tolerant:' + markedForm)) yield { tolerant: markedForm };
     if (CONTROLS_TEST.test(lowered)) { const stripped = flat(unmask(raw, '', lowered.replace(CONTROLS, ''))); if (fresh(stripped)) yield stripped; } // solo si hay controles (no espacio): los Cf ya se quitan en las formas de arriba
   }
   const decoded = plain ? '' : decodeTags(raw); if (decoded) { const f = flat(unmask(decoded)); if (fresh(f)) yield f; }
@@ -184,15 +184,16 @@ function tolerant(source) {
 }
 const TOLERANT = Object.fromEntries([['high', HIGH], ['medium', MEDIUM]].map(([level, rules]) => [level, rules.map((rule) => ({ lang: rule.lang, re: new RegExp(tolerant(rule.re.source)) }))]));
 const TOLERANT_UNITED = Object.fromEntries(Object.entries(TOLERANT).map(([level, rules]) => [level, new RegExp(rules.map((rule) => '(?:' + rule.re.source + ')').join('|'))]));
-function matchForm(normalized) {
-  if (normalized.includes(GAP_MARK)) {
-    for (const level of ['high', 'medium']) {
-      if (!TOLERANT_UNITED[level].test(normalized)) continue;
-      const hit = TOLERANT[level].find((rule) => rule.re.test(normalized));
-      if (hit) return { level, lang: hit.lang };
-    }
-    return { level: null, lang: null };
+// La forma con marcadores se entrega como { tolerant: texto } (NO como cadena): un U+0001 escrito por la persona en una forma normal no la convierte en tolerante (O457-1).
+function matchTolerant(marked) {
+  for (const level of ['high', 'medium']) {
+    if (!TOLERANT_UNITED[level].test(marked)) continue;
+    const hit = TOLERANT[level].find((rule) => rule.re.test(marked));
+    if (hit) return { level, lang: hit.lang };
   }
+  return { level: null, lang: null };
+}
+function matchForm(normalized) {
   for (const [level, rules] of [['high', HIGH], ['medium', MEDIUM]]) {
     if (!UNITED[level].test(normalized)) continue;
     const hit = rules.find((rule) => rule.re.test(normalized));
@@ -215,7 +216,7 @@ function detectRisk(text) {
 function evaluate(text) {
   let best = { level: null, lang: null };
   for (const form of riskForms(text)) {
-    const hit = matchForm(form);
+    const hit = typeof form === 'string' ? matchForm(form) : matchTolerant(form.tolerant);
     if (hit.level === 'high') return hit;
     if (hit.level === 'medium' && best.level !== 'medium') best = hit;
   }

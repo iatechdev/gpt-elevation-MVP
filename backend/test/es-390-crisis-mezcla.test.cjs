@@ -110,3 +110,38 @@ test('ES-390 (mutación, lectura de código): las reglas tolerantes y el marcado
   assert.ok(src.indexOf('GAPS_TEST.test(nfkc)') < src.indexOf('const marked = unmask(') && src.includes('TOLERANT_UNITED') && src.includes('function tolerant('));
   assert.ok(src.includes('if (rawText !== best && rank(rawText) > bestRank) best = rawText;'));
 });
+
+test('ES-390 (O457-1): un U+0001 escrito por la persona NO vuelve tolerante una forma normal: lo que se detectaba antes se sigue detectando', () => {
+  for (const text of [`no${c(1)}me quiero matar`, `no${c(1)}me quiero morir`, `${c(1)}me quiero morir`, `me quiero morir${c(1)}`, `quiero${c(1)}suicidarme`]) {
+    assert.equal(_steps.legacy(text).level === null || detectRisk(text).level === 'high', true);
+    assert.equal(detectRisk(text).level, 'high', JSON.stringify(text));
+  }
+  assert.equal(_steps.legacy(`no${c(1)}me quiero matar`).level, 'high', 'en la forma de siempre ya era high');
+  assert.equal(detectRisk(`no${c(1)}me quiero matar`).level, 'high');
+});
+
+test('ES-390 (F457-1, HTTP): lo que VIAJA al proveedor nunca lleva controles (mensaje actual e historial), aunque lo guardado de una mezcla de riesgo MEDIO los conserve', async (t) => {
+  promptVault.getActivePrompt = async () => 'Synthetic system prompt';
+  const post = (request, body) => request('POST', '/api/chat', { role: 'user', id: 104, body });
+  const CONTROLS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/;
+  const hasControl = (value) => (typeof value === 'string' ? CONTROLS.test(value) : value && typeof value === 'object' ? Object.values(value).some(hasControl) : false);
+  for (const message of [`no${SEP.ZWSP}pue${SEP.NUL}do${SEP.VT}mas`, `ya${SEP.SHY}no${SEP.NEL}pue${SEP.FS}do${SEP.ZWSP}más`, `i${SEP.ZWSP}can${SEP.NUL}t${SEP.ZWSP}go${SEP.ZWSP}on`, `Hoy${SEP.NUL} fue${SEP.VT} un día${SEP.ZWSP} largo`]) {
+    const state = install(); models.User.findByPk = async () => ({ therapistId: null }); models.EthicManifest.findOne = async () => null;
+    const calls = []; anthropic.messages.create = async (options) => { calls.push(options); return { content: [{ type: 'text', text: 'Respuesta sintética' }] }; };
+    const request = await startApp(t);
+    const first = await post(request, { message });
+    assert.ok(first.status === 200, `status ${first.status}`);
+    for (let i = 0; i < 2; i += 1) await post(request, { message: `Seguimos ${i}` });
+    assert.ok(calls.length >= 3, 'el riesgo medio SÍ llama al proveedor');
+    for (const call of calls) assert.equal(hasControl(call), false, `ningún control viaja al proveedor: ${JSON.stringify(message)}`);
+    assert.ok(state.messages.length >= 6);
+  }
+});
+
+test('ES-390 (F457-1): la barrera de salida (stripInvisible / fenceUntrusted) quita también los controles; salto de línea, tabulador y CR se conservan', () => {
+  const { stripInvisible, fenceUntrusted } = require('../utils/promptSafety');
+  const text = `a${c(0)}b${c(0x0B)}c${c(0x0C)}d${c(0x85)}e${c(0x1F)}f${c(0x7F)}g\nh\ti\r\nj`;
+  assert.equal(stripInvisible(text), 'abcdefg\nh\ti\r\nj');
+  const fenced = fenceUntrusted('the message', `x${c(0)}y${c(0x0B)}z`).block;
+  assert.ok(!/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/.test(fenced));
+});
