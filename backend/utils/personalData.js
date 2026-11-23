@@ -1,4 +1,3 @@
-const { Op } = require('sequelize');
 const { desencriptar } = require('./crypto');
 const DataRightsError = require('./dataRightsError');
 
