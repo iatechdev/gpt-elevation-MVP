@@ -253,3 +253,6 @@
 .chat-jump { position: absolute; right: 0; bottom: .5rem; min-height: var(--cg-touch); padding: 0 .9rem; border: 1.5px solid var(--cg-ink); background: var(--cg-ground); color: var(--cg-ink); font: 600 .95rem var(--cg-font-cond); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
 .chat-jump:hover { color: var(--cg-mark); border-color: var(--cg-mark); }
 .chat-jump:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }
+
+/* ES-396: estado del mensaje propio mientras no está confirmado. */
+.chat-msg-state { display: block; margin-top: .3rem; font: 600 .8rem var(--cg-font-cond); letter-spacing: .08em; text-transform: uppercase; color: var(--cg-muted); }

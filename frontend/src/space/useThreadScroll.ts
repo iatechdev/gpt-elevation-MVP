@@ -18,7 +18,11 @@ export function useThreadScroll(scroller: RefObject<HTMLDivElement | null>, tran
   const bottom = (smooth: boolean) => {
     const el = scroller.current; if (!el) return
     programmaticUntil.current = Date.now() + 900
-    el.scrollTo({ top: el.scrollHeight - el.clientHeight, behavior: smooth ? behavior() : 'auto' })
+    // ES-396: si hay un mensaje propio sin confirmar, su inicio no se deja fuera de vista aunque los avisos de debajo no quepan
+    const pending = el.querySelector<HTMLElement>('.chat-msg-state')?.closest<HTMLElement>('.chat-msg')
+    const max = el.scrollHeight - el.clientHeight
+    const top = pending ? Math.min(max, pending.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop - 8) : max
+    el.scrollTo({ top: Math.max(0, top), behavior: smooth ? behavior() : 'auto' })
   }
   // Solo un movimiento HACIA ARRIBA de la persona deja de seguir el final; volver a ≤ 80 px del final lo retoma. Cambiar el alto del contenido no cambia lo que la persona eligió.
   const measure = (scrolled = false) => {

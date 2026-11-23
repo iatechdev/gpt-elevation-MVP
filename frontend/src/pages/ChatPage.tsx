@@ -51,6 +51,17 @@ const ChatBubble = memo(function ChatBubble({ role, text, you, logo, ai, childre
   )
 })
 
+// ES-396: el mensaje propio aún sin confirmar (mismo aspecto que la burbuja «Tú»; no es la memoizada porque cambia de estado)
+function PendingBubble({ text, you, state }: { text: string; you: string; state: string }) {
+  return (
+    <div className="chat-msg chat-msg--you">
+      <span className="chat-msg-who">{you}</span>
+      <div className="chat-msg-body">{text}</div>
+      <span className="chat-msg-state">{state}</span>
+    </div>
+  )
+}
+
 export function ChatPage() {
   const { t, lang } = useLanguage()
   const navigate = useNavigate()
@@ -188,6 +199,10 @@ export function ChatPage() {
               </ChatBubble>
             </div>
           ))}
+          {/* ES-396: el mensaje propio se ve al enviarlo (estado «Enviando…» / «Sin confirmar»); se retira cuando el historial del servidor ya lo trae */}
+          {chat.intent && (chat.sentBase === null || messages.length <= chat.sentBase) && (
+            <PendingBubble text={chat.intent.message} you={copy[lang].you} state={sending || chat.waiting ? copy[lang].sending : copy[lang].unconfirmed} />
+          )}
           {sending && (
             <div role="status" className="chat-msg chat-msg--bot">
               <span className="chat-msg-who">✦ {t('logo')} · {copy[lang].ai}</span>
