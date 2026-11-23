@@ -260,6 +260,7 @@ export const adminEnglish: Record<string, string> = {
   'Solo la superadministración puede enviar enlaces de restablecimiento.': 'Only superadministration can send reset links.',
   'Usuario no encontrado.': 'User not found.',
   'No se pudo enviar el enlace.': 'The link could not be sent.',
+  'No se pudo enviar el correo (el envío no está configurado o falló). El enlace no se creó para nadie; pide a quien opera el servidor que lo emita.': 'The email could not be sent (sending is not configured or failed). Contact whoever operates the server to issue a link.',
   'Solicitud registrada. Si la cuenta puede recibirlo y el envío de correo está configurado, la persona recibirá el enlace.': 'Request recorded. If the account can receive it and email sending is configured, the person will receive the link.',
   // ES-186 parte D (/admin/users)
   'Cuentas, emparejamientos y solicitudes de plan.': 'Accounts, matches and plan requests.',
@@ -341,6 +342,8 @@ export const adminEnglish: Record<string, string> = {
 }
 export function adminText(value: string, lang: 'es' | 'en'): string {
   if (lang === 'es') return value
+  const sentLink = /^Enlace enviado al correo de la cuenta\. Vence en (\d+) minutos\.$/.exec(value) // ES-379
+  if (sentLink) return `Link sent to the account's email. It expires in ${sentLink[1]} minutes.`
   const created = /^Usuario (.+) creado exitosamente\.$/.exec(value)
   if (created) return `User ${created[1]} created successfully.`
   const capacity = /^Se alcanzó el tope de solicitudes: (\d+) de (\d+) pendientes \(hojas de vida: (\d+) de (\d+) MB\)\. $/.exec(value)

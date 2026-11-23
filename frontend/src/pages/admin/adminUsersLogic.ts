@@ -97,7 +97,11 @@ export function deleteResult(status: number, data: Data): DeleteResult {
 }
 
 // ---------------------------------------------------------------- enlace de restablecimiento (E186 A2: se decide por `code`)
+// ES-379: el servidor ahora dice si el correo salió (`emailSent`). Sin ese campo (respuesta de un servidor anterior o en caché) se conserva el texto vago de siempre.
+export const resetSentText = (minutes: number): string => `Enlace enviado al correo de la cuenta. Vence en ${minutes} minutos.`
 export function resetLinkResult(status: number, data: Data): { ok: boolean; message: string } {
+  if (status === 202 && data?.emailSent === true && Number.isInteger(data.expiresInMinutes) && (data.expiresInMinutes as number) > 0 && (data.expiresInMinutes as number) <= 1440) return { ok: true, message: resetSentText(data.expiresInMinutes as number) }
+  if (status === 202 && data?.emailSent === false) return { ok: false, message: MSG.resetNotSent }
   if (status === 202) return { ok: true, message: 'Solicitud registrada. Si la cuenta puede recibirlo y el envío de correo está configurado, la persona recibirá el enlace.' }
   return { ok: false, message: errorMessage(status, data) }
 }
@@ -141,6 +145,7 @@ export const filterableRoles = (actor: string): Role[] => (isSuper(actor) ? ROLE
 // ---------------------------------------------------------------- textos de la pantalla (claves en español; el inglés vive en adminCopy.ts y una prueba exige que todas lo tengan)
 export const TAB_LABEL = { people: 'Personas', matching: 'Emparejamientos', plans: 'Solicitudes de plan' } as const
 export const MSG = {
+  resetNotSent: 'No se pudo enviar el correo (el envío no está configurado o falló). El enlace no se creó para nadie; pide a quien opera el servidor que lo emita.',
   nameMismatch: 'El nombre no coincide. Escríbelo exactamente como aparece.',
   active: 'La cuenta está activa.',
   deactivated: 'La cuenta quedó desactivada. Sus datos se conservan.',

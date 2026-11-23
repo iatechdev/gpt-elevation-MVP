@@ -1,0 +1,7 @@
+{
+  "status": 202,
+  "body": {
+    "emailSent": false,
+    "message": "No se pudo enviar el correo (el envío no está configurado o falló). El enlace no se creó para nadie. / The email could not be sent (sending is not configured or failed). No link was left active."
+  }
+}

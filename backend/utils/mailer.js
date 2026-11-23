@@ -85,4 +85,7 @@ async function sendInvitation({ to, link, locale, hours }) {
   return { sent: true };
 }
 
-module.exports = { providers, sendPasswordReset, passwordResetMessage, sendInvitation, invitationMessage };
+// ES-379: ¿hay un proveedor registrado y elegido? Sin él no se crea ningún enlace que nadie pueda recibir.
+const providerConfigured = () => typeof providers[process.env.MAIL_PROVIDER] === 'function';
+
+module.exports = { providerConfigured, providers, sendPasswordReset, passwordResetMessage, sendInvitation, invitationMessage };

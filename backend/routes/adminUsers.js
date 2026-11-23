@@ -516,8 +516,10 @@ router.post('/:id/reset-link', async (req, res) => {
     // ES-186 B: se audita ANTES de enviar; si la auditoría falla, no sale ningún enlace (500).
     await recordAdminAction({ actor: req.user, action: 'user.reset_link', targetType: 'user', targetId: usuario.id });
     const passwordReset = require('./passwordReset');
-    passwordReset.track(passwordReset.issueLinkForUser(usuario, locale).catch(() => console.error('Error al preparar el enlace de restablecimiento.')));
-    res.status(202).json({ message: 'Si la cuenta puede recibirlo, se envió un enlace de restablecimiento a su correo. / If the account can receive it, a reset link was sent to its email.' });
+    // ES-379: aquí se ESPERA al envío para decir la verdad (quien pide es superadmin y ya ve las cuentas; la ruta pública de la persona no cambia).
+    const outcome = await passwordReset.issueLinkForUser(usuario, locale).catch(() => { console.error('Error al preparar el enlace de restablecimiento.'); return { emailSent: false, reason: 'failed' }; });
+    if (outcome.emailSent === true) return res.status(202).json({ emailSent: true, expiresInMinutes: outcome.minutes, message: 'Se envió un enlace de restablecimiento al correo de la cuenta. / A reset link was sent to the account\'s email.' });
+    return res.status(202).json({ emailSent: false, message: 'No se pudo enviar el correo (el envío no está configurado o falló). El enlace no se creó para nadie. / The email could not be sent (sending is not configured or failed). No link was left active.' });
   } catch (error) {
     console.error('Error al enviar el enlace de restablecimiento.');
     res.status(500).json({ error: 'No se pudo enviar el enlace.' });

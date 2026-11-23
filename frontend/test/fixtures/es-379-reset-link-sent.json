@@ -1,0 +1,8 @@
+{
+  "status": 202,
+  "body": {
+    "emailSent": true,
+    "expiresInMinutes": 30,
+    "message": "Se envió un enlace de restablecimiento al correo de la cuenta. / A reset link was sent to the account's email."
+  }
+}
