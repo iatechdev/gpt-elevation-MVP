@@ -64,18 +64,20 @@ const assert = require('node:assert/strict'); const fs = require('node:fs')
       if (p === '/api/recommendations/generate') return j([{ id: 1, category: 'mindfulness', content: 'Respira tres veces antes de responder.', generatedAt: '2026-11-17T10:00:00Z' }]); return j([]) })
     await page.goto(base + '/app/chat', { waitUntil: 'networkidle' }); await page.getByText('Gracias por contarme').first().waitFor(); await page.waitForTimeout(600)
     const tag = `hojas ${scheme} ${lang}`
-    await page.locator('.chat-menu-btn').click(); await page.locator('dialog[open]').waitFor()
+    // ES-397: a ≤ 900 px el «☰ Menú» abre el cajón del marco (ES-359 PR4); «Conversación» va arriba y «Cerrar sesión» es su pie. Las hojas (Recomendaciones, despedida) salen después de cerrar el cajón.
+    const drawer = 'dialog.cg-drawer[open]'; const sheet = 'dialog[open]:not(.cg-drawer)'
+    await page.locator('.chat-menu-btn').click(); await page.locator(drawer).waitFor()
     assert.equal(await page.evaluate(() => document.activeElement && document.activeElement.closest('dialog') !== null), true, `el foco entra al menú (${tag})`)
     assert.deepEqual(await axe(page), [], `axe 0 con el menú abierto (${tag})`)
-    await page.keyboard.press('Escape'); await page.waitForTimeout(200); assert.equal(await page.locator('dialog[open]').count(), 0, `Esc cierra el menú (${tag})`)
+    await page.keyboard.press('Escape'); await page.waitForTimeout(300); assert.equal(await page.locator('dialog[open]').count(), 0, `Esc cierra el menú (${tag})`)
     assert.equal(await page.evaluate(() => document.activeElement && document.activeElement.classList.contains('chat-menu-btn')), true, `el foco vuelve al botón Menú (${tag})`)
-    await page.locator('.chat-menu-btn').click(); await page.locator('dialog[open] .chat-menu-list button').nth(1).click(); await page.locator('dialog[open]').waitFor() // Recomendaciones
-    await page.locator('dialog[open] .cg-btn').first().click(); await page.getByText('Respira tres veces').waitFor(); assert.deepEqual(await axe(page), [], `axe 0 con Recomendaciones (${tag})`)
-    await page.keyboard.press('Escape'); await page.waitForTimeout(200)
-    await page.locator('.chat-menu-btn').click(); await page.locator('dialog[open] .chat-menu-list button').last().click(); await page.locator('dialog[open]').waitFor() // Cerrar sesión -> check-out
-    await page.locator('dialog[open] input[type=radio]').first().check(); assert.deepEqual(await axe(page), [], `axe 0 con el check-out (${tag})`)
-    await page.keyboard.press('Escape'); await page.waitForTimeout(200); assert.equal(await page.locator('dialog[open]').count(), 0, `Esc cierra el check-out (${tag})`)
-    console.log(`PASS ${tag}: menú, Recomendaciones y check-out (axe 0, foco, Esc)`); await ctx.close(); n++
+    await page.locator('.chat-menu-btn').click(); await page.locator(drawer + ' .chat-menu-list button').nth(1).click(); await page.locator(sheet).waitFor() // Recomendaciones
+    await page.locator(sheet + ' .cg-btn').first().click(); await page.getByText('Respira tres veces').waitFor(); assert.deepEqual(await axe(page), [], `axe 0 con Recomendaciones (${tag})`)
+    await page.keyboard.press('Escape'); await page.waitForTimeout(300); assert.equal(await page.locator('dialog[open]').count(), 0, `Esc cierra Recomendaciones (${tag})`)
+    await page.locator('.chat-menu-btn').click(); await page.locator(drawer + ' .cg-drawer__foot button').click(); await page.locator(sheet + ' input[type=radio]').first().waitFor() // Cerrar sesión -> despedida
+    await page.locator(sheet + ' input[type=radio]').first().check(); assert.deepEqual(await axe(page), [], `axe 0 con la despedida (${tag})`)
+    await page.keyboard.press('Escape'); await page.waitForTimeout(300); assert.equal(await page.locator(sheet).count(), 0, `Esc cierra la despedida (${tag})`)
+    console.log(`PASS ${tag}: menú (cajón), Recomendaciones y despedida (axe 0, foco, Esc)`); await ctx.close(); n++
   }
   console.log(`\nES-333 PR 2: ${n} combinaciones OK`); await browser.close()
 })().catch(e => { console.error('FAIL', e.message); process.exit(1) })
