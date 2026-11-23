@@ -94,6 +94,9 @@ jobs:
         env:
           ES14_TEST_DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
         run: node --test test/integration/es-14-postgres.cjs
+      # ES-395: arnés ES-44 en modo integración (30 casos, 60 llamadas simuladas) con el Postgres embebido desechable y el doble del proveedor: sin red ni IA real. Falla si el adaptador se desfasa de las rutas (p. ej. consentimientos).
+      - name: ES-44 — arnés en modo integración (30 casos, sin IA real)
+        run: node evaluation/es44/cli.cjs --mode=integration --max-cases=30 --max-calls=120
       - name: Verificar conexión y esquema contra Postgres real
         env:
           DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
