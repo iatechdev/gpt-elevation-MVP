@@ -1,4 +1,4 @@
-// ES-385 (etapa 1): ESLint SOLO con reglas de defecto como bloqueantes. `no-unused-vars` va en «warn» (no bloquea; se limpia por lotes en la etapa 2).
+// ES-385 (etapa 1): ESLint SOLO con reglas de defecto como bloqueantes. ES-392: `no-unused-vars` tambien es error (backend ya sin avisos); un PR con una variable sin usar falla a proposito.
 // Las reglas del conjunto «recommended» que marcan código de seguridad INTENCIONAL (Unicode, controles) quedan fuera: no-control-regex, no-misleading-character-class, no-irregular-whitespace, no-useless-escape.
 const globals = require('globals');
 
@@ -10,7 +10,7 @@ const BUG_RULES = {
   'no-sparse-arrays': 'error', 'no-unsafe-negation': 'error', 'no-unsafe-optional-chaining': 'error', 'no-setter-return': 'error',
   'getter-return': 'error', 'no-compare-neg-zero': 'error', 'no-redeclare': 'error', 'no-this-before-super': 'error', 'constructor-super': 'error',
   'require-yield': 'error', 'no-loss-of-precision': 'error', 'no-prototype-builtins': 'off',
-  'no-unused-vars': ['warn', { args: 'none', caughtErrors: 'none', ignoreRestSiblings: true }],
+  'no-unused-vars': ['error', { args: 'none', caughtErrors: 'none', ignoreRestSiblings: true }],
 };
 
 module.exports = [
