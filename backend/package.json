@@ -82,6 +82,7 @@
     "check:prompt-duplicates": "node scripts/checkPromptDuplicates.cjs",
     "test:experiment-read:pg": "node --test test/integration/es-216-postgres.cjs",
     "test:admin-rank:pg": "node --test test/integration/es-215-postgres.cjs",
+    "test:perf": "node scripts/test-perf.cjs",
     "test:session-version:pg": "node --test test/integration/es-366-postgres.cjs",
     "test:admin-unlock:pg": "node --test test/integration/es-217-postgres.cjs",
     "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",

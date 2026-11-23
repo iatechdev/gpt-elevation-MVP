@@ -110,6 +110,8 @@ async function startApp(t) {
   // Import the production mounts, not a test reconstruction of the router tree.
   const app = require('../server');
   const server = app.listen(0, '127.0.0.1');
+  // ES-383: sin tiempo de espera de conexiones ociosas. Con la maquina cargada el cliente (fetch) reutiliza un socket que el servidor ya cerro a los 5 s y falla con ECONNRESET; el cierre final (closeAllConnections) limpia.
+  server.keepAliveTimeout = 0;
   await once(server, 'listening');
   t.after(() => new Promise((resolve, reject) => {
     server.close(error => error ? reject(error) : resolve());

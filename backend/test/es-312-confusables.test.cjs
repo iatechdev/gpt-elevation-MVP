@@ -2,6 +2,7 @@
 // Es una ayuda, NO una protección completa: no cubre CJK, símbolos, emojis, cifras de otras escrituras, mapeos de varias letras ni otros alfabetos completos. El texto guardado/mostrado NO cambia.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert, perfCheck } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -158,7 +159,7 @@ test('ES-312 hostiles: 100.000 caracteres de confusables (todos los de la tabla 
   const mixed = ('\u{E0041}' + all + 'ㅤ ' + '́').repeat(Math.ceil(100000 / (all.length + 4))).slice(0, 100000);
   for (const text of [heavy, mixed, 'ı'.repeat(100000), 'ᴍ '.repeat(50000), ('quiero ' + all).repeat(2000), '\ud800'.repeat(50000), 'ꓲ.'.repeat(50000)]) {
     const started = process.hrtime.bigint(); assert.doesNotThrow(() => detectRisk(text)); const ms = Number(process.hrtime.bigint() - started) / 1e6;
-    assert.ok(ms < 2000, 'tardó ' + ms.toFixed(0) + ' ms (techo holgado de la prueba; la meta medida está en el PR)');
+    perfAssert('ES-312 hostil (' + text.length + ' caracteres)', ms, 2000);
   }
   for (const odd of [null, undefined, 42, {}, [], 'ı', '']) assert.doesNotThrow(() => detectRisk(odd));
 });

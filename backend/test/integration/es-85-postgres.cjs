@@ -4,6 +4,7 @@
 //   ES85_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54339/postgres node --test test/integration/es-85-postgres.cjs
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert } = require('../perf-gate.cjs'); // ES-383: los techos de tiempo informan; solo fallan con PERF_STRICT=1 (npm run test:perf)
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -436,8 +437,10 @@ test('ES-85 PostgreSQL: aislamiento del rol, transiciones, fencing, concurrencia
     const { userId, jobId } = await fixture();
     const rev = await open(); const finish = await revocation(rev, userId);
     const started = Date.now();
-    assert.equal(await claim(), null, 'el job se pospone mientras la revocación está en curso');
-    assert.ok(Date.now() - started < 300, 'no se queda esperando el bloqueo');
+    // ES-383: si el reclamo esperara el bloqueo, la revocación (que solo termina DESPUÉS) lo dejaría esperando para siempre: la guarda de 30 s distingue «espera» de «lento», sin techo de milisegundos.
+    const verdict = await Promise.race([claim(), new Promise((resolve) => setTimeout(() => resolve('ESPERÓ_EL_BLOQUEO'), 30000).unref())]);
+    assert.equal(verdict, null, 'el job se pospone mientras la revocación está en curso (sin esperar el bloqueo)');
+    perfAssert('ES-85 reclamo con revocación en curso', Date.now() - started, 300);
     assert.equal((await job(jobId)).status, 'PENDING');
     await finish();
     assert.equal((await job(jobId)).status, 'INVALIDATED');

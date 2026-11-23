@@ -2,6 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { stripInvisible } = require('../utils/promptSafety');
+const { perfAssert, bestOf } = require('./perf-gate.cjs');
 const { sanitizeBody, AiInputRejectedError, AiProviderError, MAX_CONTENT_DEPTH, MAX_CONTENT_NODES } = require('../utils/aiClient');
 
 const VS17 = String.fromCodePoint(0xE0100); const VS256 = String.fromCodePoint(0xE01EF); const TAG = String.fromCodePoint(0xE0041);
@@ -90,13 +91,25 @@ test('QA-416-01 (callClaude): un cuerpo demasiado profundo se rechaza ANTES de r
   } finally { anthropic.messages.create = original; }
 });
 
+// ES-383: el recorrido se mide en LECTURAS de propiedades (getters), no en milisegundos: uno que no se detiene en el tope lee muchísimas más, con cualquier carga de CPU.
+// `limit` aborta un recorrido desbocado (la prueba falla rápido en vez de colgarse).
+const countedShared = (levels, counter, limit) => {
+  let node = { type: 'text', text: `x${HIDDEN}` };
+  for (let i = 0; i < levels; i++) {
+    const child = node; node = {};
+    for (const key of ['a', 'b']) Object.defineProperty(node, key, { enumerable: true, get() { counter.reads += 1; if (counter.reads > limit) throw new Error('recorrido desbocado'); return child; } });
+  }
+  return node;
+};
+
 test('QA-426-1: un hijo compartido dos veces por nivel (2^n caminos) se rechaza por tope de nodos (too_many_nodes) en tiempo acotado; uno modesto se limpia', () => {
   const build = (levels) => { let node = { type: 'text', text: `x${HIDDEN}` }; for (let i = 0; i < levels; i++) node = { a: node, b: node }; return node; };
   const small = sanitizeBody({ messages: [{ role: 'user', content: [build(8)] }] });
   assert.ok(!/[\u{E0000}-\u{E007F}\u{E0100}-\u{E01EF}]/u.test(JSON.stringify(small)), '2^8 caminos se limpian');
-  const started = process.hrtime.bigint();
-  assert.throws(() => sanitizeBody({ messages: [{ role: 'user', content: [build(30)] }] }), (e) => e instanceof AiInputRejectedError && e.reason === 'too_many_nodes');
-  const ms = Number(process.hrtime.bigint() - started) / 1e6; assert.ok(ms < 5000, `rechazo en ${ms.toFixed(0)} ms (con 2^30 caminos y sin tope tardaría horas)`);
+  const counter = { reads: 0 };
+  assert.throws(() => sanitizeBody({ messages: [{ role: 'user', content: [countedShared(30, counter, MAX_CONTENT_NODES * 10)] }] }), (e) => e instanceof AiInputRejectedError && e.reason === 'too_many_nodes');
+  assert.ok(counter.reads >= MAX_CONTENT_NODES / 4 && counter.reads <= MAX_CONTENT_NODES + 2, `el recorrido se detuvo en el tope: ${counter.reads} lecturas (con 2^30 caminos y sin tope serían ~10^9)`);
+  perfAssert('QA-426-1 rechazo de 2^30 caminos', bestOf(() => assert.throws(() => sanitizeBody({ messages: [{ role: 'user', content: [build(30)] }] }), (e) => e.reason === 'too_many_nodes'), 2), 5000);
   assert.equal(MAX_CONTENT_NODES, 100000);
 });
 
@@ -120,14 +133,16 @@ test('QA-426-2 (estática): ningún llamador real mete Date/Buffer en el cuerpo:
   }
 });
 
-test('QA-429: tope de 100 000 nodos: la frontera exacta (CAP pasa, CAP+1 se rechaza), el rechazo es rápido y los cuerpos reales caben con holgura', () => {
+test('QA-429: tope de 100 000 nodos: la frontera exacta (CAP pasa, CAP+1 se rechaza), el rechazo se detiene en el tope y los cuerpos reales caben con holgura', () => {
   assert.equal(MAX_CONTENT_NODES, 100000);
   const flat = (count) => ({ x: Array.from({ length: count }, () => 'a') }); // nodos = 1 (la entrada x) + count
   assert.doesNotThrow(() => sanitizeBody(flat(MAX_CONTENT_NODES - 1)), 'exactamente el tope pasa');
   assert.throws(() => sanitizeBody(flat(MAX_CONTENT_NODES)), (e) => e instanceof AiInputRejectedError && e.reason === 'too_many_nodes');
   let deepShared = { t: 'x' }; for (let i = 0; i < 40; i++) deepShared = { a: deepShared, b: deepShared };
-  const started = process.hrtime.bigint(); assert.throws(() => sanitizeBody({ m: [deepShared] }), (e) => e.reason === 'too_many_nodes');
-  const ms = Number(process.hrtime.bigint() - started) / 1e6; assert.ok(ms < 1000, `rechazo en ${ms.toFixed(0)} ms`);
+  const counter = { reads: 0 };
+  assert.throws(() => sanitizeBody({ m: [countedShared(40, counter, MAX_CONTENT_NODES * 10)] }), (e) => e.reason === 'too_many_nodes');
+  assert.ok(counter.reads >= MAX_CONTENT_NODES / 4 && counter.reads <= MAX_CONTENT_NODES + 2, `el recorrido se detuvo en el tope: ${counter.reads} lecturas`);
+  perfAssert('QA-429 rechazo de 2^40 caminos', bestOf(() => assert.throws(() => sanitizeBody({ m: [deepShared] }), (e) => e.reason === 'too_many_nodes'), 3), 3000);
   // Cuerpo real más grande posible del chat: HISTORY_LIMIT (20) + 1 mensajes, cada uno con 20 bloques de 3 campos y un tool_use anidado: ~3 500 nodos, 3 % del tope.
   const block = (i) => ({ type: 'tool_use', id: 't' + i, name: 'x', input: { a: 'v', b: { c: ['v', 'v'] } } });
   const messages = Array.from({ length: 21 }, () => ({ role: 'user', content: Array.from({ length: 20 }, (_, i) => block(i)) }));

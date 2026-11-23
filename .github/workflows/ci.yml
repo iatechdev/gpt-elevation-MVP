@@ -119,6 +119,43 @@ jobs:
       - name: Auditar dependencias (bloquea en alta o crítica)
         run: npm audit --omit=dev --audit-level=high
 
+  # ES-383: rendimiento APARTE de la corrección. Los techos de tiempo ya no están en las pruebas que bloquean (npm test y los scripts :pg solo los informan);
+  # aquí se ejecutan en modo estricto, con el techo escalado por la velocidad que mide la misma corrida. NO bloquea PR: un runner cargado no pone el PR en rojo
+  # (continue-on-error); el resultado se lee en el registro del job. Para que bloquee, quitar continue-on-error.
+  perf:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Rendimiento (PERF_STRICT=1; informa, no bloquea)
+        env:
+          ES85_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES179_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES180_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES216_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES29_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+        run: npm run test:perf
+
   data-rights-postgres:
     runs-on: ubuntu-latest
     services:

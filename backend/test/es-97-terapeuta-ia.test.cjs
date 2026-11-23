@@ -3,6 +3,7 @@
 // Express real, HTTP y JWT reales; la persistencia y el proveedor son dobles (ver support.cjs).
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert, perfCheck } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const { models, anthropic, record, startApp, grantTherapistSharing } = require('./support.cjs');
 
 const T1 = 101;
@@ -115,7 +116,7 @@ test('ES-97 M5: un proveedor lento no deja colgado el panel más allá del tiemp
   const started = Date.now();
   const res = await request('GET', SUMMARY, asTherapist);
   assert.equal(res.status, 200);
-  assert.ok(Date.now() - started < 5000);
+  perfAssert('ES-97 M5 panel con proveedor lento (mock de 50 ms)', Date.now() - started, 5000);
   assert.ok(s.prompts[0].requestOptions.timeout <= 120000);
 });
 

@@ -5,6 +5,7 @@
 // Uso (en backend/):  ES180_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54329/postgres npm run test:admin-metrics:pg
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert } = require('../perf-gate.cjs'); // ES-383: los techos de tiempo informan; solo fallan con PERF_STRICT=1 (npm run test:perf)
 const { randomBytes } = require('node:crypto');
 const { once } = require('node:events');
 const express = require('express');
@@ -161,7 +162,7 @@ test('ES-180 PostgreSQL: métricas y avisos de administración', { timeout: 3000
     samples.sort((a, b) => a - b);
     const p95 = samples[Math.ceil(samples.length * 0.95) - 1];
     console.log(`ES-180 /api/admin/metrics con ${await MoodLog.count()} registros: p50=${samples[7].toFixed(0)}ms p95=${p95.toFixed(0)}ms`);
-    assert.ok(p95 < 500, `p95 ${p95.toFixed(0)} ms`);
+    perfAssert('ES-180 /api/admin/metrics p95', p95, 500);
     let n = 0; const previous = sequelize.options.logging; sequelize.options.logging = () => { n += 1; };
     try { await call(adm, '/api/admin/metrics'); } finally { sequelize.options.logging = previous; }
     assert.ok(n <= 12, `${n} consultas (constantes; antes 2 o 3 por profesional)`);
