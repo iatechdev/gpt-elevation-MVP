@@ -12,7 +12,7 @@ async function main() {
     const child = spawn(process.execPath, ['--test', 'test/integration/es-33-postgres.cjs', 'test/integration/es-23-postgres.cjs'], { cwd: path.join(__dirname, '..'), stdio: 'inherit', env: { ...process.env, ES33_TEST_DATABASE_URL: source, ES23_TEST_DATABASE_URL: source } });
     const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('exit', resolve); }); if (code !== 0) failed = true;
   } catch (error) { failed = true; console.error('ES-33 local failed:', error.name); }
-  finally { if (pg) await pg.stop(); if (path.dirname(path.resolve(directory)) !== parent || !path.basename(directory).startsWith('.es33-pg-')) throw new Error('Unexpected temporary directory'); await rm(directory, { recursive: true, force: true }); }
+  finally { if (pg) await pg.stop(); if (path.dirname(path.resolve(directory)) !== parent || !path.basename(directory).startsWith('.es33-pg-')) { failed = true; console.error('Directorio temporal inesperado: no se borra'); } else await rm(directory, { recursive: true, force: true }); }
   if (failed) process.exit(1);
 }
 main().catch(error => { console.error(error.name); process.exit(1); });

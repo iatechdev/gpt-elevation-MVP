@@ -82,7 +82,10 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      # Sin lint en el backend: se comprueba la sintaxis y se corren los tests (P1 del PR #2).
+      # ES-385 (etapa 1): ESLint con SOLO reglas de defecto como bloqueantes (backend/eslint.config.cjs); no-unused-vars va en «warn» y no bloquea (etapa 2: limpiar por lotes).
+      - name: ESLint (reglas de defecto)
+        run: npm run lint
+      # Además de lo anterior se comprueba la sintaxis y se corren los tests (P1 del PR #2).
       - name: Revisar sintaxis
         run: find . -name node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
       - run: npm test
