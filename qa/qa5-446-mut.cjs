@@ -1,0 +1,13 @@
+// [QA-Claude-5] #446: mutaciones propias de backend/routes/passwordReset.js y adminUsers.js (copia de trabajo de QA; se restaura con git). Reinicia el backend en cada una.
+const fs = require('fs'); const cp = require('child_process'); const B = (process.env.QA_TOOLS || '.') + '/qa5/main/backend'; const PR = B + '/routes/passwordReset.js', AU = B + '/routes/adminUsers.js'
+const sh = (c, env) => cp.spawnSync('bash', ['-c', c], { encoding: 'utf8', env: { ...process.env, ...env } })
+const M = [
+  ['a_no_invalida_si_falla_el_envio', PR, "await PasswordReset.update({ usedAt: new Date() }, { where: { tokenHash: hashToken(token), usedAt: null } }).catch(() => console.error('No se pudo invalidar el enlace no enviado.'));", '', 'ok'],
+  ['b_emailSent_siempre_true', PR, "return { emailSent: false, reason: 'send_failed' };", "return { emailSent: true, minutes: ttlMinutes() };", 'ok'],
+  ['c_crea_enlace_sin_proveedor', PR, "if (!providerConfigured()) { console.error('Enlace de restablecimiento no emitido: sin proveedor de correo configurado (ES-12).'); return { emailSent: false, reason: 'not_configured' }; }", '', 'none'],
+  ['d_no_espera_el_envio_en_admin', AU, "const outcome = await passwordReset.issueLinkForUser(usuario, locale)", "const outcome = await (passwordReset.track(passwordReset.issueLinkForUser(usuario, locale)), Promise.resolve({ emailSent: true, minutes: 30 }))", 'ok'],
+  ['e_sin_tope_por_cuenta', PR, "if (recent >= perAccountPerHour()) { await transaction.commit(); return { emailSent: false, reason: 'rate_limited', limit: perAccountPerHour() }; }", '', 'ok'],
+]
+const run = (mode) => { sh(`: > /tmp/r446m.txt; (bash ${process.env.QA_TOOLS || '.'}/qa5/restart446.sh ${mode} > /tmp/r446m.txt 2>&1 &); until grep -q backend-ok /tmp/r446m.txt 2>/dev/null; do sleep 3; done; rm -f ${process.env.QA_TOOLS || '.'}/qa5/out/outbox.jsonl; node qa/qa5-reg-seed.cjs > /dev/null 2>&1`); const r = cp.spawnSync(process.execPath, ['qa/qa5-446.cjs'], { encoding: 'utf8', env: { ...process.env, MODE: mode } }); return r.stdout.split('\n').filter((l) => l.startsWith('FALLA')).map((l) => l.slice(6, 120)) }
+const origs = { [PR]: fs.readFileSync(PR, 'utf8'), [AU]: fs.readFileSync(AU, 'utf8') }
+try { for (const [id, file, a, b, mode] of M) { if (process.env.ONLY && id[0] !== process.env.ONLY) continue; if (!origs[file].includes(a)) { console.log(id + ': NO APLICA'); continue } fs.writeFileSync(file, origs[file].split(a).join(b)); let f; try { f = run(mode) } finally { fs.writeFileSync(file, origs[file]) } console.log(`${id}: ${f.length ? 'DETECTADA' : 'ESCAPÓ'} (${f.length})`); f.slice(0, 2).forEach((x) => console.log('   ' + x)) } } finally { fs.writeFileSync(PR, origs[PR]); fs.writeFileSync(AU, origs[AU]) }

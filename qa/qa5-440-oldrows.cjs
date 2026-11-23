@@ -1,0 +1,5 @@
+// [QA-Claude-5] #440: siembra en la BD desechable las filas del catálogo ANTERIOR de main (como la siembra ES-66 que ya corrió en staging: findOrCreate, valores existentes preservados).
+const { Client } = require('pg'); const rows = JSON.parse(require('fs').readFileSync((process.env.QA_TOOLS || '.') + '/qa5/out/old-landing.json', 'utf8'))
+;(async () => { const c = new Client({ connectionString: process.env.DATABASE_URL }); await c.connect(); const cols = (await c.query("SELECT column_name FROM information_schema.columns WHERE table_name='LandingContents'")).rows.map((r) => r.column_name); console.log('columnas', cols.join(','))
+  let n = 0; for (const e of rows) for (const l of ['es', 'en']) { if (e[l] == null) continue; await c.query('INSERT INTO "LandingContents" (key,lang,value,updated_by,"createdAt","updatedAt") VALUES ($1,$2,$3,$4,now(),now()) ON CONFLICT DO NOTHING', [e.key, l, e[l], 'ES-66 seed']); n++ }
+  console.log('filas antiguas sembradas', n); await c.end() })().catch((e) => { console.error(e.message); process.exit(1) })
