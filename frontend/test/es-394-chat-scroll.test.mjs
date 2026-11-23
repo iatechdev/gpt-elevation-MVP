@@ -36,3 +36,7 @@ test('ES-394: el hilo gestiona su desplazamiento (sin ancla automática) y, con 
   assert.match(css, /\.chat-scroll \{ overflow-anchor: none; \}/)
   assert.match(css, /@media \(min-width: 901px\) \{\s*\.cg-frame:has\(\.chat-shell\) > \.cg-body--wideside \{ display: grid; grid-template-rows: minmax\(0, 1fr\); align-items: stretch; \}\s*\.cg-frame:has\(\.chat-shell\) > \.cg-body--wideside > \.cg-side--groups \{ min-height: 0; overflow-y: auto; \}/)
 })
+
+test('ES-394 (E394-1): al activar «Ir al último mensaje» el foco pasa al hilo antes de que el control se desmonte', () => {
+  assert.match(hook, /const jump = \(\) => \{ scroller\.current\?\.focus\(\{ preventScroll: true \}\); following\.current = true;/)
+})

@@ -61,7 +61,8 @@ export function useThreadScroll(scroller: RefObject<HTMLDivElement | null>, tran
     observer.observe(box); return () => observer.disconnect()
   }, [transcript]) // eslint-disable-line react-hooks/exhaustive-deps -- el observador se crea una vez; bottom() y measure() solo leen refs
 
-  const jump = () => { following.current = true; bottom(true); setAway(false) }
+  // El botón se desmonta al llegar al final: el foco pasa antes al hilo (región con tabIndex 0) para no caer a <body> (E394-1).
+  const jump = () => { scroller.current?.focus({ preventScroll: true }); following.current = true; bottom(true); setAway(false) }
   const touched = () => { userUntil.current = Date.now() + 1500 } // rueda, dedos, teclas o barra: la persona está moviendo el hilo
   return { onScroll: () => measure(true), onWheel: touched, onTouchMove: touched, onKeyDown: touched, onPointerDown: touched, away, jump }
 }
