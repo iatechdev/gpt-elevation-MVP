@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Precios y Profesionales en Cartografía (maqueta)</title>
+<style>
+/* Maqueta de DISEÑO (no es código de producto): /pricing y /profesionales en el marco Público migrado (PublicFrame migrated), como la portada, privacidad y términos (ES-328).
+   Flujos, estados y textos NO cambian: salen de shared/landing-content.json (landing.pricing.*), PlanCards.tsx, LandingPlans.tsx y professional/copy.ts. Tokens y piezas = cartografia.css / shell.css;
+   lo NUEVO está marcado «NUEVO». Los datos de la lámina (nombres y precios de planes) son de ejemplo. */
+.cg{--cg-ground:#e7ece8;--cg-panel:#f2f5f2;--cg-ink:#14201c;--cg-muted:#475550;--cg-line:#b9c3bd;--cg-mark:#1d4f91;--cg-err:#a8321d;--cg-good:#1f5f46;
+--cg-font-cond:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;--cg-font-sans:'Barlow',system-ui,sans-serif;--cg-font-name:'Spectral',Georgia,serif;
+--cg-touch:2.875rem;--cg-focus:3px;color-scheme:light;background:var(--cg-ground);color:var(--cg-ink);font:400 1.0625rem/1.55 var(--cg-font-sans)}
+@media (prefers-color-scheme:dark){.cg:not([data-theme='light']){--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}}
+.cg[data-theme='dark']{--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}body{margin:0}
+.cg :focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:3px}
+.cg a{color:var(--cg-mark);text-underline-offset:3px}
+.cg-muted{color:var(--cg-muted)}
+.cg-tag{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch);padding:.55rem 1.2rem;background:var(--cg-ink);color:var(--cg-ground);border:0;border-radius:0;font:700 1rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.cg-btn:hover{background:var(--cg-mark)}
+.cg a.cg-btn{color:var(--cg-ground)}
+.cg-btn--ghost,.cg a.cg-btn--ghost{background:none;color:var(--cg-ink);box-shadow:inset 0 0 0 1.5px var(--cg-ink)}
+.cg-btn--ghost:hover{background:none;color:var(--cg-mark);box-shadow:inset 0 0 0 1.5px var(--cg-mark)}
+.cg-btn--danger{background:var(--cg-err);color:var(--cg-ground)}.cg-btn--danger:hover{background:var(--cg-err)}
+.cg-btn:disabled{opacity:.55;cursor:not-allowed;background:var(--cg-ink);color:var(--cg-ground)}
+.cg-btn--ghost:disabled{background:none;color:var(--cg-ink)}
+.cg-linkbtn{min-width:var(--cg-touch);background:none;border:0;border-bottom:1.5px solid var(--cg-mark);border-radius:0;padding:.1rem 0;min-height:var(--cg-touch);font:600 1rem var(--cg-font-sans);color:var(--cg-ink);cursor:pointer}
+.cg-card{background:var(--cg-panel);border:1.5px solid var(--cg-ink);padding:1rem 1.1rem}
+.cg-banner{border:1.5px solid var(--cg-ink);padding:.8rem 1rem;background:var(--cg-panel);margin:1rem 0}
+.cg-banner--error{border-color:var(--cg-err)}
+.cg-banner__title{display:block;font-weight:600}
+.cg-banner--error .cg-banner__title::before{content:'\26A0\00a0';color:var(--cg-err)}
+.cg-chip{display:inline-flex;gap:.3rem;align-items:center;border:1px solid var(--cg-line);padding:.05rem .45rem;font:600 .78rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-chip--ok{border-color:var(--cg-good);color:var(--cg-good)}.cg-chip--wait{border-color:var(--cg-mark);color:var(--cg-mark)}.cg-chip--bad{border-color:var(--cg-err);color:var(--cg-err)}
+.cg-field{display:grid;gap:.3rem;margin-top:1rem;border:0;padding:0;min-width:0}
+.cg-label{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;padding:0}
+.cg-input,.cg-textarea{width:100%;min-height:var(--cg-touch);padding:.7rem .8rem;background:var(--cg-panel);color:var(--cg-ink);border:1.5px solid var(--cg-ink);border-radius:0;font:inherit}
+.cg-textarea{min-height:9rem;resize:vertical;line-height:1.5}
+.cg-input[aria-invalid='true'],.cg-textarea[aria-invalid='true']{border-color:var(--cg-err);border-width:2px}
+.cg-hint{color:var(--cg-muted);font-size:.85rem;margin:0}
+.cg-error{color:var(--cg-err);font-size:.9rem;margin:0}.cg-error::before{content:'\26A0\00a0'}
+.cg-items{list-style:none;margin:0;padding:0}
+.cg-item{border-top:1px solid var(--cg-line);padding:.9rem 0;display:grid;gap:.4rem}.cg-item:first-child{border-top:2px solid var(--cg-ink)}
+.cg-dialog{background:var(--cg-panel);color:var(--cg-ink);border:2px solid var(--cg-ink);padding:1.3rem 1.4rem;max-width:min(30rem,calc(100vw - 2rem));width:100%}
+.cg-dialog__actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1.2rem}
+.cg-scrim{background:rgb(14 22 19/.55);padding:1.2rem 0;display:flex;justify-content:center}
+/* marco (shell.css + ES-153 aprobado) */
+.cg-frame{min-height:100dvh;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.cg-skip{position:absolute;left:1rem;top:-10rem;z-index:100;background:var(--cg-panel);color:var(--cg-mark);border:2px solid var(--cg-ink);padding:.7rem 1rem;font-weight:600}.cg-skip:focus{top:1rem}
+.cg-header{display:flex;align-items:center;justify-content:space-between;gap:.8rem 1.4rem;flex-wrap:wrap;padding:1rem 0;border-bottom:1px solid var(--cg-line);max-width:1240px;width:100%;margin:0 auto}
+.cg a.cg-brand{font:700 1.7rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--cg-ink);display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.cg-brand i{font-style:normal;color:var(--cg-mark)}
+.cg-nav{display:flex;gap:.2rem 1.3rem;flex-wrap:wrap;align-items:center;font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase}
+.cg-nav a{color:var(--cg-ink);text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch)}
+.cg-nav a:hover{border-color:var(--cg-mark)}.cg-nav a[aria-current='page']{border-color:var(--cg-ink)}
+.cg-header__end{display:flex;align-items:center;gap:.7rem 1rem;flex-wrap:wrap;margin-left:auto}
+.cg-lang,.cg-seg{display:inline-flex;border:1.5px solid var(--cg-ink)}
+.cg-lang__btn,.cg-seg button{min-width:var(--cg-touch);min-height:var(--cg-touch);padding:0 .8rem;background:none;border:0;border-radius:0;color:var(--cg-ink);font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.cg-lang__btn[aria-pressed='true'],.cg-seg button[aria-pressed='true']{background:var(--cg-ink);color:var(--cg-ground)}
+.cg-seg button+button{border-left:1.5px solid var(--cg-ink)}
+.cg-usermenu__button{background:none;border:0;border-bottom:3px solid transparent;min-height:var(--cg-touch);padding:0 .2rem;color:var(--cg-ink);font:italic 500 1.1rem var(--cg-font-name)}
+.cg-usermenu__button.is-here{border-color:var(--cg-ink)}
+.cg-body{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:1rem 0 2rem;min-width:0}
+.cg-main{min-width:0;outline:none}
+.cg-prefs{display:flex;gap:.6rem 1.4rem;flex-wrap:wrap;align-items:center;width:100%;max-width:1240px;margin:0 auto;padding:.8rem 0;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted)}
+.cg-prefs__group{display:inline-flex;align-items:center;gap:.6rem}
+.cg-footer{display:flex;justify-content:space-between;gap:.4rem 1rem;flex-wrap:wrap;padding:1.2rem 0 2rem;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted);max-width:1240px;width:100%;margin:0 auto}
+.cg-only-narrow{display:none}
+@media (max-width:900px){
+ .cg-body{padding-top:.6rem}
+ .cg-header--person{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 .8rem;padding:.4rem 0 .6rem}
+ .cg-header--person .cg-header__end{display:contents}
+ .cg-header--person .cg-usermenu__button{grid-column:2;grid-row:1;justify-self:end}
+ .cg-header--person .cg-nav{grid-column:1 / -1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 .6rem}
+ .cg-header--person .cg-nav a{min-width:0;overflow-wrap:anywhere;line-height:1.05;font-size:.88rem}
+ .cg-header--person .cg-lang{display:none}.cg-only-narrow{display:flex}}
+@media (max-width:360px){.cg-header--person .cg-nav a{font-size:.74rem;letter-spacing:.02em;overflow-wrap:normal}}
+@media (min-width:901px){.cg-only-narrow{display:none!important}}
+/* ===== NUEVO en estas pantallas ===== */
+.pg-head{margin:0 0 1.2rem;max-width:46rem}.pg-head .cg-tag{margin:0 0 .3rem}
+.pg-title{font:700 clamp(1.9rem,4.6vw,2.8rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .5rem}   /* título de las pantallas de utilidad; el .cg-h1 de 4 rem queda para portada y mapa */
+.pg-lead{margin:0}
+.pg-stack{display:grid;gap:1rem;max-width:46rem}
+.pg-card h2{font:700 1.35rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.03em;margin:0 0 .5rem}
+.pg-card h3{font:700 1.15rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.04em;margin:.2rem 0}
+.pg-card p{margin:.4rem 0}
+.pg-actions{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem}
+.pg-price{font:700 1.5rem var(--cg-font-cond)}
+.pg-feat{margin:.5rem 0;padding-left:1.2rem}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1fr) 3rem minmax(0,1fr);gap:1rem;align-items:start}
+.pg-arrow{align-self:center;text-align:center;font:700 1.6rem var(--cg-font-cond);color:var(--cg-muted)}
+.pg-work{display:grid;grid-template-columns:minmax(0,18rem) minmax(0,1fr);gap:1.4rem;align-items:start}
+.pg-paper{font:400 1.15rem/1.6 var(--cg-font-name);min-height:11rem}   /* lo que la persona escribe en el diario va en Spectral */
+.pg-quote{font:italic 400 1.1rem/1.5 var(--cg-font-name);border-left:4px solid var(--cg-line);margin:.4rem 0;padding:.2rem 0 .2rem .9rem}
+.pg-quote--hidden{border-left-style:dashed;color:var(--cg-muted);font-family:var(--cg-font-sans);font-style:normal}
+.pg-switch{display:inline-flex;align-items:center;gap:.7rem;min-height:var(--cg-touch);background:none;border:0;padding:0;font:inherit;color:var(--cg-ink);cursor:pointer}
+.pg-switch__track{width:3.2rem;height:1.8rem;border:2px solid var(--cg-ink);background:var(--cg-ground);position:relative;flex:none}
+.pg-switch__track::after{content:'';position:absolute;top:2px;left:2px;width:1.2rem;height:1.2rem;background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track{background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track::after{left:auto;right:2px;background:var(--cg-ground)}
+.pg-switch__word{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase}
+.pg-todo{border:1.5px dashed var(--cg-line);padding:.5rem .8rem;color:var(--cg-muted);font-size:.9rem}   /* marcador: se mantiene el texto actual de copy.ts */
+@media (max-width:900px){.pg-cols{grid-template-columns:minmax(0,1fr)}.pg-work{grid-template-columns:minmax(0,1fr)}}
+.pg-radios{display:flex;flex-wrap:wrap;gap:.5rem}
+.pg-radios label{display:inline-flex;align-items:center;gap:.5rem;min-height:var(--cg-touch);padding:0 .9rem;border:1.5px solid var(--cg-ink);cursor:pointer;font:600 1rem var(--cg-font-cond);letter-spacing:.06em;text-transform:uppercase}
+.pg-radios input{width:1.2rem;height:1.2rem;accent-color:var(--cg-ink)}
+.pg-radios label:has(input:checked){background:var(--cg-ink);color:var(--cg-ground)}
+.pg-radios label:has(input:focus-visible){outline:var(--cg-focus) solid var(--cg-mark);outline-offset:2px}
+.pg-pick{display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch);cursor:pointer}.pg-pick input{width:1.4rem;height:1.4rem;margin:.15rem 0 0;accent-color:var(--cg-ink);flex:none}
+fieldset.cg-field legend{padding:0}
+/* ===== sólo de la lámina ===== */
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
+/* NUEVO (ES-328) */
+.pp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;margin:1rem 0}.pp-grid>*{min-width:0}
+@media (max-width:1100px){.pp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:640px){.pp-grid{grid-template-columns:minmax(0,1fr)}}
+.pp-plan{display:flex;flex-direction:column;gap:.5rem;padding:1.1rem;border:1.5px solid var(--cg-ink);background:var(--cg-panel)}.pp-plan h2{margin:0;font:700 1.35rem var(--cg-font-cond);text-transform:uppercase}
+.pp-plan p{margin:0;overflow-wrap:anywhere}.pp-plan--hl{border-top:6px solid var(--cg-mark)}.pp-plan--sel{outline:4px solid var(--cg-mark);outline-offset:2px}
+.pp-plan .cg-chip{align-self:flex-start}.pp-plan>.cg-btn{margin-top:auto;text-align:center;white-space:normal}
+.pp-price{font:700 2rem var(--cg-font-cond)}.pp-feats{margin:.2rem 0;padding-left:1.1rem}.pp-feats li{margin:.2rem 0}
+.pp-skel{height:14rem;border:1.5px dashed var(--cg-line);background:var(--cg-panel);margin:1rem 0}
+.pp-notice{margin:1.4rem 0 0;padding-top:.8rem;border-top:1px solid var(--cg-line);color:var(--cg-muted);font-size:.9rem;max-width:46rem}
+.pp-form{display:grid;gap:.4rem;max-width:46rem}.pp-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}@media (max-width:640px){.pp-pair{grid-template-columns:minmax(0,1fr)}}
+.cg-error{display:block;color:var(--cg-err);font-weight:600;margin-top:.2rem}.cg-input[aria-invalid=true],.cg-textarea[aria-invalid=true]{border-color:var(--cg-err);border-width:2px}
+.pc-check{display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch);cursor:pointer}.pc-check input{width:1.4rem;height:1.4rem;accent-color:var(--cg-ink);flex:none;margin-top:.1rem}
+.pc-link{color:var(--cg-ink);text-underline-offset:4px;display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.cg-input[type=file]{padding:.5rem;min-height:var(--cg-touch);height:auto}
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Controles de la lámina (no forman parte del diseño)"><b>Lámina · Precios y Profesionales (ES-328)</b>
+ <label>Pantalla <select id="scene"><option value="pricing">Precios · visitante</option><option value="pricing-auth">Precios · con sesión</option><option value="pricing-selected">Precios · plan elegido (?plan=)</option><option value="pricing-pending">Precios · solicitud en revisión</option><option value="pricing-submitted">Precios · solicitud enviada</option><option value="pricing-unknown">Precios · resultado sin confirmar</option><option value="pricing-retired">Precios · plan retirado</option><option value="pricing-checking">Precios · consultando solicitud</option><option value="pricing-loading">Precios · cargando</option><option value="pricing-error">Precios · error de carga</option><option value="pricing-empty">Precios · sin planes</option><option value="pros">Profesionales · formulario</option><option value="pros-errors">Profesionales · errores por campo</option><option value="pros-sending">Profesionales · enviando</option><option value="pros-success">Profesionales · enviada</option><option value="pros-network">Profesionales · error de red</option><option value="pros-rate">Profesionales · demasiados intentos</option><option value="pros-closed">Profesionales · cerrado</option><option value="pros-server">Profesionales · error de servidor</option></select></label>
+ <label>Idioma <select id="lang"><option value="es">ES</option><option value="en">EN</option></select></label>
+ <label>Tema <select id="theme"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></label>
+ <span>Esta barra no existe en la plataforma. Los datos de la lámina son de ejemplo.</span></div>
+<div id="root"></div>
+<script>
+const S={es:{skip:'Saltar al contenido',lang:'Idioma',main:'Principal',prefs:'Preferencias',theme:'Tema',tsys:'Sistema',tlight:'Claro',tdark:'Oscuro',ex:'(ejemplo)',
+ how:'Cómo funciona',privacy:'Privacidad',manifest:'Manifiesto ético',signIn:'Entrar',signUp:'Crear cuenta',foot1:'Elevation es acompañamiento y autoconocimiento. No es terapia ni diagnóstico.',foot2:'Tú decides qué guardar.',
+ // /pricing (landing-content.json landing.pricing.* y landing.access.*)
+ pLabel:'Planes',pTitle:'Elige cómo quieres acompañarte',pSub:'Empieza sin costo y cambia de plan cuando lo necesites.',free:'Gratis',featured:'Destacado',register:'Crear cuenta y solicitar este plan',request:'Solicitar este plan',pNote:'Los planes de pago pasan por la aprobación de un administrador.',
+ loading:'Cargando planes…',loadErr:'No se pudieron cargar los planes. Inténtalo de nuevo.',retry:'Reintentar',empty:'Pronto publicaremos los planes.',review:'Revisa el plan seleccionado antes de enviar tu solicitud.',retired:'El plan seleccionado ya no está disponible. Revisa las opciones actuales.',
+ submitting:'Enviando solicitud…',submitted:'Tu solicitud quedó registrada y está en revisión. El plan aún no está activado.',pending:'Ya tienes una solicitud en revisión.',checkingReq:'Consultando el estado de tu solicitud…',reqErr:'No pudimos consultar tu solicitud. Comprueba el estado antes de solicitar.',unknown:'No pudimos confirmar el resultado. Comprueba el estado antes de volver a solicitarlo.',checkStatus:'Comprobar estado',space:'Continuar a mi espacio',
+ month:'/ mes',year:'/ año',notice:'El asistente de IA de Elevation ofrece acompañamiento y orientación profesional no clínicos; no sustituye la atención psicológica, médica ni de emergencia.',
+ plans:[['Básico','Gratis'],['Esencial','12 USD'],['Plus','29 USD'],['Pro','59 USD']],
+ // /profesionales (professional/copy.ts)
+ title:'Solicitud para profesionales',home:'Volver al inicio',intro:'Cuéntanos quién eres y adjunta tu hoja de vida. El equipo de Elevation revisa tu solicitud y te escribe al correo que indiques. Después, una junta valida tus credenciales antes de darte acceso.',
+ req:'obligatorio',opt:'opcional',name:'Nombre completo',email:'Correo electrónico',country:'País',profession:'Profesión o especialidad',license:'Número de colegiatura o registro profesional',licenseHelp:'Si aplica en tu país.',profile:'Perfil profesional (enlace)',profileHelp:'Por ejemplo, tu perfil público. Debe empezar por https://',message:'Mensaje',messageHelp:'Hasta 1.000 caracteres.',
+ cv:'Hoja de vida (PDF, máximo 5 MB)',cvHelp:'Solo se aceptan archivos PDF de hasta 5 MB. Solo la ve el equipo de Elevation.',cvChosen:'Archivo elegido',cvRemove:'Quitar archivo',consent:'Acepto el aviso de privacidad: Elevation usará mis datos solo para evaluar esta solicitud.',submit:'Enviar solicitud',sending:'Enviando…',proNotice:'Elevation no es un servicio de emergencias ni sustituye la atención clínica.',
+ invalid:'Revisa este campo.',invalidSummary:'Revisa los campos marcados.',cvRequired:'Adjunta tu hoja de vida en PDF.',emailInvalid:'Escribe un correo válido.',consentRequired:'Debes aceptar el aviso de privacidad.',
+ network:'No pudimos enviar la solicitud. Lo que escribiste sigue aquí; inténtalo de nuevo.',rate:'Hiciste demasiados intentos. Inténtalo de nuevo más tarde.',closed:'Por ahora no estamos recibiendo solicitudes. Inténtalo más tarde. Lo que escribiste sigue aquí.',server:'No pudimos guardar la solicitud. Lo que escribiste sigue aquí; inténtalo más tarde.',
+ okTitle:'Solicitud recibida',okBody:'Recibimos tu solicitud. El equipo de Elevation la revisará y te escribirá al correo que indicaste.'},
+en:{skip:'Skip to content',lang:'Language',main:'Main',prefs:'Preferences',theme:'Theme',tsys:'System',tlight:'Light',tdark:'Dark',ex:'(example)',
+ how:'How it works',privacy:'Privacy',manifest:'Ethical manifest',signIn:'Sign in',signUp:'Create account',foot1:'Elevation is support and self-knowledge. It is not therapy or diagnosis.',foot2:'You decide what to save.',
+ pLabel:'Plans',pTitle:'Choose how you want to be supported',pSub:'Start at no cost and change plans whenever you need.',free:'Free',featured:'Featured',register:'Create an account and request this plan',request:'Request this plan',pNote:'Paid plans go through administrator approval.',
+ loading:'Loading plans…',loadErr:'Plans could not be loaded. Please try again.',retry:'Try again',empty:'We will publish the plans soon.',review:'Review the selected plan before submitting your request.',retired:'The selected plan is no longer available. Review the current options.',
+ submitting:'Submitting request…',submitted:'Your request was recorded and is under review. The plan is not active yet.',pending:'You already have a request under review.',checkingReq:'Checking your request status…',reqErr:'We could not check your request. Check its status before requesting.',unknown:'We could not confirm the result. Check its status before requesting again.',checkStatus:'Check status',space:'Continue to my space',
+ month:'/ month',year:'/ year',notice:'Elevation’s AI assistant offers non-clinical support and career guidance; it does not replace psychological, medical or emergency care.',
+ plans:[['Basic','Free'],['Essential','12 USD'],['Plus','29 USD'],['Pro','59 USD']],
+ title:'Application for professionals',home:'Back to home',intro:'Tell us who you are and attach your résumé. The Elevation team reviews your application and writes to the email you provide. Afterwards, a board verifies your credentials before giving you access.',
+ req:'required',opt:'optional',name:'Full name',email:'Email address',country:'Country',profession:'Profession or specialty',license:'License or professional registration number',licenseHelp:'If it applies in your country.',profile:'Professional profile (link)',profileHelp:'For example, your public profile. It must start with https://',message:'Message',messageHelp:'Up to 1,000 characters.',
+ cv:'Résumé / CV (PDF, up to 5 MB)',cvHelp:'Only PDF files up to 5 MB are accepted. Only the Elevation team can see it.',cvChosen:'Selected file',cvRemove:'Remove file',consent:'I accept the privacy notice: Elevation will use my data only to evaluate this application.',submit:'Send application',sending:'Sending…',proNotice:'Elevation is not an emergency service and does not replace clinical care.',
+ invalid:'Check this field.',invalidSummary:'Check the marked fields.',cvRequired:'Attach your résumé as a PDF.',emailInvalid:'Enter a valid email.',consentRequired:'You must accept the privacy notice.',
+ network:'We could not send the application. What you wrote is still here; please try again.',rate:'You made too many attempts. Please try again later.',closed:'We are not accepting applications right now. Please try again later. What you wrote is still here.',server:'We could not save the application. What you wrote is still here; please try again later.',
+ okTitle:'Application received',okBody:'We received your application. The Elevation team will review it and write to the email you provided.'}};
+const q=id=>document.getElementById(id);let lang='es',theme='system',scene='pricing';const c=()=>S[lang];
+const ph=()=>lang==='es'?'Texto de ejemplo':'Example text';
+const langSw=()=>`<div class="cg-lang" role="group" aria-label="${c().lang}">${['es','en'].map(l=>`<button type="button" class="cg-lang__btn" lang="${l}" aria-pressed="${lang===l}" data-lang="${l}">${l.toUpperCase()}</button>`).join('')}</div>`;
+const themeSw=()=>`<div class="cg-seg" role="group" aria-label="${c().theme}">${[['system','tsys'],['light','tlight'],['dark','tdark']].map(([v,k])=>`<button type="button" aria-pressed="${theme===v}" data-theme-set="${v}">${c()[k]}</button>`).join('')}</div>`;
+const btn=(t,cl='',x='')=>`<button type="button" class="cg-btn ${cl}" ${x}>${t}</button>`;
+const note=(t,err,role)=>`<div class="cg-banner${err?' cg-banner--error':''}" role="${role||(err?'alert':'status')}"><span class="cg-banner__title">${t}</span></div>`;
+function pubFrame(inner){const k=c();return `<div class="cg cg-frame" ${theme==='system'?'':`data-theme="${theme}"`}><a class="cg-skip" href="#main">${k.skip}</a>
+ <header class="cg-header"><a class="cg-brand" href="#h" aria-label="Elevation">Elevation<i>.</i></a>
+ <nav class="cg-nav cg-nav--grid" aria-label="${k.how}"><a href="#how">${k.how}</a><a href="#priv">${k.privacy}</a><a href="#man">${k.manifest}</a><a href="#in">${k.signIn}</a><a class="cg-btn" href="#up">${k.signUp}</a></nav>
+ <div class="cg-header__end">${langSw()}</div></header>
+ <div class="cg-body"><main id="main" tabindex="-1" class="cg-main">${inner}</main></div><div class="cg-prefs" role="group" aria-label="${k.prefs}"><span class="cg-prefs__group"><span>${k.theme}</span>${themeSw()}</span></div><footer class="cg-footer"><span>${k.foot1}</span><span>${k.foot2}</span></footer></div>`}
+const head=(title,lead,tag)=>`<header class="pg-head">${tag?`<p class="cg-tag">${tag}</p>`:''}<h1 class="pg-title">${title}</h1>${lead?`<p class="pg-lead">${lead}</p>`:''}</header>`;
+// ---- precios
+function plans(k,{auth,sel,pend,dis}){return `<div class="pp-grid">${k.plans.map(([n,p],i)=>{const hl=i===2,on=sel===i,isPend=pend===i;const free=i===0;return `<article class="cg-card pp-plan${hl?' pp-plan--hl':''}${on?' pp-plan--sel':''}" aria-labelledby="pn${i}">${hl?`<span class="cg-chip">${k.featured}</span>`:''}<h2 id="pn${i}">${n} ${k.ex}</h2><p>${ph()} ${k.ex}</p><p class="pp-price">${p}</p><p class="cg-hint">${free?'USD · ':''}${k.month}</p><ul class="pp-feats"><li>${ph()} ${k.ex}</li><li>${ph()} ${k.ex}</li></ul>${auth?btn(isPend?k.pending:k.request,'',`${dis?'disabled aria-describedby="st"':''}`):`<a class="cg-btn" href="#r${i}" ${dis?'aria-disabled="true" tabindex="-1" aria-describedby="st"':''}>${k.register}</a>`}</article>`}).join('')}</div>`}
+function pricing(){const k=c();const s=scene;let h=head(k.pTitle,'',k.pLabel);
+ if(s==='pricing-loading')h+=`<div role="status"><p>${k.loading}</p><div class="pp-skel" aria-hidden="true"></div></div>`;
+ else if(s==='pricing-error')h+=`<div role="alert"><p>${k.loadErr}</p><div class="pg-actions">${btn(k.retry)}</div></div>`;
+ else if(s==='pricing-empty')h+=`<p role="status">${k.empty}</p>`;
+ else{const auth=['pricing-auth','pricing-pending','pricing-submitted','pricing-unknown','pricing-retired','pricing-checking'].includes(s);
+  h+=`<p>${k.pSub}</p>`;
+  if(s==='pricing-selected')h+=note(k.review);
+  if(s==='pricing-retired')h+=note(k.retired);
+  const st=s==='pricing-submitted'?note(k.submitted):s==='pricing-pending'?note(k.pending):s==='pricing-unknown'?`<div class="cg-banner cg-banner--error" role="alert"><span class="cg-banner__title">${k.unknown}</span><div class="pg-actions">${btn(k.checkStatus)}</div></div>`:s==='pricing-checking'?note(k.checkingReq):'';
+  h+=`<div id="st">${st}</div>`+plans(k,{auth,sel:s==='pricing-selected'?1:null,pend:s==='pricing-pending'?1:null,dis:['pricing-pending','pricing-submitted','pricing-unknown'].includes(s)})+`<p class="cg-hint">${k.pNote}</p>`+(auth?`<p><a class="pc-link" href="#sp">${k.space}</a></p>`:'')}
+ h+=`<p class="pp-notice" role="note">${k.notice}</p>`;return h}
+// ---- profesionales
+const fl=(id,label,req,help,err,val,ta,type)=>`<div class="cg-field"><label class="cg-label" for="${id}">${label} <span class="cg-hint">(${req?c().req:c().opt})</span></label>${ta?`<textarea class="cg-textarea" id="${id}" style="min-height:6rem" ${err?'aria-invalid="true"':''} aria-describedby="${id}h${err?' '+id+'e':''}">${val||''}</textarea>`:`<input class="cg-input" id="${id}" type="${type||'text'}" value="${val||''}" ${err?'aria-invalid="true"':''} aria-describedby="${id}h${err?' '+id+'e':''}">`}${help?`<span id="${id}h" class="cg-hint">${help}</span>`:`<span id="${id}h"></span>`}${err?`<span id="${id}e" class="cg-error">⚠ ${err}</span>`:''}</div>`;
+function pros(){const k=c();const s=scene;
+ if(s==='pros-success')return `<section class="cg-card pg-card" aria-labelledby="ok"><h1 class="pg-title" id="ok" tabindex="-1">${k.okTitle}</h1><p role="status">${k.okBody}</p><div class="pg-actions"><a class="cg-btn" href="#home">${k.home}</a></div></section>`;
+ const errs=s==='pros-errors',sending=s==='pros-sending';const e=(m)=>errs?m:'';
+ const banner=s==='pros-network'?k.network:s==='pros-rate'?k.rate:s==='pros-closed'?k.closed:s==='pros-server'?k.server:errs?k.invalidSummary:'';
+ return head(k.title,k.intro,'')+`<form class="cg-card pg-card pp-form" onsubmit="return false" novalidate>${banner?`<div class="cg-banner cg-banner--error" role="alert"><span class="cg-banner__title">${banner}</span></div>`:''}<div class="pp-pair">${fl('n',k.name,1,'',e(k.invalid),errs?'':ph()+' '+k.ex)}${fl('em',k.email,1,'',e(k.emailInvalid),errs?'ana':'ana@ejemplo.invalid','', 'email')}${fl('co',k.country,1,'',e(k.invalid),errs?'':ph()+' '+k.ex)}${fl('pr',k.profession,1,'',e(k.invalid),errs?'':ph()+' '+k.ex)}</div>${fl('li',k.license,0,k.licenseHelp)}${fl('pu',k.profile,0,k.profileHelp,'','','', 'url')}${fl('ms',k.message,0,k.messageHelp,'','',1)}
+ <div class="cg-field"><label class="cg-label" for="cv">${k.cv} <span class="cg-hint">(${k.req})</span></label><input class="cg-input" id="cv" type="file" accept="application/pdf,.pdf" ${errs?'aria-invalid="true"':''} aria-describedby="cvh${errs?' cve':''}"><span id="cvh" class="cg-hint">${k.cvHelp}</span>${errs?`<span id="cve" class="cg-error">⚠ ${k.cvRequired}</span>`:`<p class="cg-hint" role="status">${k.cvChosen}: cv-ejemplo.pdf (240 KB) <button type="button" class="cg-linkbtn">${k.cvRemove}</button></p>`}</div>
+ <div class="cg-field"><label class="pc-check" for="cs"><input id="cs" type="checkbox" ${errs?'aria-invalid="true" aria-describedby="cse"':'checked'}><span>${k.consent}</span></label>${errs?`<span id="cse" class="cg-error">⚠ ${k.consentRequired}</span>`:''}</div>
+ <p class="cg-hint">${k.proNotice}</p><div class="pg-actions">${btn(sending?k.sending:k.submit,'',sending?'disabled aria-busy="true"':'')}</div></form>`}
+function sc(){const h=scene.startsWith('pricing')?pricing():pros();return pubFrame(h)}
+
+function render(){q('root').innerHTML=sc();document.documentElement.lang=lang;const dark=theme==='dark'||(theme==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.body.style.background=dark?'#0e1613':'#e7ece8'}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-lang],[data-theme-set]');if(!t)return;if(t.dataset.lang){lang=t.dataset.lang;q('lang').value=lang}else{theme=t.dataset.themeSet;q('theme').value=theme}render()});
+q('scene').onchange=e=>{scene=e.target.value;render()};q('lang').onchange=e=>{lang=e.target.value;render()};q('theme').onchange=e=>{theme=e.target.value;render()};
+const hh=new URLSearchParams(location.hash.slice(1));if(hh.get('scene')){scene=hh.get('scene');q('scene').value=scene}if(hh.get('lang')){lang=hh.get('lang');q('lang').value=lang}if(hh.get('theme')){theme=hh.get('theme');q('theme').value=theme}
+render();
+</script>
+</body>
+</html>

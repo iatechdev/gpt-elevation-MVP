@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Persona C en Cartografía (maqueta)</title>
+<style>
+/* Maqueta de DISEÑO (no es código de producto): migración visual de Inicio (/app/dashboard), Mi profesional (/app/my-therapist) y Siguiente paso
+   (/app/next-step: rutas, experimentos, plan) al marco de Persona aprobado en ES-153 (ES-329). Flujos, estados y textos NO cambian: salen del código de main
+   (UserDashboard.tsx, myProfessionalCopy.ts, career/copy.ts, skill-map). Tokens y piezas = cartografia.css / shell.css; lo NUEVO está marcado «NUEVO».
+   Sin tipografías autoalojadas. Todos los datos de la lámina son de ejemplo. */
+.cg{--cg-ground:#e7ece8;--cg-panel:#f2f5f2;--cg-ink:#14201c;--cg-muted:#475550;--cg-line:#b9c3bd;--cg-mark:#1d4f91;--cg-err:#a8321d;--cg-good:#1f5f46;
+--cg-font-cond:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;--cg-font-sans:'Barlow',system-ui,sans-serif;--cg-font-name:'Spectral',Georgia,serif;
+--cg-touch:2.875rem;--cg-focus:3px;color-scheme:light;background:var(--cg-ground);color:var(--cg-ink);font:400 1.0625rem/1.55 var(--cg-font-sans)}
+@media (prefers-color-scheme:dark){.cg:not([data-theme='light']){--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}}
+.cg[data-theme='dark']{--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}body{margin:0}
+.cg :focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:3px}
+.cg a{color:var(--cg-mark);text-underline-offset:3px}
+.cg-muted{color:var(--cg-muted)}
+.cg-tag{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch);padding:.55rem 1.2rem;background:var(--cg-ink);color:var(--cg-ground);border:0;border-radius:0;font:700 1rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.cg-btn:hover{background:var(--cg-mark)}
+.cg a.cg-btn{color:var(--cg-ground)}
+.cg-btn--ghost,.cg a.cg-btn--ghost{background:none;color:var(--cg-ink);box-shadow:inset 0 0 0 1.5px var(--cg-ink)}
+.cg-btn--ghost:hover{background:none;color:var(--cg-mark);box-shadow:inset 0 0 0 1.5px var(--cg-mark)}
+.cg-btn--danger{background:var(--cg-err);color:var(--cg-ground)}.cg-btn--danger:hover{background:var(--cg-err)}
+.cg-btn:disabled{opacity:.55;cursor:not-allowed;background:var(--cg-ink);color:var(--cg-ground)}
+.cg-btn--ghost:disabled{background:none;color:var(--cg-ink)}
+.cg-linkbtn{min-width:var(--cg-touch);background:none;border:0;border-bottom:1.5px solid var(--cg-mark);border-radius:0;padding:.1rem 0;min-height:var(--cg-touch);font:600 1rem var(--cg-font-sans);color:var(--cg-ink);cursor:pointer}
+.cg-card{background:var(--cg-panel);border:1.5px solid var(--cg-ink);padding:1rem 1.1rem}
+.cg-banner{border:1.5px solid var(--cg-ink);padding:.8rem 1rem;background:var(--cg-panel);margin:1rem 0}
+.cg-banner--error{border-color:var(--cg-err)}
+.cg-banner__title{display:block;font-weight:600}
+.cg-banner--error .cg-banner__title::before{content:'\26A0\00a0';color:var(--cg-err)}
+.cg-chip{display:inline-flex;gap:.3rem;align-items:center;border:1px solid var(--cg-line);padding:.05rem .45rem;font:600 .78rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-chip--ok{border-color:var(--cg-good);color:var(--cg-good)}.cg-chip--wait{border-color:var(--cg-mark);color:var(--cg-mark)}.cg-chip--bad{border-color:var(--cg-err);color:var(--cg-err)}
+.cg-field{display:grid;gap:.3rem;margin-top:1rem;border:0;padding:0;min-width:0}
+.cg-label{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;padding:0}
+.cg-input,.cg-textarea{width:100%;min-height:var(--cg-touch);padding:.7rem .8rem;background:var(--cg-panel);color:var(--cg-ink);border:1.5px solid var(--cg-ink);border-radius:0;font:inherit}
+.cg-textarea{min-height:9rem;resize:vertical;line-height:1.5}
+.cg-input[aria-invalid='true'],.cg-textarea[aria-invalid='true']{border-color:var(--cg-err);border-width:2px}
+.cg-hint{color:var(--cg-muted);font-size:.85rem;margin:0}
+.cg-error{color:var(--cg-err);font-size:.9rem;margin:0}.cg-error::before{content:'\26A0\00a0'}
+.cg-items{list-style:none;margin:0;padding:0}
+.cg-item{border-top:1px solid var(--cg-line);padding:.9rem 0;display:grid;gap:.4rem}.cg-item:first-child{border-top:2px solid var(--cg-ink)}
+.cg-dialog{background:var(--cg-panel);color:var(--cg-ink);border:2px solid var(--cg-ink);padding:1.3rem 1.4rem;max-width:min(30rem,calc(100vw - 2rem));width:100%}
+.cg-dialog__actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1.2rem}
+.cg-scrim{background:rgb(14 22 19/.55);padding:1.2rem 0;display:flex;justify-content:center}
+/* marco (shell.css + ES-153 aprobado) */
+.cg-frame{min-height:100dvh;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.cg-skip{position:absolute;left:1rem;top:-10rem;z-index:100;background:var(--cg-panel);color:var(--cg-mark);border:2px solid var(--cg-ink);padding:.7rem 1rem;font-weight:600}.cg-skip:focus{top:1rem}
+.cg-header{display:flex;align-items:center;justify-content:space-between;gap:.8rem 1.4rem;flex-wrap:wrap;padding:1rem 0;border-bottom:1px solid var(--cg-line);max-width:1240px;width:100%;margin:0 auto}
+.cg a.cg-brand{font:700 1.7rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--cg-ink);display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.cg-brand i{font-style:normal;color:var(--cg-mark)}
+.cg-nav{display:flex;gap:.2rem 1.3rem;flex-wrap:wrap;align-items:center;font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase}
+.cg-nav a{color:var(--cg-ink);text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch)}
+.cg-nav a:hover{border-color:var(--cg-mark)}.cg-nav a[aria-current='page']{border-color:var(--cg-ink)}
+.cg-header__end{display:flex;align-items:center;gap:.7rem 1rem;flex-wrap:wrap;margin-left:auto}
+.cg-lang,.cg-seg{display:inline-flex;border:1.5px solid var(--cg-ink)}
+.cg-lang__btn,.cg-seg button{min-width:var(--cg-touch);min-height:var(--cg-touch);padding:0 .8rem;background:none;border:0;border-radius:0;color:var(--cg-ink);font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.cg-lang__btn[aria-pressed='true'],.cg-seg button[aria-pressed='true']{background:var(--cg-ink);color:var(--cg-ground)}
+.cg-seg button+button{border-left:1.5px solid var(--cg-ink)}
+.cg-usermenu__button{background:none;border:0;border-bottom:3px solid transparent;min-height:var(--cg-touch);padding:0 .2rem;color:var(--cg-ink);font:italic 500 1.1rem var(--cg-font-name)}
+.cg-usermenu__button.is-here{border-color:var(--cg-ink)}
+.cg-body{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:1rem 0 2rem;min-width:0}
+.cg-main{min-width:0;outline:none}
+.cg-prefs{display:flex;gap:.6rem 1.4rem;flex-wrap:wrap;align-items:center;width:100%;max-width:1240px;margin:0 auto;padding:.8rem 0;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted)}
+.cg-prefs__group{display:inline-flex;align-items:center;gap:.6rem}
+.cg-footer{display:flex;justify-content:space-between;gap:.4rem 1rem;flex-wrap:wrap;padding:1.2rem 0 2rem;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted);max-width:1240px;width:100%;margin:0 auto}
+.cg-only-narrow{display:none}
+@media (max-width:900px){
+ .cg-body{padding-top:.6rem}
+ .cg-header--person{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 .8rem;padding:.4rem 0 .6rem}
+ .cg-header--person .cg-header__end{display:contents}
+ .cg-header--person .cg-usermenu__button{grid-column:2;grid-row:1;justify-self:end}
+ .cg-header--person .cg-nav{grid-column:1 / -1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 .6rem}
+ .cg-header--person .cg-nav a{min-width:0;overflow-wrap:anywhere;line-height:1.05;font-size:.88rem}
+ .cg-header--person .cg-lang{display:none}.cg-only-narrow{display:flex}}
+@media (max-width:360px){.cg-header--person .cg-nav a{font-size:.74rem;letter-spacing:.02em;overflow-wrap:normal}}
+@media (min-width:901px){.cg-only-narrow{display:none!important}}
+/* ===== NUEVO en estas pantallas ===== */
+.pg-head{margin:0 0 1.2rem;max-width:46rem}.pg-head .cg-tag{margin:0 0 .3rem}
+.pg-title{font:700 clamp(1.9rem,4.6vw,2.8rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .5rem}   /* título de las pantallas de utilidad; el .cg-h1 de 4 rem queda para portada y mapa */
+.pg-lead{margin:0}
+.pg-stack{display:grid;gap:1rem;max-width:46rem}
+.pg-card h2{font:700 1.35rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.03em;margin:0 0 .5rem}
+.pg-card h3{font:700 1.15rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.04em;margin:.2rem 0}
+.pg-card p{margin:.4rem 0}
+.pg-actions{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem}
+.pg-price{font:700 1.5rem var(--cg-font-cond)}
+.pg-feat{margin:.5rem 0;padding-left:1.2rem}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1fr) 3rem minmax(0,1fr);gap:1rem;align-items:start}
+.pg-arrow{align-self:center;text-align:center;font:700 1.6rem var(--cg-font-cond);color:var(--cg-muted)}
+.pg-work{display:grid;grid-template-columns:minmax(0,18rem) minmax(0,1fr);gap:1.4rem;align-items:start}
+.pg-paper{font:400 1.15rem/1.6 var(--cg-font-name);min-height:11rem}   /* lo que la persona escribe en el diario va en Spectral */
+.pg-quote{font:italic 400 1.1rem/1.5 var(--cg-font-name);border-left:4px solid var(--cg-line);margin:.4rem 0;padding:.2rem 0 .2rem .9rem}
+.pg-quote--hidden{border-left-style:dashed;color:var(--cg-muted);font-family:var(--cg-font-sans);font-style:normal}
+.pg-switch{display:inline-flex;align-items:center;gap:.7rem;min-height:var(--cg-touch);background:none;border:0;padding:0;font:inherit;color:var(--cg-ink);cursor:pointer}
+.pg-switch__track{width:3.2rem;height:1.8rem;border:2px solid var(--cg-ink);background:var(--cg-ground);position:relative;flex:none}
+.pg-switch__track::after{content:'';position:absolute;top:2px;left:2px;width:1.2rem;height:1.2rem;background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track{background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track::after{left:auto;right:2px;background:var(--cg-ground)}
+.ps-sep{border-top:1px solid var(--cg-line);margin-top:1rem;padding-top:.2rem}.ps-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-top:.6rem}.ps-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin:.6rem 0}@media (max-width:640px){.ps-2{grid-template-columns:minmax(0,1fr)}}.ps-2>div{border:1px solid var(--cg-line);padding:.7rem;min-width:0}.ps-2 h3{margin:0 0 .3rem;font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase}.ps-2 ul{margin:0;padding-left:1.1rem}.ps-never{border-style:dashed!important;border-color:var(--cg-ink)!important}.ps-new{font-size:.8rem;color:var(--cg-muted);margin:.3rem 0 0}.pg-switch:disabled{opacity:.55;cursor:not-allowed}.pg-switch__word{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase}
+.pg-todo{border:1.5px dashed var(--cg-line);padding:.5rem .8rem;color:var(--cg-muted);font-size:.9rem}   /* marcador: se mantiene el texto actual de copy.ts */
+@media (max-width:900px){.pg-cols{grid-template-columns:minmax(0,1fr)}.pg-work{grid-template-columns:minmax(0,1fr)}}
+.pg-radios{display:flex;flex-wrap:wrap;gap:.5rem}
+.pg-radios label{display:inline-flex;align-items:center;gap:.5rem;min-height:var(--cg-touch);padding:0 .9rem;border:1.5px solid var(--cg-ink);cursor:pointer;font:600 1rem var(--cg-font-cond);letter-spacing:.06em;text-transform:uppercase}
+.pg-radios input{width:1.2rem;height:1.2rem;accent-color:var(--cg-ink)}
+.pg-radios label:has(input:checked){background:var(--cg-ink);color:var(--cg-ground)}
+.pg-radios label:has(input:focus-visible){outline:var(--cg-focus) solid var(--cg-mark);outline-offset:2px}
+.pg-pick{display:flex;gap:.7rem;align-items:flex-start;min-height:var(--cg-touch);cursor:pointer}.pg-pick input{width:1.4rem;height:1.4rem;margin:.15rem 0 0;accent-color:var(--cg-ink);flex:none}
+fieldset.cg-field legend{padding:0}
+/* ===== sólo de la lámina ===== */
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
+/* NUEVO (ES-329) */
+.pc-stack{display:grid;gap:1rem;min-width:0}.pc-stack>*{min-width:0}.pc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.pc-grid>*{min-width:0}
+.pc-grid>.pc-stack{align-content:start}.pc-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.pc-three>*{min-width:0}.pc-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+@media (max-width:900px){.pc-three{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.pc-grid,.pc-three,.pc-pair{grid-template-columns:minmax(0,1fr)}}
+.pc-scale{display:flex;flex-wrap:wrap;gap:.5rem;margin:.4rem 0}
+.pc-scale button{min-height:var(--cg-touch);min-width:var(--cg-touch);padding:0 .9rem;border:1.5px solid var(--cg-ink);background:var(--cg-ground);color:var(--cg-ink);font:600 1rem var(--cg-font-cond);cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.pc-scale button small{font:500 .75rem var(--cg-font-sans);letter-spacing:0;text-transform:none}
+.pc-scale button[aria-pressed=true]{background:var(--cg-ink);color:var(--cg-ground)}
+.pc-scale button:focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:2px}
+.pc-region{overflow-x:auto;max-width:100%}.pc-region:focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:2px}
+.pc-trend{border-collapse:collapse;width:100%;min-width:30rem}.pc-trend th,.pc-trend td{border:1px solid var(--cg-line);padding:.4rem .6rem;text-align:left;font-size:.9rem}.pc-trend th{font:600 .8rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
+.pc-subnav{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1rem;padding:0;border-bottom:1px solid var(--cg-line)}
+.pc-subnav a{display:inline-flex;align-items:center;min-height:var(--cg-touch);padding:0 1rem;color:var(--cg-ink);text-decoration:none;font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;border-bottom:4px solid transparent}
+.pc-subnav a[aria-current=page]{border-bottom-color:var(--cg-mark)}.pc-subnav a:focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:2px}
+.pc-dl{margin:.4rem 0}.pc-dl dt{font:600 .8rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}.pc-dl dd{margin:0 0 .6rem;overflow-wrap:anywhere}
+.pc-warn{border-left:4px solid var(--cg-err);padding:.3rem .8rem;margin:.6rem 0}
+.pc-fs{border:0;margin:.6rem 0;padding:0;min-width:0}.pc-fs legend{font:600 .9rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;padding:0;margin-bottom:.2rem}
+.pc-check{display:flex;gap:.7rem;align-items:center;min-height:var(--cg-touch);cursor:pointer}.pc-check input{width:1.4rem;height:1.4rem;accent-color:var(--cg-ink);flex:none}
+.cg-select{min-height:var(--cg-touch);width:100%;background:var(--cg-ground);color:var(--cg-ink);border:2px solid var(--cg-ink);border-radius:0;padding:0 .6rem;font:inherit}
+.pc-draft{border:1px solid var(--cg-line);padding:.8rem 1rem;margin:.6rem 0;background:var(--cg-ground)}.pc-draft p{margin:.3rem 0}
+.pc-link{color:var(--cg-ink);text-underline-offset:4px;display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.pc-line{display:flex;justify-content:space-between;gap:.8rem;flex-wrap:wrap;align-items:baseline}
+.pc-details summary{min-height:var(--cg-touch);display:flex;align-items:center;cursor:pointer;font-weight:600}
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Controles de la lámina (no forman parte del diseño)"><b>Lámina · Persona C (ES-329)</b>
+ <label>Pantalla <select id="scene">
+  <option value="home">Inicio · sin registro de hoy, sin profesional</option><option value="home-done">Inicio · registro hecho, sesión agendada</option><option value="home-plan">Inicio · con plan de pago</option><option value="home-live">Inicio · sesión en curso</option><option value="home-rec">Inicio · recomendación abierta</option><option value="home-out">Inicio · al salir (diálogo)</option><option value="home-loading">Inicio · cargando</option>
+  <option value="pro">Mi profesional · con profesional</option><option value="pro-none">Mi profesional · sin profesional</option><option value="pro-error">Mi profesional · error de carga</option><option value="share-on">Compartir · activado</option><option value="share-off">Compartir · desactivado</option><option value="share-saving">Compartir · guardando</option><option value="share-err">Compartir · error al guardar</option><option value="share-unsure">Compartir · resultado incierto (sin releer)</option><option value="share-notseen">Compartir · aún no se ve el cambio</option><option value="share-loaderr">Compartir · error al leer</option><option value="share-lists">Compartir · propuesta: qué se ve y qué no (texto nuevo)</option><option value="unlink">Desvincular · diálogo</option><option value="unlink-working">Desvincular · en curso</option><option value="unlink-err">Desvincular · error</option>
+  <option value="next">Siguiente paso · rutas</option><option value="next-exp">Siguiente paso · experimento</option><option value="next-basis">Siguiente paso · fundamento cambió</option><option value="next-plan">Siguiente paso · plan vacío</option>
+ </select></label>
+ <label>Idioma <select id="lang"><option value="es">ES</option><option value="en">EN</option></select></label>
+ <label>Tema <select id="theme"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></label>
+ <span>Esta barra no existe en la plataforma. Los datos de la lámina son de ejemplo.</span></div>
+<div id="root"></div>
+<script>
+const q=id=>document.getElementById(id);let lang='es',theme='system',scene='home';const c=()=>S[lang];
+const langSw=()=>`<div class="cg-lang" role="group" aria-label="${c().lang}">${['es','en'].map(l=>`<button type="button" class="cg-lang__btn" lang="${l}" aria-pressed="${lang===l}" data-lang="${l}">${l.toUpperCase()}</button>`).join('')}</div>`;
+const themeSw=()=>`<div class="cg-seg" role="group" aria-label="${c().theme}">${[['system','tsys'],['light','tlight'],['dark','tdark']].map(([v,k])=>`<button type="button" aria-pressed="${theme===v}" data-theme-set="${v}">${c()[k]}</button>`).join('')}</div>`;
+const prefs=()=>`<div class="cg-prefs" role="group" aria-label="${c().prefs}"><span class="cg-only-narrow cg-prefs__group"><span>${c().lang}</span>${langSw()}</span><span class="cg-prefs__group"><span>${c().theme}</span>${themeSw()}</span></div><footer class="cg-footer"><span>${c().foot1}</span><span>${c().foot2}</span></footer>`;
+function frame(inner,{active=null,here=false}={}){const k=c();return `<div class="cg cg-frame" ${theme==='system'?'':`data-theme="${theme}"`}><a class="cg-skip" href="#main">${k.skip}</a>
+ <header class="cg-header cg-header--person"><a class="cg-brand" href="#h" aria-label="Elevation">Elevation<i>.</i></a>
+ <nav class="cg-nav" aria-label="${k.main}">${k.nav.map((n,i)=>`<a href="#n${i}" ${active===i?'aria-current="page"':''}>${n}</a>`).join('')}</nav>
+ <div class="cg-header__end">${langSw()}<button type="button" class="cg-usermenu__button${here?' is-here':''}" aria-expanded="false" aria-label="${k.menu}: Ana ${k.ex}"><span>Ana</span><span aria-hidden="true"> ▾</span></button></div></header>
+ <div class="cg-body"><main id="main" tabindex="-1" class="cg-main">${inner}</main></div>${prefs()}</div>`}
+const head=(title,lead,tag)=>`<header class="pg-head">${tag?`<p class="cg-tag">${tag}</p>`:''}<h1 class="pg-title">${title}</h1>${lead?`<p class="pg-lead">${lead}</p>`:''}</header>`;
+const card=(title,body,id)=>`<section class="cg-card pg-card" ${id?`aria-labelledby="${id}"`:''}><h2 ${id?`id="${id}"`:''}>${title}</h2>${body}</section>`;
+const dlg=(title,inner,acts)=>`<div class="cg-scrim"><div class="cg-dialog" role="dialog" aria-modal="true" aria-labelledby="dg"><h2 id="dg" class="pg-card" style="font:700 1.35rem var(--cg-font-cond);text-transform:uppercase;margin:0 0 .6rem">${title}</h2>${inner}<div class="cg-dialog__actions">${acts}</div></div></div>`;
+const btn=(t,cl='')=>`<button type="button" class="cg-btn ${cl}">${t}</button>`;
+const fld=(id,label,val,ta)=>`<div class="cg-field"><label class="cg-label" for="${id}">${label}</label>${ta?`<textarea class="cg-textarea" id="${id}" style="min-height:5rem">${val}</textarea>`:`<input class="cg-input" id="${id}" value="${val}">`}</div>`;
+const note=(t,err)=>`<div class="cg-banner${err?' cg-banner--error':''}" ${err?'role="alert"':'role="note"'}><span class="cg-banner__title">${t}</span></div>`;
+const S={es:{skip:'Saltar al contenido',lang:'Idioma',main:'Principal',menu:'Menú de usuario',
+ nav:['Mapa','Conversación','Evidencias','Diario','Siguiente paso'],foot1:'Elevation es acompañamiento y autoconocimiento. No es terapia ni diagnóstico.',foot2:'Tú decides qué guardar.',prefs:'Preferencias',theme:'Tema',tsys:'Sistema',tlight:'Claro',tdark:'Oscuro',ex:'(ejemplo)',cancel:'Cancelar',close:'Cerrar',
+ // Inicio (UserDashboard + space/copy + skill-map + career)
+ dTitle:'Mi panel',mapTitle:'Mapa de competencias',mapText:'Mira tus competencias por territorios laborales y decide qué cruza a tu zona profesional. El nivel no certifica: muestra qué evidencia hay hoy.',mapCta:'Abrir mi mapa',
+ nextTitle:'Mi siguiente paso',nextPreview:'Vista preliminar con datos sintéticos. Los cambios no se guardan en tu cuenta.',
+ emo:'Estado emocional',arrive:'¿Cómo llegas hoy?',checked:'✓ Ya registraste tu estado de hoy',of5:n=>n+' de 5',moods:['muy bajo','bajo','medio','alto','muy alto'],
+ prog:'Tu progreso',weekN:'sesiones esta semana',trend:'Tendencia emocional',days:['lun','mar','mié','jue','vie','sáb','dom'],
+ upc:'Próxima sesión',live:'Sesión en curso',withP:'Con',join:'Entrar a la videollamada',soon:'La sesión está por comenzar',linkLater:'El enlace estará disponible cuando el profesional inicie la sesión',noSess:'Tu profesional aún no ha agendado una sesión.',findPro:'Buscar mi profesional',
+ chatSel:'Selecciona cómo llegas hoy para comenzar tu conversación.',chatHint:'Tu conversación con la IA ocupa toda la pantalla para que puedas leerla con calma.',chatLink:'Ir a mi conversación',
+ plan:'Mi plan',planName:'Básico',seePlans:'Ver planes →',free:'Gratis',month:'mes',aiDay:'Mensajes IA / día',sessMonth:'Sesiones / mes',
+ rec:'Recomendaciones para ti',recGen:'Generar nuevas',recEmpty:'Aún no tienes recomendaciones. ¡Genera las primeras!',recCats:['Hábito','Reflexión','Recurso'],explore:'Explorar →',ctx:'Mi contexto',evid:'Mis evidencias',compass:'Brújula profesional',catalog:'Catálogo de rutas',
+ outTitle:'¿Cómo te vas?',howConv:'¿Cómo fue la conversación?',signOut:'Cerrar sesión',skipBtn:'Saltar',loading:'Cargando…',
+ // Mi profesional (myProfessionalCopy.ts)
+ mpTitle:'Mi profesional',shT:'Compartir mis datos con mi terapeuta',shD:'Verá tu correo, tu ánimo y tus valoraciones. No verá tus chats, tu diario ni tu mapa de carrera. Puedes retirarlo cuando quieras.',shSaving:'Guardando…',shSaved:'Listo',shErr:'No se pudo guardar. Inténtalo de nuevo.',shOn:'Activado',shOff:'Desactivado',unBtn:'Dejar de compartir y desvincularme',unT:'¿Desvincularte de Ana?',unB:'Se cancelarán tus sesiones futuras con esta persona y dejará de ver tus datos.',unCancel:'Cancelar',unYes:'Sí, desvincularme',unWork:'Desvinculando…',unErr:'No se pudo desvincular. Inténtalo de nuevo.',shLoadErr:'No pudimos cargar tu permiso de compartir con tu profesional.',shCheck:'Comprobar',shChecking:'Comprobando…',shUnsureOn:'No pudimos confirmar si quedó activado. Comprueba antes de reintentar.',shUnsureOff:'No pudimos confirmar si se desactivó. Puede que tu profesional siga viendo tus datos. Comprueba antes de continuar.',shNotSeenOff:'Todavía no vemos que se haya desactivado. Puede que tu profesional siga viendo tus datos. Comprueba de nuevo o inténtalo otra vez.',shSee:'Verá',shNoSee:'No verá',shSeeL:['tu correo','tu ánimo','tus valoraciones'],shNoSeeL:['tus chats','tu diario','tu mapa de carrera'],shCrisis:'tus señales de crisis',mpErr:'No pudimos cargar la información de tu profesional ni de tus sesiones.',mpRetry:'Reintentar',mpNoneT:'Aún no tienes un profesional asignado',mpNoneD:'Encuentra a la persona indicada según tus preferencias.',mpFind:'Buscar mi profesional',
+ mpProfile:'Perfil',mpSpec:'Especialidades',mpLang:'Idiomas',mpApp:'Enfoque',mpUp:'Próximas sesiones',mpJoin:'Entrar a videollamada',mpWait:'Disponible 15 minutos antes',mpPast:'Sesiones anteriores',mpDone:'Completada',mpMood:'Ánimo al terminar: alto (4/5)',mpChange:'¿Quieres cambiar de profesional?',mpMin:'45 min',
+ // Siguiente paso (career/copy.ts)
+ routes:'Rutas',exps:'Experimentos',planT:'Plan',synth:'SINTÉTICO',cons:'Tus restricciones',consHelp:'Declara mercados e idiomas de trabajo; no se infieren de tu residencia. Idiomas o modalidades vacíos quedan por confirmar.',market:'Mercado objetivo',co:'Colombia',dk:'Dinamarca',langs:'Idiomas de trabajo',es:'Español',en:'Inglés',arr:'Modalidades aceptables',remote:'Remota',hybrid:'Híbrida',onsite:'Presencial',reg:'¿Consideras profesiones reguladas?',unknown:'Por confirmar',saveCons:'Guardar restricciones',opts:'Opciones que puedes explorar',
+ continuity:'Continuidad',pref:'Preferencias',matches:'Coincide con lo declarado',transfer:'Transferencia sustentada',noEv:'Aún sin evidencia',feas:'Viabilidad',cond:'Condicionada a verificar fuentes y requisitos',occ:'Ficha ocupacional',pendLic:'Habilitación pendiente de verificar',routeLimit:'Esta elección no garantiza contratación ni habilitación.',details:'Fuentes y detalles',choose:'Elegir esta ruta',reject:'Rechazar esta ruta',routeEx:'Ruta de ejemplo',
+ expT:'Experimentos',inProg:'En curso',subm:'Entregado',selfRev:'Reflexión propia guardada',version:'Versión',current:'Fundamento actual',selfRep:'Tu reflexión es un autorreporte, no una revisión profesional.',obs:'Observación',interp:'Interpretación',saveRef:'Guardar mi reflexión',humanRev:'Revisión humana pendiente de autorización',
+ basisT:'Tu experimento necesita revisión',basisWhat:'Qué cambió',basisKeep:'Qué se conserva: al empezar otra versión, tu entrega, tu reflexión y tu decisión se muestran como borrador «de la versión anterior, por revisar». No cuentan como resultado hasta que los uses. La versión anterior queda intacta en el historial.',rebase:'Revisar fundamento y empezar otra versión',carriedT:'De la versión anterior, por revisar',carriedNot:'No es un resultado vigente hasta que lo uses.',carriedDraft:'Borrador de la versión anterior, por revisar',fromV:'De la versión',partRef:'Reflexión',useDraft:'Usar en esta versión',discard:'Descartar',discardAsk:'Descartar quita este borrador de esta versión; sigue en el historial.',discardYes:'Sí, descartar',keep:'Conservar',noPlan:'No hay un plan aceptado. Guarda una decisión para proponerlo.',reasonNote:'texto vigente de la razón del cambio'},
+en:{skip:'Skip to content',lang:'Language',main:'Main',menu:'User menu',
+ nav:['Map','Conversation','Evidence','Diary','Next step'],foot1:'Elevation is support and self-knowledge. It is not therapy or diagnosis.',foot2:'You decide what to save.',prefs:'Preferences',theme:'Theme',tsys:'System',tlight:'Light',tdark:'Dark',ex:'(example)',cancel:'Cancel',close:'Close',
+ dTitle:'My dashboard',mapTitle:'Skills map',mapText:'See your skills by work territory and decide what crosses into your professional zone. A level does not certify: it shows what evidence exists today.',mapCta:'Open my map',
+ nextTitle:'My next step',nextPreview:'Preview with synthetic data. Changes are not saved to your account.',
+ emo:'Emotional state',arrive:'How are you arriving today?',checked:'✓ Check-in done for today',of5:n=>n+' of 5',moods:['very low','low','medium','high','very high'],
+ prog:'Your progress',weekN:'sessions this week',trend:'Emotional trend',days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+ upc:'Upcoming session',live:'Session live',withP:'With',join:'Join videocall',soon:'Session starting soon',linkLater:'Link will be available when your professional starts the session',noSess:'Your professional has not scheduled a session yet.',findPro:'Find my professional',
+ chatSel:'Select how you’re arriving today to start your conversation.',chatHint:'Your conversation with the AI takes the whole screen so you can read it comfortably.',chatLink:'Go to my conversation',
+ plan:'My plan',planName:'Basic',seePlans:'View plans →',free:'Free',month:'month',aiDay:'AI messages / day',sessMonth:'Sessions / month',
+ rec:'Recommendations for you',recGen:'Generate new',recEmpty:'No recommendations yet. Generate your first ones!',recCats:['Habit','Reflection','Resource'],explore:'Explore →',ctx:'My context',evid:'My evidence',compass:'Career compass',catalog:'Route catalog',
+ outTitle:'How are you leaving?',howConv:'How was the conversation?',signOut:'Sign out',skipBtn:'Skip',loading:'Loading…',
+ mpTitle:'My professional',shT:'Share my data with my therapist',shD:'They will see your email, mood and ratings. They will not see your chats, journal or career map. You can withdraw this at any time.',shSaving:'Saving…',shSaved:'Done',shErr:'Could not save. Please try again.',shOn:'On',shOff:'Off',unBtn:'Stop sharing and unlink',unT:'Unlink from Ana?',unB:'Your future sessions with them will be cancelled and they will no longer see your data.',unCancel:'Cancel',unYes:'Yes, unlink',unWork:'Unlinking…',unErr:'Could not unlink. Please try again.',shLoadErr:'We could not load your permission to share with your professional.',shCheck:'Check',shChecking:'Checking…',shUnsureOn:'We could not confirm whether it was turned on. Check before trying again.',shUnsureOff:'We could not confirm whether it was turned off. Your professional may still see your data. Check before continuing.',shNotSeenOff:'We do not see it turned off yet. Your professional may still see your data. Check again or try once more.',shSee:'They will see',shNoSee:'They will not see',shSeeL:['your email','your mood','your ratings'],shNoSeeL:['your chats','your journal','your career map'],shCrisis:'your crisis signals',mpErr:'We could not load your professional’s information or your sessions.',mpRetry:'Try again',mpNoneT:'You don’t have a professional assigned yet',mpNoneD:'Find the right person based on your preferences.',mpFind:'Find my professional',
+ mpProfile:'Profile',mpSpec:'Specialties',mpLang:'Languages',mpApp:'Approach',mpUp:'Upcoming sessions',mpJoin:'Join videocall',mpWait:'Available 15 minutes before',mpPast:'Past sessions',mpDone:'Completed',mpMood:'Mood at the end: high (4/5)',mpChange:'Want to change professional?',mpMin:'45 min',
+ routes:'Routes',exps:'Experiments',planT:'Plan',synth:'SYNTHETIC',cons:'Your constraints',consHelp:'State markets and working languages; they are not inferred from residence. Empty language or arrangement selections remain unconfirmed.',market:'Target market',co:'Colombia',dk:'Denmark',langs:'Working languages',es:'Spanish',en:'English',arr:'Acceptable work arrangements',remote:'Remote',hybrid:'Hybrid',onsite:'On-site',reg:'Would you consider regulated professions?',unknown:'To confirm',saveCons:'Save constraints',opts:'Options you can explore',
+ continuity:'Continuity',pref:'Preferences',matches:'Matches what was stated',transfer:'Evidence-supported transfer',noEv:'No evidence yet',feas:'Feasibility',cond:'Subject to verifying sources and requirements',occ:'Occupational profile',pendLic:'Professional authorization pending verification',routeLimit:'This choice does not guarantee employment or professional authorization.',details:'Sources and details',choose:'Choose this route',reject:'Reject this route',routeEx:'Example route',
+ expT:'Experiments',inProg:'In progress',subm:'Submitted',selfRev:'Self-reflection saved',version:'Version',current:'Current basis',selfRep:'Your reflection is self-reported, not a professional review.',obs:'Observation',interp:'Interpretation',saveRef:'Save my reflection',humanRev:'Human review awaiting authorization',
+ basisT:'Your experiment needs review',basisWhat:'What changed',basisKeep:'What is kept: when you start another version, your submission, reflection and decision appear as a draft “from the previous version, to review”. They do not count as a result until you use them. The previous version stays intact in the history.',rebase:'Review the basis and start a new version',carriedT:'From the previous version, to review',carriedNot:'It is not a current result until you use it.',carriedDraft:'Draft from the previous version, to review',fromV:'From version',partRef:'Reflection',useDraft:'Use in this version',discard:'Discard',discardAsk:'Discarding removes this draft from this version; it stays in the history.',discardYes:'Yes, discard',keep:'Keep it',noPlan:'There is no accepted plan. Save a decision to propose one.',reasonNote:'current text of the reason for the change'}};
+const ph=()=>lang==='es'?'Texto de ejemplo':'Example text';
+const chip=(t,cl='')=>`<span class="cg-chip ${cl}">${t}</span>`;
+const scale=(k,sel,name)=>`<div class="pc-scale" role="group" aria-label="${name}">${k.moods.map((w,i)=>`<button type="button" aria-pressed="${sel===i+1}">${i+1}<small>${w}</small></button>`).join('')}</div>`;
+const sub=(k,cur)=>`<nav class="pc-subnav" aria-label="${k.nextTitle}"><a href="#r" ${cur===0?'aria-current="page"':''}>${k.routes}</a><a href="#e" ${cur===1?'aria-current="page"':''}>${k.exps}</a><a href="#p" ${cur===2?'aria-current="page"':''}>${k.planT}</a></nav>`;
+const chk=(l,on)=>`<label class="pc-check"><input type="checkbox" ${on?'checked':''}><span>${l}</span></label>`;
+const sel=(l,opts,id)=>`<div class="cg-field"><label class="cg-label" for="${id}">${l}</label><select class="cg-select" id="${id}">${opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+function sc(){const k=c();let h='',a=null,here=false;
+ // ===== INICIO =====
+ if(scene.startsWith('home')){
+  const done=scene==='home-done'||scene==='home-live'||scene==='home-rec'||scene==='home-plan';const hasPro=done;const liveS=scene==='home-live';
+  if(scene==='home-loading'){h=head(k.dTitle,'')+`<p role="status" class="cg-hint">${k.loading}</p>`}
+  else{
+  const emo=card(k.emo,done?`<p>${k.checked}</p><p class="cg-hint">${k.of5(4)} · ${k.moods[3]}</p>`:`<p>${k.arrive}</p>${scale(k,null,k.arrive)}`,'em');
+  const trend=`<div class="pc-region" role="region" tabindex="0" aria-label="${k.trend}"><table class="pc-trend"><caption class="cg-hint" style="text-align:left;caption-side:top;margin:0 0 .3rem">${k.trend}</caption><thead><tr>${k.days.map(d=>`<th scope="col">${d}</th>`).join('')}</tr></thead><tbody><tr>${[3,4,'—',4,5,3,4].map(v=>`<td>${v==='—'?'—':k.of5(v)}</td>`).join('')}</tr></tbody></table></div>`;
+  const pr=card(k.prog,`<dl class="pc-dl"><dt>${k.weekN}</dt><dd style="font:700 1.8rem var(--cg-font-cond)">${done?3:0}</dd></dl>${trend}`,'pg');
+  const up=card(liveS?k.live:k.upc,hasPro?`<p><strong>${k.withP} Ana ${k.ex}</strong></p><p class="cg-hint">${lang==='es'?'martes, 24 nov., 10:00':'Tuesday, 24 Nov, 10:00'} — 45 min</p>`+(liveS?`<div class="pg-actions">${btn(k.join)}</div>`:`<p class="cg-hint">${k.linkLater}</p>`):`<p>${k.noSess}</p><div class="pg-actions">${btn(k.findPro)}</div>`,'up');
+  const chat=card(k.chatLink,done?`<p>${k.chatHint}</p><div class="pg-actions"><a class="cg-btn" href="#chat">${k.chatLink}</a></div>`:`<p>${k.chatSel}</p>`,'ch');
+  const paid=scene==='home-plan';const planL=`<section class="cg-card pg-card" aria-labelledby="pl"><div class="pc-line"><h2 id="pl" style="margin:0">${k.plan}</h2>${chip(paid?'Plus '+k.ex:k.planName)}</div><p style="font:700 1.5rem var(--cg-font-cond);margin:.4rem 0">${paid?'$19 USD / '+k.month+' '+k.ex:k.free}</p><dl class="pc-dl"><div class="pc-line"><dt>${k.aiDay}</dt><dd>${paid?'100':'10'} ${k.ex}</dd></div><div class="pc-line"><dt>${k.sessMonth}</dt><dd>${paid?'∞':'0'} ${k.ex}</dd></div></dl>${paid?`<ul class="pg-feats" style="list-style:none;padding:0;margin:0 0 .4rem"><li>✓ ${ph()} ${k.ex}</li><li>✓ ${ph()} ${k.ex}</li></ul>`:`<div class="pg-actions"><a class="cg-linkbtn pc-link" href="#plan">${k.seePlans}</a></div>`}</section>`;
+  const recs=card(k.rec,`<div class="pg-actions" style="margin:0 0 .6rem">${btn(k.recGen,'cg-btn--ghost')}</div>`+(done?`<ul class="cg-items">${k.recCats.map((cat,i)=>`<li class="cg-item"><div class="pc-line"><span class="cg-tag">${cat}</span></div><p>${ph()} ${k.ex}</p><div class="pg-actions"><button type="button" class="cg-linkbtn">${k.explore}</button></div></li>`).join('')}</ul>`:`<p class="cg-muted">${k.recEmpty}</p>`),'rc');
+  const entry=`<div class="pc-grid"><section class="cg-card pg-card" aria-labelledby="mp"><h2 id="mp">${k.mapTitle}</h2><p>${k.mapText}</p><div class="pg-actions"><a class="cg-btn" href="#map">${k.mapCta}</a></div></section><section class="cg-card pg-card" aria-labelledby="ns"><h2 id="ns">${k.nextTitle}</h2><p>${k.nextPreview}</p><div class="pg-actions"><a class="cg-btn cg-btn--ghost" href="#next">${k.nextTitle} →</a></div></section></div>`;
+  const links=`<nav aria-label="${k.dTitle}" style="display:flex;flex-wrap:wrap;gap:.2rem 1.4rem">${[k.ctx,k.evid,k.compass,k.catalog].map(t=>`<a class="pc-link" href="#x">${t}</a>`).join('')}</nav>`;
+  h=head(k.dTitle,'')+`<div class="pc-stack">${entry}<div class="pc-grid"><div class="pc-stack">${emo}${pr}</div><div class="pc-stack">${up}${chat}${planL}</div></div>${recs}${links}</div>`}
+  if(scene==='home-rec')h+=dlg(k.recCats[0],`<p>${ph()} ${k.ex}</p>`,btn(k.close,'cg-btn--ghost'));
+  if(scene==='home-out')h+=dlg(k.outTitle,`${scale(k,4,k.outTitle)}<p class="cg-label" style="margin:.8rem 0 0">${k.howConv}</p><div class="pc-scale" role="group" aria-label="${k.howConv}">${[1,2,3,4,5].map(n=>`<button type="button" aria-pressed="${n===4}">${k.of5(n)}</button>`).join('')}</div>`,btn(k.skipBtn,'cg-btn--ghost')+btn(k.signOut));
+ }
+ // ===== MI PROFESIONAL =====
+ if(scene.startsWith('pro')){a=null;here=true;h=head(k.mpTitle,'')+`<div class="pc-stack">`;
+  if(scene==='pro-error')h+=note(k.mpErr,true)+`<div class="pg-actions">${btn(k.mpRetry)}</div>`;
+  else if(scene==='pro-none')h+=card(k.mpNoneT,`<p>${k.mpNoneD}</p><div class="pg-actions">${btn(k.mpFind)}</div>`,'pn');
+  else h+=card('Ana '+k.ex,`<dl class="pc-dl"><dt>${k.mpProfile}</dt><dd>${ph()} ${k.ex}</dd><dt>${k.mpSpec}</dt><dd>${ph()} ${k.ex}</dd><dt>${k.mpLang}</dt><dd>${k.es}, ${k.en}</dd><dt>${k.mpApp}</dt><dd>${ph()} ${k.ex}</dd></dl>`,'pp')
+   +card(k.mpUp,`<ul class="cg-items"><li class="cg-item"><div class="pc-line"><strong>${lang==='es'?'martes, 24 nov., 10:00':'Tuesday, 24 Nov, 10:00'} · ${k.mpMin}</strong></div><div class="pg-actions"><button type="button" class="cg-btn" disabled aria-describedby="jw">${k.mpJoin}</button><span id="jw" class="cg-hint">${k.mpWait}</span></div></li></ul>`,'pu')
+   +card(k.mpPast,`<ul class="cg-items"><li class="cg-item"><div class="pc-line"><strong>${lang==='es'?'martes, 10 nov.':'Tuesday, 10 Nov'} · ${k.mpMin}</strong>${chip('✓ '+k.mpDone,'cg-chip--ok')}</div><p class="cg-hint">${k.mpMood}</p></li></ul>`,'ps')
+   +`<p><button type="button" class="cg-linkbtn">${k.mpChange}</button></p>`;
+  h+=`</div>`}
+
+ // ===== COMPARTIR / DESVINCULAR (tarjeta de Mi profesional; ES-96/100/244) =====
+ if(scene.startsWith('share')||scene.startsWith('unlink')){a=null;here=true;
+  const sw=(on,dis)=>'<button type="button" class="pg-switch" role="switch" aria-checked="'+on+'" aria-labelledby="shT" aria-describedby="shD"'+(dis?' disabled':'')+'><span class="pg-switch__track" aria-hidden="true"></span><span class="pg-switch__word">'+(on?k.shOn:k.shOff)+'</span></button>';
+  const lists=scene==='share-lists'?'<div class="ps-2"><div><h3>'+k.shSee+'</h3><ul>'+k.shSeeL.map(x=>'<li>'+x+'</li>').join('')+'</ul></div><div class="ps-never"><h3>'+k.shNoSee+'</h3><ul>'+k.shNoSeeL.map(x=>'<li>'+x+'</li>').join('')+'<li>'+k.shCrisis+' <span class="cg-chip">NUEVO · por decidir</span></li></ul></div></div><p class="ps-new">Lámina: los encabezados «Verá/No verá» son fragmentos de la frase existente; la línea de crisis es texto NUEVO y exige decisión de Alejo y confirmación de backend antes de escribirla.</p>':'';
+  const desc=scene==='share-lists'?'':'<p id="shD">'+k.shD+'</p>';
+  const dsc=scene==='share-lists'?'<p id="shD" class="pg-lead" style="margin:.3rem 0">'+k.shD+'</p>':'';
+  let ctl='',status='';
+  if(scene==='share-on'||scene==='share-lists'||scene==='unlink'||scene.startsWith('unlink-'))ctl=sw(true,false);
+  else if(scene==='share-off')ctl=sw(false,false);
+  else if(scene==='share-saving'){ctl=sw(true,true);status='<p class="cg-hint" role="status">'+k.shSaving+'</p>'}
+  else if(scene==='share-err'){ctl=sw(true,false);status='<p class="cg-error" role="status">'+k.shErr+'</p>'}
+  else if(scene==='share-unsure'){ctl=btn(k.shCheck);status=note(k.shUnsureOff,true)}
+  else if(scene==='share-notseen'){ctl=sw(true,false);status=note(k.shNotSeenOff,true)+'<div class="pg-actions">'+btn(k.shCheck,'cg-btn--ghost')+'</div>'}
+  h=head(k.mpTitle,'')+'<div class="pc-stack">'+card('Ana '+k.ex,'<dl class="pc-dl"><dt>'+k.mpProfile+'</dt><dd>'+ph()+' '+k.ex+'</dd></dl><p class="cg-hint">'+(lang==='es'?'El resto de la pantalla (sesiones, cambiar de profesional) no cambia.':'The rest of the screen (sessions, change professional) does not change.')+'</p>','pp');
+  if(scene==='share-loaderr')h+=note(k.shLoadErr,true)+'<div class="pg-actions">'+btn(k.mpRetry)+'</div>';
+  else h+='<section class="cg-card pg-card" aria-labelledby="shT"><h2 id="shT">'+k.shT+'</h2>'+desc+dsc+lists+'<div class="ps-row">'+ctl+'</div><div role="status" aria-live="polite">'+status+'</div><div class="ps-sep"><div class="pg-actions">'+btn(k.unBtn,'cg-btn--danger')+'</div></div></section>';
+  h+='</div>';
+  if(scene==='unlink'||scene==='unlink-working'||scene==='unlink-err'){const w=scene==='unlink-working';h+=dlg(k.unT,'<p>'+k.unB+'</p>'+(scene==='unlink-err'?'<p role="alert" class="cg-error">'+k.unErr+'</p>':''),(w?'<button type="button" class="cg-btn cg-btn--ghost" disabled>'+k.unCancel+'</button><button type="button" class="cg-btn cg-btn--danger" disabled aria-busy="true">'+k.unWork+'</button>':btn(k.unCancel,'cg-btn--ghost')+btn(k.unYes,'cg-btn--danger')))}
+ }
+ // ===== SIGUIENTE PASO =====
+ if(scene.startsWith('next')){a=4;const route=`<article class="cg-card pg-card"><p class="pc-line"><span class="cg-tag">${k.synth} · ${k.continuity}</span></p><h3 style="margin:.3rem 0">${k.routeEx} ${k.ex}</h3><p class="cg-hint">${k.co} · ${k.occ}</p><dl class="pc-dl"><dt>${k.pref}</dt><dd>${k.matches}</dd><dt>${k.transfer}</dt><dd>${k.noEv}</dd><dt>${k.feas}</dt><dd>${k.cond}</dd></dl><p class="pc-warn">${k.pendLic}</p><details class="pc-details"><summary>${k.details}</summary><p>${ph()} ${k.ex}</p></details><p class="cg-hint">${k.routeLimit}</p><div class="pg-actions">${btn(k.choose)}${btn(k.reject,'cg-btn--ghost')}</div></article>`;
+  h=head(k.nextTitle,'')+note(k.nextPreview)+`<div style="height:.8rem"></div>`;
+  if(scene==='next'){h+=sub(k,0)+`<div class="pc-stack"><section class="cg-card pg-card" aria-labelledby="cs"><h2 id="cs">${k.cons}</h2><p class="cg-hint">${k.consHelp}</p><div class="pc-pair"><fieldset class="pc-fs"><legend>${k.market}</legend>${chk(k.co,1)}${chk(k.dk,0)}</fieldset><fieldset class="pc-fs"><legend>${k.langs}</legend>${chk(k.es,1)}${chk(k.en,1)}</fieldset></div><fieldset class="pc-fs"><legend>${k.arr}</legend>${chk(k.remote,1)}${chk(k.hybrid,1)}${chk(k.onsite,0)}</fieldset>${sel(k.reg,[k.unknown,lang==='es'?'Sí':'Yes','No'],'rg')}<div class="pg-actions">${btn(k.saveCons)}${btn(k.cancel,'cg-btn--ghost')}</div></section><h2 style="font:700 1.35rem var(--cg-font-cond);text-transform:uppercase;margin:.4rem 0 0">${k.opts}</h2><div class="pc-three">${route}</div></div>`}
+  if(scene==='next-exp'){h+=sub(k,1)+`<div class="pc-stack"><section class="cg-card pg-card" aria-labelledby="ex"><div class="pc-line"><h2 id="ex" style="margin:0">${k.expT}</h2></div><article class="pg-card"><div class="pc-line"><h3 style="margin:0">${k.routeEx} ${k.ex}</h3>${chip('✓ '+k.selfRev)}</div><p class="cg-hint">${k.version} 2 · ${k.current}</p><p>${k.selfRep}</p><div class="pc-pair">${fld('ob',k.obs,'',1)}${fld('it',k.interp,'',1)}</div><div class="pg-actions">${btn(k.saveRef)}${btn(k.cancel,'cg-btn--ghost')}</div></article></section><section class="cg-card pg-card" aria-labelledby="hr"><h2 id="hr">${k.humanRev}</h2></section></div>`}
+  if(scene==='next-basis'){h+=sub(k,1)+`<div class="pc-stack"><div class="cg-banner" role="status"><span class="cg-banner__title">${k.basisT}</span><p style="margin:.4rem 0">${k.basisWhat}</p><ul><li><span class="pg-todo">${k.reasonNote}</span></li></ul><p class="cg-hint">${k.basisKeep}</p><div class="pg-actions">${btn(k.rebase)}</div></div><section class="cg-card pg-card" aria-labelledby="cr"><h2 id="cr" tabindex="-1">${k.carriedT}</h2><p class="cg-hint">${k.carriedNot}</p><article class="pc-draft"><h3 style="margin:0 0 .2rem">${k.partRef}</h3><p class="cg-tag">${k.carriedDraft} · ${k.fromV} 1</p><p>${ph()} ${k.ex}</p><div class="pg-actions">${btn(k.useDraft)}${btn(k.discard,'cg-btn--ghost')}</div></article><article class="pc-draft"><h3 style="margin:0 0 .2rem">${k.partRef} (2)</h3><p class="cg-tag">${k.carriedDraft} · ${k.fromV} 1</p><p role="status">${k.discardAsk}</p><div class="pg-actions">${btn(k.discardYes,'cg-btn--danger')}${btn(k.keep,'cg-btn--ghost')}</div></article></section></div>`}
+  if(scene==='next-plan'){h+=sub(k,2)+`<div class="pc-stack"><section class="cg-card pg-card"><p>${k.noPlan}</p></section></div>`}
+ }
+ return frame(h,{active:a,here})}
+
+function render(){q('root').innerHTML=sc();document.documentElement.lang=lang;const dark=theme==='dark'||(theme==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.body.style.background=dark?'#0e1613':'#e7ece8'}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-lang],[data-theme-set]');if(!t)return;if(t.dataset.lang){lang=t.dataset.lang;q('lang').value=lang}else{theme=t.dataset.themeSet;q('theme').value=theme}render()});
+q('scene').onchange=e=>{scene=e.target.value;render()};q('lang').onchange=e=>{lang=e.target.value;render()};q('theme').onchange=e=>{theme=e.target.value;render()};
+const hh=new URLSearchParams(location.hash.slice(1));if(hh.get('scene')){scene=hh.get('scene');q('scene').value=scene}if(hh.get('lang')){lang=hh.get('lang');q('lang').value=lang}if(hh.get('theme')){theme=hh.get('theme');q('theme').value=theme}
+render();
+</script>
+</body>
+</html>

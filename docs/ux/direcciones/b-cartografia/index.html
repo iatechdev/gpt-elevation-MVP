@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elevation · Dirección B · Cartografía</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Spectral:ital,wght@1,400;1,500&display=swap">
+<style>
+/* Dirección B · Cartografía.
+   Concepto: el relieve es el nivel. Donde la persona registra un nivel con evidencia, el terreno sube;
+   lo que no tiene respaldo queda plano. Cada línea gruesa de nivel equivale a un nivel registrado (1 a 4).
+   Color: hoja de mapa gris verdosa, curvas de nivel siena y una sola marca bermellón: «tú estás aquí». */
+:root{
+  --ground:#E7ECE8; --panel:#F2F5F2; --ink:#14201C; --muted:#475550; --line:#B9C3BD;
+  --contour:#8F5A33; --contour-soft:rgba(143,90,51,.38); --mark:#B72D0A; --ok:#14201C;
+  --cond:'Barlow Condensed',system-ui,sans-serif; --sans:'Barlow',system-ui,sans-serif; --name:'Spectral',Georgia,serif;
+  --gut:max(16px,env(safe-area-inset-left,0px)); --gutr:max(16px,env(safe-area-inset-right,0px));
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E1613; --panel:#15201C; --ink:#E9EFEB; --muted:#9DAAA4; --line:#2A3832;
+  --contour:#C9976A; --contour-soft:rgba(201,151,106,.4); --mark:#FF6B3F; --ok:#E9EFEB; color-scheme:dark}}
+:root[data-theme="dark"]{--ground:#0E1613;--panel:#15201C;--ink:#E9EFEB;--muted:#9DAAA4;--line:#2A3832;--contour:#C9976A;--contour-soft:rgba(201,151,106,.4);--mark:#FF6B3F;--ok:#E9EFEB;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:400 1.0625rem/1.55 var(--sans);padding-left:var(--gut);padding-right:var(--gutr)}
+button,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--mark);outline-offset:3px}
+.sr{position:absolute;left:-9999px}
+.wrap{max-width:1240px;margin:0 auto}
+.proto{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;padding:.6rem 0;border-bottom:1px solid var(--line);font:600 .78rem var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.proto b{color:var(--ink);margin-right:auto}
+.proto button{background:none;border:1px solid var(--line);padding:.3rem .7rem;cursor:pointer;font:600 .78rem var(--cond);letter-spacing:.08em;text-transform:uppercase}
+.proto button[aria-current="true"]{border-color:var(--mark);color:var(--mark)}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:1rem 0}
+.brand{font:700 1.7rem var(--cond);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
+.brand i{font-style:normal;color:var(--mark)}
+nav.main{display:flex;gap:1.4rem;font:600 .95rem var(--cond);letter-spacing:.08em;text-transform:uppercase}
+nav.main a{color:var(--ink);text-decoration:none}
+nav.main a:hover{color:var(--mark)}
+.view{display:none}.view.on{display:block}
+
+h1{font:700 clamp(3rem,10vw,8.2rem)/.9 var(--cond);text-transform:uppercase;letter-spacing:.005em;margin:0;max-width:11ch}
+h1 em{font:italic 500 .88em/1 var(--name);text-transform:none;letter-spacing:-.01em}
+h2{font:700 1.7rem/1 var(--cond);text-transform:uppercase;letter-spacing:.02em;margin:0}
+.nm{font:italic 500 clamp(1.7rem,3.6vw,2.6rem)/1.05 var(--name);margin:0}
+.tag{font:600 .78rem var(--cond);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;min-height:46px;padding:.55rem 1.2rem;background:var(--ink);color:var(--ground);border:0;font:700 1rem var(--cond);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.btn:hover{background:var(--mark);color:#fff}
+.btn.ghost{background:none;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.ghost:hover{background:none;color:var(--mark);box-shadow:inset 0 0 0 1.5px var(--mark)}
+.lnk{background:none;border:0;border-bottom:1.5px solid var(--mark);padding:.1rem 0;font-weight:600;cursor:pointer}
+.chip{display:inline-block;border:1px solid var(--line);padding:.05rem .45rem;font:600 .72rem var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* portada */
+.hero{position:relative;margin:0 calc(var(--gut) * -1) 0 calc(var(--gutr) * -1);min-height:min(78vh,720px);border-bottom:2px solid var(--ink);overflow:hidden}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero .in{position:relative;padding:clamp(1.5rem,5vw,3.5rem) max(16px,env(safe-area-inset-left,0px)) 2.5rem;max-width:1240px;margin:0 auto}
+.hero p.lead{max-width:34rem;font-size:1.2rem;margin:1.4rem 0 0;background:var(--ground);display:inline-block;padding:.3rem .5rem .3rem 0}
+.here{position:absolute;right:max(8%,16px);top:46%;display:flex;align-items:center;gap:.5rem;font:600 .85rem var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--mark)}
+.here i{width:14px;height:14px;border-radius:50%;background:var(--mark);box-shadow:0 0 0 5px rgba(217,58,18,.22)}
+.legend{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:1rem;background:var(--panel);border:1.5px solid var(--ink);padding:.8rem 1rem;font-size:.85rem;max-width:20rem}
+.legend ul{list-style:none;margin:.5rem 0 0;padding:0;display:grid;gap:.35rem}
+.legend li{display:flex;gap:.6rem;align-items:center}
+.sym{width:14px;height:14px;flex:none;display:inline-block;border-radius:50%}
+.sym.s{background:var(--ink)}.sym.p{border:2px dashed var(--mark)}.sym.n{border:1.5px solid var(--muted)}
+.sym.l{border-radius:0;height:0;border-top:3px solid var(--contour);width:18px}
+.try{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2.5rem;padding:2.5rem 0}
+textarea{width:100%;min-height:96px;padding:.8rem;background:var(--panel);border:1.5px solid var(--ink);font:400 1rem/1.55 var(--sans);border-radius:0;resize:vertical}
+.card{background:var(--panel);border:1.5px solid var(--ink);padding:1rem 1.1rem}
+.card[hidden]{display:none}
+.row{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-top:.8rem}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--ink);margin:1rem 0 0}
+.steps>div{padding:1rem 1rem 1.4rem 0;border-right:1px solid var(--line)}.steps>div+div{padding-left:1rem}.steps>div:last-child{border:0}
+.slot{margin:2rem 0;aspect-ratio:21/8;border:1.5px dashed var(--muted);display:grid;place-items:center;text-align:center;padding:1rem;font:500 .95rem var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+footer.f{padding:1.2rem 0 2rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+
+/* mapa de la persona */
+.sheet{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:1.6rem;padding:1.2rem 0 2rem}
+.mapbox{position:relative;border:2px solid var(--ink);background:var(--ground);aspect-ratio:16/11}
+.mapbox canvas{position:absolute;inset:0;width:100%;height:100%}
+.place{position:absolute;transform:translate(-8px,-8px);display:flex;align-items:center;gap:.45rem;background:none;border:0;padding:.2rem;cursor:pointer;text-align:left}
+.place .sym{background:var(--ground)}
+.place .sym.n{border:1.5px solid var(--muted)}
+.place .sym.s{background:var(--ink);border:1.5px solid var(--ink)}
+.place .sym.p{border:2px dashed var(--mark)}
+.place span.lb{font:italic 500 .98rem/1.1 var(--name);background:rgba(231,236,232,.82);padding:0 .25rem}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .place span.lb{background:rgba(14,22,19,.8)}}
+:root[data-theme="dark"] .place span.lb{background:rgba(14,22,19,.8)}
+.place[aria-pressed="true"] span.lb{outline:2px solid var(--mark)}
+.title-block{display:grid;grid-template-columns:repeat(3,auto);gap:.2rem 1.4rem;margin-top:.8rem;font-size:.8rem;color:var(--muted);justify-content:start}
+.title-block b{color:var(--ink);font-weight:600;display:block}
+.field{padding:1.1rem 1.2rem;background:var(--panel);border:2px solid var(--ink);align-self:start;position:sticky;top:1rem}
+.field .rowx{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin:.6rem 0}
+.ticks{display:inline-flex;gap:4px}.ticks i{width:16px;height:6px;background:var(--line);display:block}.ticks i.f{background:var(--contour)}
+.field ul{margin:.6rem 0;padding-left:1.1rem}
+.opts{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+.opts label{border:1.5px solid var(--ink);padding:.3rem .8rem;font:700 1rem var(--cond);cursor:pointer}
+.opts input{position:absolute;opacity:0}
+.opts input:checked+span{background:var(--ink);color:var(--ground);box-shadow:0 0 0 .5rem var(--ink)}
+.opts label:has(input:focus-visible){outline:3px solid var(--mark);outline-offset:2px}
+
+/* conversación */
+.log{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:2rem;padding:1.4rem 0 0}
+.entries{max-width:44rem}
+.entry{display:grid;grid-template-columns:5.2rem minmax(0,1fr);gap:1rem;padding:1rem 0;border-top:1px solid var(--line)}
+.entry .t{font:600 .78rem var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.entry.ai p{font:italic 500 1.25rem/1.4 var(--name);margin:0}
+.entry.me p{margin:0;font-size:1.05rem}
+.entry.ai .pista p{font:400 1rem/1.5 var(--sans);margin:.3rem 0 0}
+.entry.ai .pista p.tag{font:600 .78rem var(--cond);letter-spacing:.12em;text-transform:uppercase;margin:0}
+.pista{margin-top:.8rem;border:1.5px dashed var(--mark);padding:.8rem 1rem;background:var(--panel)}
+.composer{position:sticky;bottom:0;background:var(--ground);border-top:2px solid var(--ink);padding:.8rem 0 calc(.8rem + env(safe-area-inset-bottom,0px));margin-top:1rem}
+.composer .row{margin:0;align-items:flex-end}
+.composer textarea{min-height:56px;flex:1}
+.mini{position:sticky;top:1rem;align-self:start}
+.mini .mapbox{aspect-ratio:1/1}
+
+@media (max-width:900px){
+  .try,.sheet,.log{grid-template-columns:1fr}
+  .field,.mini{position:static}.steps{grid-template-columns:1fr}.steps>div{border-right:0;border-bottom:1px solid var(--line);padding-left:0!important}
+  .legend{position:static;margin:0 var(--gutr) 1rem var(--gut)}.here{top:30%}
+  .mapbox{aspect-ratio:4/5}.place span.lb{font-size:.82rem}
+  nav.main{display:none}.title-block{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="proto" role="toolbar" aria-label="Pantallas del prototipo">
+    <b>Dirección B · Cartografía · prototipo</b>
+    <button data-go="portada" aria-current="true">Portada</button>
+    <button data-go="inicio">Inicio con sesión</button>
+    <button data-go="chat">Conversación</button>
+  </div>
+  <header class="top">
+    <a class="brand" href="#portada" aria-label="Elevation, inicio">Elevation<i>.</i></a>
+    <nav class="main" aria-label="Principal"><a href="#" data-go="portada">Cómo funciona</a><a href="#" data-go="portada">Privacidad</a><a href="#" data-go="inicio">Entrar</a></nav>
+  </header>
+
+  <!-- PORTADA -->
+  <main id="v-portada" class="view on">
+    <section class="hero" aria-label="Portada">
+      <canvas id="c-hero" aria-hidden="true"></canvas>
+      <div class="here" aria-hidden="true"><i></i>Tú estás aquí</div>
+      <div class="in">
+        <h1>Tu experiencia tiene <em>relieve.</em></h1>
+        <p class="lead">Cuéntanos una escena de tu trabajo. Cada capacidad que confirmes con evidencia levanta tu mapa. Lo que no tiene respaldo se queda plano.</p>
+      </div>
+      <div class="legend"><span class="tag">Leyenda</span>
+        <ul><li><i class="sym s"></i>Nivel registrado por ti, con evidencia</li><li><i class="sym p"></i>Pista sugerida, esperando tu respuesta</li><li><i class="sym n"></i>Sin evaluar</li><li><i class="sym l"></i>Cada línea gruesa es un nivel</li></ul></div>
+    </section>
+
+    <section class="try" aria-labelledby="t1">
+      <div>
+        <p class="tag" id="t1">Pruébalo con una escena de ejemplo <span class="chip">Ejemplo, no es tuyo</span></p>
+        <label class="sr" for="sc">Tu escena</label>
+        <textarea id="sc" maxlength="360">El pedido se atrasó, avisé a todos y reorganicé la entrega.</textarea>
+        <div class="row"><button class="btn" id="mark">Marcar en el mapa</button><button class="btn ghost" data-go="chat">Escribir la mía</button></div>
+      </div>
+      <div class="card" id="pc" hidden aria-live="polite">
+        <p class="tag">Posible pista</p>
+        <p class="nm" id="pc-t">Planificación y organización</p>
+        <p id="pc-b" style="margin:.6rem 0 0">Se apoya en «reorganicé la entrega». Es una sugerencia, no una evaluación.</p>
+        <div class="row" id="pc-a"><button class="lnk" data-p="yes">Sí, un poco</button><button class="lnk" data-p="no">No todavía</button></div>
+      </div>
+    </section>
+
+    <section class="steps" aria-label="Cómo funciona">
+      <div><span class="tag">1 · Cuentas</span><p style="margin:.4rem 0 0">Una escena real, en tus palabras.</p></div>
+      <div><span class="tag">2 · Revisas</span><p style="margin:.4rem 0 0">Te mostramos qué frase respalda cada pista. Tú aceptas o descartas.</p></div>
+      <div><span class="tag">3 · Registras</span><p style="margin:.4rem 0 0">Tu nivel es el que tú registras con evidencia. Nadie lo certifica.</p></div>
+    </section>
+    <div class="slot">Espacio reservado para fotografía real · persona en su lugar de trabajo, Bogotá · por encargar, no se genera con IA</div>
+    <footer class="f"><span>Elevation es acompañamiento y autoconocimiento. No es terapia ni diagnóstico.</span><span>Tú decides qué guardar.</span></footer>
+  </main>
+
+  <!-- INICIO CON SESIÓN -->
+  <main id="v-inicio" class="view">
+    <div class="sheet">
+      <section aria-labelledby="mt">
+        <p class="tag">Hoja de Camila <span class="chip">Ejemplo</span></p>
+        <h2 id="mt" style="margin:.3rem 0 .8rem">Tu mapa de capacidades</h2>
+        <div class="mapbox" id="mb-home"><canvas id="c-home" aria-hidden="true"></canvas></div>
+        <div class="title-block"><span><b>Fuente</b>Evidencia que tú confirmas</span><span><b>Revisión humana</b>Ninguna todavía</span><span><b>Escala</b>Nivel 1 a 4, sin certificar</span></div>
+      </section>
+      <aside class="field" id="field" aria-live="polite" aria-label="Libreta de campo"></aside>
+    </div>
+  </main>
+
+  <!-- CONVERSACIÓN -->
+  <main id="v-chat" class="view">
+    <div class="log">
+      <section aria-labelledby="ct">
+        <p class="tag">Diario de campo · esto no es terapia ni diagnóstico, puedes pausar</p>
+        <h2 id="ct" style="margin:.3rem 0 1rem">Conversación</h2>
+        <div class="entries" id="entries">
+          <div class="entry ai"><span class="t">Elevation</span><p>Cuéntame una situación de trabajo que te dejó pensando. Una frase basta.</p></div>
+          <div class="entry me"><span class="t">Tú · 1</span><p>Esta semana se atrasó un pedido grande y me tocó reorganizar todo.</p></div>
+          <div class="entry ai"><span class="t">Elevation</span><p>Suena a una semana movida. ¿Qué fue lo primero que hiciste cuando supiste del atraso?</p></div>
+          <div class="entry me"><span class="t">Tú · 2</span><p>Avisé a todos y reorganicé la entrega.</p></div>
+          <div class="entry ai"><span class="t">Elevation</span><div><p>En lo que cuentas aparece algo que podría ser coordinar cambios. Es una posibilidad, no una evaluación.</p>
+            <div class="pista" id="cp"><p class="tag" style="margin:0">Posible pista · Planificación y organización</p><p style="margin:.3rem 0 0;font-size:1rem;font-family:var(--sans);font-style:normal">Se apoya en «reorganicé la entrega». ¿Te suena?</p>
+              <div class="row"><button class="lnk" data-c="yes">Sí, un poco</button><button class="lnk" data-c="no">No todavía</button></div></div></div></div>
+        </div>
+        <form class="composer" id="cf"><label class="sr" for="cm">Tu mensaje</label>
+          <div class="row"><textarea id="cm" maxlength="500" placeholder="Escribe lo que quieras compartir."></textarea><button class="btn" type="submit">Enviar</button></div>
+          <p style="font-size:.8rem;color:var(--muted);margin:.5rem 0 0">Tu conversación es privada. Tú decides qué se guarda como evidencia.</p></form>
+      </section>
+      <aside class="mini" aria-label="Dónde cae esta pista en tu mapa">
+        <p class="tag">Dónde cae en tu mapa</p>
+        <div class="mapbox" id="mb-chat"><canvas id="c-chat" aria-hidden="true"></canvas></div>
+        <p style="font-size:.85rem;color:var(--muted);margin:.5rem 0 0" id="mini-n">La pista aún no cambia tu mapa. El relieve sube cuando registras un nivel con evidencia.</p>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  /* ---------- relieve: ruido suave + líneas de nivel (marching squares) ---------- */
+  function hash(i,j){var s=Math.sin(i*127.1+j*311.7)*43758.5453;return s-Math.floor(s)}
+  function vnoise(x,y){var i=Math.floor(x),j=Math.floor(y),fx=x-i,fy=y-j;fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);
+    var a=hash(i,j),b=hash(i+1,j),c=hash(i,j+1),d=hash(i+1,j+1);return a+(b-a)*fx+(c-a)*fy+(a-b-c+d)*fx*fy}
+  function fbm(x,y){return .55*vnoise(x,y)+.3*vnoise(x*2.1+5,y*2.1+9)+.15*vnoise(x*4.3+2,y*4.3+7)}
+  var T=[null,[3,0],[0,1],[3,1],[1,2],[[3,0],[1,2]],[0,2],[3,2],[2,3],[0,2],[[0,1],[2,3]],[2,1],[3,1],[0,1],[3,0],null];
+  function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+  function paint(cv,field,opt){
+    var dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
+    cv.width=w*dpr;cv.height=h*dpr;var g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+    var cell=opt.cell||7,cols=Math.ceil(w/cell)+1,rows=Math.ceil(h/cell)+1,v=new Float32Array(cols*rows),ref=Math.min(w,h);
+    for(var j=0;j<rows;j++)for(var i=0;i<cols;i++)v[j*cols+i]=field(i*cell/ref,j*cell/ref,w/ref,h/ref);
+    var col=css('--contour'),soft=css('--contour-soft');
+    for(var k=1;k<=opt.levels;k++){var L=k*opt.step,heavy=k%opt.heavyEvery===0;
+      g.beginPath();g.strokeStyle=heavy?col:soft;g.lineWidth=heavy?2:1;
+      for(var j2=0;j2<rows-1;j2++)for(var i2=0;i2<cols-1;i2++){
+        var a=v[j2*cols+i2],b=v[j2*cols+i2+1],c=v[(j2+1)*cols+i2+1],d=v[(j2+1)*cols+i2];
+        var ci=(a>=L?1:0)|(b>=L?2:0)|(c>=L?4:0)|(d>=L?8:0),segs=T[ci];if(!segs)continue;if(typeof segs[0]==='number')segs=[segs];
+        var x0=i2*cell,y0=j2*cell;
+        for(var s=0;s<segs.length;s++){var p=[];for(var e=0;e<2;e++){var ed=segs[s][e],x,y;
+          if(ed===0){x=x0+cell*(L-a)/(b-a);y=y0}else if(ed===1){x=x0+cell;y=y0+cell*(L-b)/(c-b)}
+          else if(ed===2){x=x0+cell*(L-d)/(c-d);y=y0+cell}else{x=x0;y=y0+cell*(L-a)/(d-a)}p.push(x,y)}
+          g.moveTo(p[0],p[1]);g.lineTo(p[2],p[3])}}
+      g.stroke()}}
+  /* ---------- datos de ejemplo: las 8 capacidades reales del catálogo ---------- */
+  var P=[{id:0,n:'Adaptabilidad',x:.13,y:.3},{id:1,n:'Análisis de información',x:.3,y:.7},{id:2,n:'Aprendizaje autónomo',x:.44,y:.26},
+    {id:3,n:'Comunicación',x:.62,y:.58,lv:2,fr:['Le expliqué al cliente qué había pasado antes de que preguntara.','Avisé a todos y reorganicé la entrega.']},
+    {id:4,n:'Influencia y liderazgo',x:.8,y:.24},{id:5,n:'Planificación y organización',x:.46,y:.86,pista:'reorganicé la entrega'},
+    {id:6,n:'Resolución de problemas',x:.16,y:.86},{id:7,n:'Trabajo en equipo',x:.84,y:.74,pista:'el turno de la tarde supiera dónde íbamos'}];
+  P.forEach(function(p){p.h=(p.lv||0)*.25;p.th=p.h});
+  function peaks(ps){return function(x,y,aw,ah){var s=0;for(var i=0;i<ps.length;i++){var p=ps[i];if(!p.h)continue;var dx=x-p.x*aw,dy=y-p.y*ah;s+=p.h*Math.exp(-(dx*dx+dy*dy)/(2*.15*.15))}return s}}
+  var maps=[];
+  function make(cv,ps,decor){var m={cv:cv,ps:ps,decor:decor};
+    var f=peaks(ps);m.field=decor?function(x,y,aw,ah){return .55*fbm(x*2.3+3,y*2.3+1)+f(x,y,aw,ah)}:f;
+    m.draw=function(){paint(cv,m.field,decor?{levels:9,step:.07,heavyEvery:3,cell:8}:{levels:8,step:.125,heavyEvery:2,cell:6})};
+    maps.push(m);return m}
+  var hero=make(document.getElementById('c-hero'),P,true);
+  var home=make(document.getElementById('c-home'),P,false);
+  var chat=make(document.getElementById('c-chat'),P,false);
+  function redraw(){maps.forEach(function(m){if(m.cv.offsetParent)m.draw()})}
+  var ro=window.ResizeObserver?new ResizeObserver(redraw):null;maps.forEach(function(m){if(ro)ro.observe(m.cv)});
+  window.addEventListener('resize',redraw);
+  var anim=window.matchMedia('(prefers-reduced-motion: reduce)').matches?false:true;
+  function raise(p,to){p.th=to;if(!anim){p.h=to;redraw();return}
+    (function step(){var d=p.th-p.h;if(Math.abs(d)<.004){p.h=p.th;redraw();return}p.h+=d*.12;redraw();requestAnimationFrame(step)})()}
+  /* ---------- lugares sobre el mapa (botones reales, con teclado) ---------- */
+  function place(box,p,onSel){var b=document.createElement('button');b.type='button';b.className='place';b.dataset.id=p.id;
+    b.style.left=(p.x*100)+'%';b.style.top=(p.y*100)+'%';b.setAttribute('aria-pressed','false');
+    b.innerHTML='<i class="sym"></i><span class="lb"></span>';b.addEventListener('click',function(){onSel(p)});box.appendChild(b);p.el=b;sym(p)}
+  function sym(p){if(!p.el)return;var s=p.el.querySelector('.sym'),st=p.lv?'s':(p.pista&&!p.no?'p':'n');s.className='sym '+st;
+    p.el.querySelector('.lb').textContent=p.n;p.el.setAttribute('aria-label',p.n+': '+(p.lv?'nivel '+p.lv+' de 4':(p.pista&&!p.no?'pista sugerida':'sin evaluar')))}
+  var sel=null,F=document.getElementById('field');
+  function ticks(n){var h='<span class="ticks" aria-hidden="true">';for(var i=1;i<=4;i++)h+='<i class="'+(i<=n?'f':'')+'"></i>';return h+'</span>'}
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+  function panel(){var p=sel;if(!p){F.innerHTML='<p class="tag">Libreta de campo</p><p class="nm">Elige un lugar del mapa.</p><p style="margin:.6rem 0 0">Cada lugar es una capacidad. El relieve solo sube donde registras un nivel con evidencia.</p>';return}
+    var h='<p class="tag">Libreta de campo</p><p class="nm">'+esc(p.n)+'</p>';
+    if(p.lv){h+='<div class="rowx"><span>Nivel '+p.lv+' de 4</span>'+ticks(p.lv)+'</div><p style="margin:0;font-size:.95rem">Registrado por ti con '+p.fr.length+' frases. Sin revisión humana.</p><ul>'+p.fr.map(function(f){return'<li>'+esc(f)+'</li>'}).join('')+'</ul><p style="font-size:.85rem;color:var(--muted)">El nivel no certifica nada: es lo que tú registras con tu evidencia.</p>'}
+    else if(p.pista&&!p.no&&!p.ok){h+='<p class="chip">Pista sugerida</p><p>Se apoya en «'+esc(p.pista)+'». Es una sugerencia, no una evaluación.</p><div class="row"><button class="lnk" data-a="ok">Sí, un poco</button><button class="lnk" data-a="no">No todavía</button></div>'}
+    else if(p.ok){h+='<p class="chip">Evidencia anotada</p><p>Para que suba en el mapa, registra tu nivel. Tú decides cuál.</p><fieldset style="border:0;padding:0;margin:0"><legend class="tag">Nivel</legend><div class="opts">'+[1,2,3,4].map(function(n){return'<label><input type="radio" name="lv" value="'+n+'"><span>'+n+'</span></label>'}).join('')+'</div></fieldset><div class="row"><button class="btn" data-a="save">Registrar nivel</button></div><p style="font-size:.85rem;color:var(--muted)">Se guarda con tu nota y la frase que lo respalda.</p>'}
+    else{h+='<p class="chip">Sin evaluar</p><p>Terreno plano: todavía no hay evidencia aquí. No inventamos un nivel.</p><div class="row"><button class="btn ghost" data-go="chat">Contar una escena</button></div>'}
+    F.innerHTML=h}
+  function pick(p){sel=p;P.forEach(function(q){if(q.el)q.el.setAttribute('aria-pressed',q===p?'true':'false')});panel()}
+  F.addEventListener('click',function(e){var a=e.target.closest('[data-a]');if(!a||!sel)return;var k=a.dataset.a;
+    if(k==='no'){sel.no=true;sym(sel)}
+    if(k==='ok'){sel.ok=true}
+    if(k==='save'){var r=F.querySelector('input[name=lv]:checked');if(!r){return}sel.lv=+r.value;sel.fr=[sel.pista];sel.ok=false;sym(sel);raise(sel,sel.lv*.25)}
+    panel()});
+  P.forEach(function(p){place(document.getElementById('mb-home'),p,pick)});
+  panel();
+  /* ---------- portada: marcar en el mapa ---------- */
+  var pc=document.getElementById('pc'),pcb=document.getElementById('pc-b'),pca=document.getElementById('pc-a'),demo=P[5],ring;
+  document.getElementById('mark').addEventListener('click',function(){pc.hidden=false;demo.demoRing=true;
+    pcb.textContent='Se apoya en «reorganicé la entrega». Es una sugerencia, no una evaluación.';pca.innerHTML='<button class="lnk" data-p="yes">Sí, un poco</button><button class="lnk" data-p="no">No todavía</button>'});
+  pc.addEventListener('click',function(e){var a=e.target.closest('[data-p]');if(!a)return;
+    if(a.dataset.p==='no'){pc.hidden=true;return}
+    pcb.textContent='Anotada. Para que suba en el mapa, registras tu nivel con evidencia. Así se vería un nivel 1:';
+    pca.innerHTML='<button class="btn ghost" id="see">Ver cómo sube</button>';
+    document.getElementById('see').addEventListener('click',function(){raise(demo,.25);this.disabled=true})});
+  /* ---------- conversación ---------- */
+  document.getElementById('cp').addEventListener('click',function(e){var a=e.target.closest('[data-c]');if(!a)return;
+    var n=document.getElementById('mini-n');
+    if(a.dataset.c==='yes'){this.querySelector('p:nth-child(2)').textContent='Anotada como pista. Puedes retirarla cuando quieras.';
+      n.textContent='Planificación y organización queda marcada como pista. El relieve sube cuando registras un nivel con evidencia.'}
+    else{this.querySelector('p:nth-child(2)').textContent='Entendido, la dejamos fuera.';n.textContent='Sin cambios en tu mapa.'}});
+  document.getElementById('cf').addEventListener('submit',function(e){e.preventDefault();var t=document.getElementById('cm'),v=t.value.trim();if(!v)return;
+    var en=document.getElementById('entries');
+    function add(c,who,txt){var d=document.createElement('div');d.className='entry '+c;var s=document.createElement('span');s.className='t';s.textContent=who;var p=document.createElement('p');p.textContent=txt;d.append(s,p);en.append(d);return d}
+    add('me','Tú · 3',v);var a=add('ai','Elevation','Gracias por contarlo. En este prototipo no hay respuesta real; en el producto, aquí seguiría una pregunta.');t.value='';a.scrollIntoView({block:'nearest'})});
+  /* ---------- navegación ---------- */
+  var V={portada:1,inicio:1,chat:1};
+  function show(n){if(!V[n])n='portada';for(var k in V)document.getElementById('v-'+k).classList.toggle('on',k===n);
+    document.querySelectorAll('.proto [data-go]').forEach(function(b){b.setAttribute('aria-current',b.dataset.go===n?'true':'false')});
+    try{history.replaceState(null,'','#'+n)}catch(e){}window.scrollTo(0,0);requestAnimationFrame(redraw)}
+  document.addEventListener('click',function(e){var g=e.target.closest('[data-go]');if(g){e.preventDefault();show(g.dataset.go)}});
+  window.addEventListener('hashchange',function(){show((location.hash||'').slice(1))});
+  show((location.hash||'').slice(1));
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redraw);
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener&&window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw);
+  /* en la conversación, el mapa pequeño solo marca el lugar de la pista */
+  chat.ps=P;
+  var cb=document.getElementById('mb-chat');P.forEach(function(p){var b=document.createElement('span');b.className='place';b.style.left=(p.x*100)+'%';b.style.top=(p.y*100)+'%';b.style.pointerEvents='none';
+    var st=p.lv?'s':(p.id===5?'p':'n');b.innerHTML='<i class="sym '+st+'"></i>'+(p.id===5||p.id===3?'<span class="lb">'+esc(p.n)+'</span>':'');cb.appendChild(b)});
+})();
+</script>
+</body>
+</html>

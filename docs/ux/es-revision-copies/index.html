@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión de copies (maqueta)</title>
+<style>
+/* Maqueta de DISEÑO ES-360 (no es código de producto): textos finales ES/EN de portada, demostración, registro y acceso, con lista de elementos a retirar y mapa de claves i18n.
+   Tokens y piezas = Cartografía (mismas que las láminas aprobadas). Los textos son PROPUESTA de UX/UI-Claude a partir de la propuesta de Alejo; lo marcado «No verificado» depende de producto o tecnología.
+   Sin tipografías autoalojadas (alternativa del sistema). Datos de ejemplo (@example.test). */
+.cg{--cg-ground:#e7ece8;--cg-panel:#f2f5f2;--cg-ink:#14201c;--cg-muted:#475550;--cg-line:#b9c3bd;--cg-mark:#1d4f91;--cg-err:#a8321d;--cg-good:#1f5f46;
+--cg-font-cond:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;--cg-font-sans:'Barlow',system-ui,sans-serif;--cg-font-name:'Spectral',Georgia,serif;
+--cg-touch:2.875rem;--cg-focus:3px;color-scheme:light;background:var(--cg-ground);color:var(--cg-ink);font:400 1.0625rem/1.55 var(--cg-font-sans)}
+@media (prefers-color-scheme:dark){.cg:not([data-theme='light']){--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}}
+.cg[data-theme='dark']{--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-err:#ff8a70;--cg-good:#7dd3a8;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}body{margin:0}
+.cg :focus-visible{outline:var(--cg-focus) solid var(--cg-mark);outline-offset:3px}
+.cg a{color:var(--cg-mark);text-underline-offset:3px}
+.cg-muted{color:var(--cg-muted)}
+.cg-tag{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch);padding:.55rem 1.2rem;background:var(--cg-ink);color:var(--cg-ground);border:0;border-radius:0;font:700 1rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.cg-btn:hover{background:var(--cg-mark)}
+.cg a.cg-btn{color:var(--cg-ground)}
+.cg-btn--ghost,.cg a.cg-btn--ghost{background:none;color:var(--cg-ink);box-shadow:inset 0 0 0 1.5px var(--cg-ink)}
+.cg-btn--ghost:hover{background:none;color:var(--cg-mark);box-shadow:inset 0 0 0 1.5px var(--cg-mark)}
+.cg-btn--danger{background:var(--cg-err);color:var(--cg-ground)}.cg-btn--danger:hover{background:var(--cg-err)}
+.cg-btn:disabled{opacity:.55;cursor:not-allowed;background:var(--cg-ink);color:var(--cg-ground)}
+.cg-btn--ghost:disabled{background:none;color:var(--cg-ink)}
+.cg-linkbtn{min-width:var(--cg-touch);background:none;border:0;border-bottom:1.5px solid var(--cg-mark);border-radius:0;padding:.1rem 0;min-height:var(--cg-touch);font:600 1rem var(--cg-font-sans);color:var(--cg-ink);cursor:pointer}
+.cg-card{background:var(--cg-panel);border:1.5px solid var(--cg-ink);padding:1rem 1.1rem}
+.cg-banner{border:1.5px solid var(--cg-ink);padding:.8rem 1rem;background:var(--cg-panel);margin:1rem 0}
+.cg-banner--error{border-color:var(--cg-err)}
+.cg-banner__title{display:block;font-weight:600}
+.cg-banner--error .cg-banner__title::before{content:'\26A0\00a0';color:var(--cg-err)}
+.cg-chip{display:inline-flex;gap:.3rem;align-items:center;border:1px solid var(--cg-line);padding:.05rem .45rem;font:600 .78rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-chip--ok{border-color:var(--cg-good);color:var(--cg-good)}.cg-chip--wait{border-color:var(--cg-mark);color:var(--cg-mark)}.cg-chip--bad{border-color:var(--cg-err);color:var(--cg-err)}
+.cg-field{display:grid;gap:.3rem;margin-top:1rem;border:0;padding:0;min-width:0}
+.cg-label{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;padding:0}
+.cg-input,.cg-textarea{width:100%;min-height:var(--cg-touch);padding:.7rem .8rem;background:var(--cg-panel);color:var(--cg-ink);border:1.5px solid var(--cg-ink);border-radius:0;font:inherit}
+.cg-textarea{min-height:9rem;resize:vertical;line-height:1.5}
+.cg-input[aria-invalid='true'],.cg-textarea[aria-invalid='true']{border-color:var(--cg-err);border-width:2px}
+.cg-hint{color:var(--cg-muted);font-size:.85rem;margin:0}
+.cg-error{color:var(--cg-err);font-size:.9rem;margin:0}.cg-error::before{content:'\26A0\00a0'}
+.cg-items{list-style:none;margin:0;padding:0}
+.cg-item{border-top:1px solid var(--cg-line);padding:.9rem 0;display:grid;gap:.4rem}.cg-item:first-child{border-top:2px solid var(--cg-ink)}
+.cg-dialog{background:var(--cg-panel);color:var(--cg-ink);border:2px solid var(--cg-ink);padding:1.3rem 1.4rem;max-width:min(30rem,calc(100vw - 2rem));width:100%}
+.cg-dialog__actions{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1.2rem}
+.cg-scrim{background:rgb(14 22 19/.55);padding:1.2rem 0;display:flex;justify-content:center}
+/* marco (shell.css + ES-153 aprobado) */
+.cg-frame{min-height:100dvh;display:flex;flex-direction:column;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.cg-skip{position:absolute;left:1rem;top:-10rem;z-index:100;background:var(--cg-panel);color:var(--cg-mark);border:2px solid var(--cg-ink);padding:.7rem 1rem;font-weight:600}.cg-skip:focus{top:1rem}
+.cg-header{display:flex;align-items:center;justify-content:space-between;gap:.8rem 1.4rem;flex-wrap:wrap;padding:1rem 0;border-bottom:1px solid var(--cg-line);max-width:1240px;width:100%;margin:0 auto}
+.cg a.cg-brand{font:700 1.7rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--cg-ink);display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.cg-brand i{font-style:normal;color:var(--cg-mark)}
+.cg-nav{display:flex;gap:.2rem 1.3rem;flex-wrap:wrap;align-items:center;font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase}
+.cg-nav a{color:var(--cg-ink);text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch)}
+.cg-nav a:hover{border-color:var(--cg-mark)}.cg-nav a[aria-current='page']{border-color:var(--cg-ink)}
+.cg-header__end{display:flex;align-items:center;gap:.7rem 1rem;flex-wrap:wrap;margin-left:auto}
+.cg-lang,.cg-seg{display:inline-flex;border:1.5px solid var(--cg-ink)}
+.cg-lang__btn,.cg-seg button{min-width:var(--cg-touch);min-height:var(--cg-touch);padding:0 .8rem;background:none;border:0;border-radius:0;color:var(--cg-ink);font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.cg-lang__btn[aria-pressed='true'],.cg-seg button[aria-pressed='true']{background:var(--cg-ink);color:var(--cg-ground)}
+.cg-seg button+button{border-left:1.5px solid var(--cg-ink)}
+.cg-usermenu__button{background:none;border:0;border-bottom:3px solid transparent;min-height:var(--cg-touch);padding:0 .2rem;color:var(--cg-ink);font:italic 500 1.1rem var(--cg-font-name)}
+.cg-usermenu__button.is-here{border-color:var(--cg-ink)}
+.cg-body{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:1rem 0 2rem;min-width:0}
+.cg-main{min-width:0;outline:none}
+.cg-prefs{display:flex;gap:.6rem 1.4rem;flex-wrap:wrap;align-items:center;width:100%;max-width:1240px;margin:0 auto;padding:.8rem 0;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted)}
+.cg-prefs__group{display:inline-flex;align-items:center;gap:.6rem}
+.cg-footer{display:flex;justify-content:space-between;gap:.4rem 1rem;flex-wrap:wrap;padding:1.2rem 0 2rem;border-top:1px solid var(--cg-line);font-size:.85rem;color:var(--cg-muted);max-width:1240px;width:100%;margin:0 auto}
+.cg-only-narrow{display:none}
+@media (max-width:900px){
+ .cg-body{padding-top:.6rem}
+ .cg-header--person{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 .8rem;padding:.4rem 0 .6rem}
+ .cg-header--person .cg-header__end{display:contents}
+ .cg-header--person .cg-usermenu__button{grid-column:2;grid-row:1;justify-self:end}
+ .cg-header--person .cg-nav{grid-column:1 / -1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 .6rem}
+ .cg-header--person .cg-nav a{min-width:0;overflow-wrap:anywhere;line-height:1.05;font-size:.88rem}
+ .cg-header--person .cg-lang{display:none}.cg-only-narrow{display:flex}}
+@media (max-width:360px){.cg-header--person .cg-nav a{font-size:.74rem;letter-spacing:.02em;overflow-wrap:normal}}
+@media (min-width:901px){.cg-only-narrow{display:none!important}}
+
+/* ===== NUEVO en estas pantallas ===== */
+.pg-head{margin:0 0 1.2rem;max-width:46rem}.pg-head .cg-tag{margin:0 0 .3rem}
+.pg-title{font:700 clamp(1.9rem,4.6vw,2.8rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .5rem}   /* título de las pantallas de utilidad; el .cg-h1 de 4 rem queda para portada y mapa */
+.pg-lead{margin:0}
+.pg-stack{display:grid;gap:1rem;max-width:46rem}
+.pg-card h2{font:700 1.35rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.03em;margin:0 0 .5rem}
+.pg-card h3{font:700 1.15rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.04em;margin:.2rem 0}
+.pg-card p{margin:.4rem 0}
+.pg-actions{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;margin-top:.9rem}
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem}
+.pg-price{font:700 1.5rem var(--cg-font-cond)}
+.pg-feat{margin:.5rem 0;padding-left:1.2rem}
+.pg-cols{display:grid;grid-template-columns:minmax(0,1fr) 3rem minmax(0,1fr);gap:1rem;align-items:start}
+.pg-arrow{align-self:center;text-align:center;font:700 1.6rem var(--cg-font-cond);color:var(--cg-muted)}
+.pg-work{display:grid;grid-template-columns:minmax(0,18rem) minmax(0,1fr);gap:1.4rem;align-items:start}
+.pg-paper{font:400 1.15rem/1.6 var(--cg-font-name);min-height:11rem}   /* lo que la persona escribe en el diario va en Spectral */
+.pg-quote{font:italic 400 1.1rem/1.5 var(--cg-font-name);border-left:4px solid var(--cg-line);margin:.4rem 0;padding:.2rem 0 .2rem .9rem}
+.pg-quote--hidden{border-left-style:dashed;color:var(--cg-muted);font-family:var(--cg-font-sans);font-style:normal}
+.pg-switch{display:inline-flex;align-items:center;gap:.7rem;min-height:var(--cg-touch);background:none;border:0;padding:0;font:inherit;color:var(--cg-ink);cursor:pointer}
+.pg-switch__track{width:3.2rem;height:1.8rem;border:2px solid var(--cg-ink);background:var(--cg-ground);position:relative;flex:none}
+.pg-switch__track::after{content:'';position:absolute;top:2px;left:2px;width:1.2rem;height:1.2rem;background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track{background:var(--cg-ink)}
+.pg-switch[aria-checked='true'] .pg-switch__track::after{left:auto;right:2px;background:var(--cg-ground)}
+.pg-switch__word{font:600 .85rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase}
+.pg-todo{border:1.5px dashed var(--cg-line);padding:.5rem .8rem;color:var(--cg-muted);font-size:.9rem}   /* marcador: se mantiene el texto actual de copy.ts */
+@media (max-width:900px){.pg-cols{grid-template-columns:minmax(0,1fr)}.pg-work{grid-template-columns:minmax(0,1fr)}}
+/* NUEVO (marco Administración y gráfica) */
+.pg-two{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;align-items:start}
+.pg-stack{grid-template-columns:minmax(0,1fr)}
+@media (min-width:1000px){.pg-two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.cg-figures{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));margin:.4rem 0;border-top:2px solid var(--cg-ink);border-left:1px solid var(--cg-line)}
+.cg-figure{background:var(--cg-panel);padding:.8rem 1rem;border-right:1px solid var(--cg-line);border-bottom:1px solid var(--cg-line);margin:0}
+.cg-figure dt{font:600 .8rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-figure dd{margin:0;font:700 1.9rem var(--cg-font-cond)}
+.cg-tablewrap{overflow-x:auto}.cg-table{border-collapse:collapse;width:100%}.cg-table th,.cg-table td{overflow-wrap:anywhere}
+.cg-table th,.cg-table td{text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--cg-line)}
+.cg-table th{font:600 .8rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted);border-bottom:1.5px solid var(--cg-ink)}
+.pg-chart{border-bottom:2px solid var(--cg-ink);height:9rem;display:flex;align-items:flex-end}
+.pg-bars{display:grid;grid-template-columns:repeat(30,minmax(0,1fr));gap:2px;align-items:end;width:100%;height:100%}
+.pg-bar{display:block;background:var(--cg-mark);min-height:1px}.pg-bar[style*="height:0%"]{height:1px!important}
+.pg-tabs{display:flex;flex-wrap:wrap;gap:.3rem;border-bottom:2px solid var(--cg-ink)}
+.pg-tab{background:none;border:0;border-radius:0;min-height:var(--cg-touch);padding:.55rem 1rem;margin-bottom:-2px;font:600 1rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-ink);cursor:pointer;border-bottom:4px solid transparent}
+.pg-tab[aria-selected='true']{border-bottom-color:var(--cg-mark)}
+.pg-filters{display:flex;gap:1rem;flex-wrap:wrap;align-items:end;margin-bottom:.8rem}
+.pg-filters .cg-input{min-width:12rem}
+.pg-peoplecards{display:none}
+@media (max-width:640px){.pg-people,.pg-people+*{}.cg-tablewrap[aria-label]{display:none}.pg-peoplecards{display:block}.pg-filters .cg-input{min-width:0;width:100%}.pg-filters .cg-field{flex:1 1 100%}}
+/* marco de administración: barra lateral (shell.css) */
+.cg-role{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted)}
+.cg-who{color:var(--cg-muted);font-size:1rem;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cg-signout{min-height:var(--cg-touch)}
+.cg-body--side{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:2rem;align-items:start}
+.cg-side{position:sticky;top:1rem}
+.cg-sidenav{display:grid;border-top:2px solid var(--cg-ink);font:600 1rem var(--cg-font-cond);letter-spacing:.06em;text-transform:uppercase}
+.cg-sidenav a{color:var(--cg-ink);text-decoration:none;display:flex;align-items:center;min-height:var(--cg-touch);padding:.3rem .2rem;border-bottom:1px solid var(--cg-line)}
+.cg-sidenav a:hover{background:var(--cg-panel)}.cg-sidenav a[aria-current='page']{box-shadow:inset 4px 0 0 var(--cg-mark);padding-left:.8rem}
+.cg-side__group{margin:1rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid var(--cg-ink)}
+@media (max-width:900px){.cg-body--side{grid-template-columns:minmax(0,1fr);gap:1rem}.cg-side{position:static}.cg-sidenav{display:flex;flex-wrap:wrap;gap:.1rem 1rem;border-top:0}.cg-sidenav a{border-bottom:3px solid transparent;padding:.3rem 0;min-width:var(--cg-touch);justify-content:center}.cg-sidenav a[aria-current='page']{box-shadow:none;padding-left:0;border-bottom-color:var(--cg-mark)}.cg-header--admin .cg-header__end{margin-left:0;width:100%;justify-content:space-between}.cg-header--admin .cg-lang{display:none}}
+/* NUEVO (ES-359) marco global */
+.gf{position:relative;min-height:100dvh;display:flex;flex-direction:column;background:var(--cg-ground);color:var(--cg-ink)}
+.gf-top{display:flex;align-items:center;justify-content:space-between;gap:.8rem 1.2rem;flex-wrap:wrap;min-height:56px;padding:.3rem max(1rem,calc((100% - 1240px)/2 + 1rem));border-bottom:1px solid var(--cg-line);position:relative}
+.gf-brand{display:inline-flex;align-items:center;gap:.6rem}
+.cg a.gf-logo{font:700 1.5rem var(--cg-font-cond);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--cg-ink);min-height:var(--cg-touch);display:inline-flex;align-items:center}.gf-logo i{font-style:normal;color:var(--cg-mark)}
+.gf-end{display:flex;align-items:center;gap:.5rem}
+.gf-btn{display:inline-flex;align-items:center;gap:.4rem;min-height:var(--cg-touch);padding:0 .8rem;background:none;border:1.5px solid var(--cg-ink);border-radius:0;color:var(--cg-ink);font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.gf-btn[aria-expanded='true']{background:var(--cg-ink);color:var(--cg-ground)}
+.gf-btn--plain{border-color:transparent}.gf-btn--plain:hover,.gf-btn:hover{border-color:var(--cg-mark)}
+.gf-name{font:600 1rem var(--cg-font-cond);letter-spacing:.04em;text-transform:none;max-width:12rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gf-pop{position:absolute;right:max(1rem,calc((100% - 1240px)/2 + 1rem));top:calc(100% + 4px);z-index:20;background:var(--cg-panel);border:2px solid var(--cg-ink);padding:1rem 1.1rem;min-width:17rem;max-width:calc(100vw - 2rem);box-shadow:6px 6px 0 rgb(0 0 0/.12)}
+.gf-pop h2{font:600 .8rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted);margin:.8rem 0 .3rem}.gf-pop h2:first-child{margin-top:0}
+.gf-pop .cg-seg button[aria-pressed='true']::before{content:'✓ '}
+.gf-pop--acct{padding:.4rem 0;min-width:19rem}.gf-pop--acct .cg-seg button,.gf-pop--acct .cg-lang__btn{width:auto;padding:0 .8rem;justify-content:center;font:700 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;min-height:var(--cg-touch)}.gf-pop--acct .cg-seg button:hover,.gf-pop--acct .cg-lang__btn:hover{background:none}.gf-pop--acct .cg-seg button[aria-pressed='true'],.gf-pop--acct .cg-lang__btn[aria-pressed='true']{background:var(--cg-ink);color:var(--cg-ground)}.gf-prefsbox{padding:.3rem 1.1rem .6rem}.gf-prefsbox h2{font:600 .8rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted);margin:.6rem 0 .3rem}.gf-pop--acct a,.gf-pop--acct button{display:flex;align-items:center;min-height:var(--cg-touch);width:100%;padding:0 1.1rem;color:var(--cg-ink);text-decoration:none;background:none;border:0;font:inherit;text-align:left;cursor:pointer}.gf-pop--acct a:hover,.gf-pop--acct button:hover{background:var(--cg-ground)}.gf-pop--acct hr{border:0;border-top:1px solid var(--cg-line);margin:.3rem 0}
+.gf-pop--acct .gf-who{padding:.4rem 1.1rem .6rem;color:var(--cg-muted);font-size:.85rem}
+.gf-body{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:1rem 1rem 2rem;display:grid;grid-template-columns:14.5rem minmax(0,1fr);gap:2rem;align-items:start}
+.gf-side{position:sticky;top:1rem;max-height:calc(100dvh - 2rem);overflow:auto}
+.gf-side .cg-sidenav{border-top:0;font-size:.95rem}.gf-side .cg-sidenav a{min-height:2.5rem;padding:.2rem .6rem}
+.gf-side h2{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted);margin:1.1rem 0 .2rem;padding:0 .6rem .25rem;border-bottom:1px solid var(--cg-ink)}.gf-side h2:first-child{margin-top:0}
+.gf-menubtn{display:none}
+.gf-chip{font:600 .78rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted);border:1px solid var(--cg-line);padding:.1rem .45rem}
+.gf-main h1{font:700 clamp(1.9rem,4.6vw,2.8rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .8rem}
+.gf-main .cg-card{margin:0 0 1rem}
+.gf-scrim{position:absolute;inset:0;background:rgb(14 22 19/.55);z-index:30;display:flex}
+.gf-drawer{background:var(--cg-panel);width:min(22rem,92vw);display:flex;flex-direction:column;border-right:2px solid var(--cg-ink);min-height:0}
+.gf-drawer__head{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.6rem 1rem;border-bottom:1px solid var(--cg-line)}.gf-drawer__head h2{margin:0;font:700 1.2rem var(--cg-font-cond);text-transform:uppercase}.gf-drawer__head p{margin:0;font-size:.85rem;color:var(--cg-muted)}
+.gf-drawer__body{overflow:auto;padding:0 1rem 1rem;flex:1 1 auto;min-height:0}
+.gf-drawer__foot{padding:.7rem 1rem;border-top:1px solid var(--cg-line)}.gf-drawer__foot .cg-btn{width:100%}
+.gf-drawer h3{font:600 .8rem var(--cg-font-cond);letter-spacing:.12em;text-transform:uppercase;color:var(--cg-muted);margin:1rem 0 .1rem}
+.gf-list{display:grid;margin:.2rem 0}.gf-list a,.gf-list button{display:flex;align-items:center;min-height:var(--cg-touch);padding:0 .5rem;border:0;border-bottom:1px solid var(--cg-line);background:none;color:var(--cg-ink);font:inherit;text-decoration:none;text-align:left;cursor:pointer}
+.gf-list a[aria-current='page']{font-weight:700;box-shadow:inset 4px 0 0 var(--cg-mark);padding-left:.8rem}
+.gf-prefs{display:grid;gap:.5rem;margin:.4rem 0}.gf-prefs>div{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}.gf-prefs span{min-width:4.5rem}
+.gf-prefs .cg-seg button[aria-pressed='true']::before,.gf-pop .cg-lang__btn[aria-pressed='true']::before{content:'✓ '}
+.gf .cg-lang__btn[aria-pressed='true']::before{content:'✓ '}
+.gf-chatbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.5rem;align-items:center;min-height:56px;padding:.2rem .6rem;border-bottom:1px solid var(--cg-line)}
+.gf-chatbar h1{font:700 1.05rem/1.1 var(--cg-font-cond);text-transform:uppercase;letter-spacing:.06em;margin:0}.gf-chatbar p{margin:0;font-size:.8rem;color:var(--cg-muted)}
+.gf-meter{height:6px;background:var(--cg-line)}.gf-meter i{display:block;height:100%;width:42%;background:var(--cg-mark)}
+.gf-thread{padding:1rem;min-height:16rem}.gf-comp{display:flex;gap:.6rem;padding:.6rem 1rem 1rem}.gf-comp .cg-textarea{min-height:var(--cg-touch);flex:1}
+.gf-sess{margin:1rem 0}
+.gf-st a,.gf-st span.l{display:flex;align-items:center;min-height:2.5rem;padding:.2rem .6rem;border-bottom:1px solid var(--cg-line);color:var(--cg-ink);text-decoration:none}
+.gf-st .hv{background:var(--cg-panel);box-shadow:inset 0 -3px 0 var(--cg-mark)}.gf-st .fc{outline:3px solid var(--cg-mark);outline-offset:-3px}.gf-st .cu{font-weight:700;box-shadow:inset 4px 0 0 var(--cg-mark);padding-left:.8rem}.gf-st .dis{color:var(--cg-muted);text-decoration:line-through}
+@media (max-width:900px){.gf-top{padding:.2rem .8rem;flex-wrap:nowrap}.gf-end--desk{display:none}.gf-brand .gf-chip{display:none}.gf-menubtn{display:inline-flex}.gf-body{grid-template-columns:minmax(0,1fr);gap:0}.gf-side{display:none}.gf-pop{right:.8rem}}
+@media (min-width:901px){.gf-menubtn{display:none!important}}
+
+/* ===== NUEVO en esta lámina (ES-360): portada, acceso y tablas de revisión ===== */
+.ld-head{display:flex;align-items:center;justify-content:space-between;gap:.4rem 1.4rem;flex-wrap:wrap;padding:.8rem 0;border-bottom:1px solid var(--cg-line);max-width:1240px;width:100%;margin:0 auto}
+.ld-nav{display:flex;gap:.2rem 1.3rem;flex-wrap:wrap;align-items:center;font:600 .95rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase}
+.ld-nav a{color:var(--cg-ink);text-decoration:none;border-bottom:3px solid transparent;display:inline-flex;align-items:center;justify-content:center;min-height:var(--cg-touch);min-width:var(--cg-touch)}.ld-nav a:hover{border-color:var(--cg-mark)}
+.ld-end{display:flex;align-items:center;gap:.5rem 1rem;flex-wrap:wrap;margin-left:auto}
+.ld-end a.cg-btn{padding:.4rem .9rem}
+.ld-main{max-width:1240px;width:100%;margin:0 auto;padding:0 0 1rem;min-width:0;flex:1}
+.ld-sec{padding:2.2rem 0;border-top:1px solid var(--cg-line)}.ld-sec:first-child{border-top:0}
+.ld-h1{font:700 clamp(2.1rem,6vw,4rem)/1.02 var(--cg-font-cond);text-transform:uppercase;margin:0 0 1rem;overflow-wrap:anywhere}
+.ld-h1 em{font-style:normal;color:var(--cg-mark)}
+.ld-h2{font:700 clamp(1.5rem,3.6vw,2.2rem)/1.05 var(--cg-font-cond);text-transform:uppercase;margin:.2rem 0 .8rem}
+.ld-lead{font-size:1.2rem;max-width:40rem;margin:0 0 1.2rem}
+.ld-hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:2rem;align-items:center;padding:2rem 0}
+.ld-relief{margin:0;border:1.5px solid var(--cg-ink);background:var(--cg-panel);padding:.8rem}
+.ld-relief svg{display:block;width:100%;height:auto}
+.ld-legend{list-style:none;margin:.6rem 0 0;padding:0;display:grid;gap:.3rem;font-size:.9rem}
+.ld-legend li{display:flex;gap:.6rem;align-items:center}.ld-legend svg{width:1.6rem;height:1.2rem;flex:none}
+.ld-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.ld-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.ld-demo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;align-items:start}
+.ld-quote{border-left:4px solid var(--cg-mark);margin:.7rem 0;padding:.6rem 1rem;background:var(--cg-ground);font:italic 500 1.2rem/1.4 var(--cg-font-name)}
+.ld-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.ld-steps li{border-top:3px solid var(--cg-ink);padding-top:.7rem}.ld-steps h3{font:700 1.25rem/1.1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .3rem}.ld-steps p{margin:0}
+.ld-sub{margin-top:1.6rem}.ld-sub h3{font:700 1.2rem var(--cg-font-cond);text-transform:uppercase;letter-spacing:.05em;margin:0 0 .2rem}
+.ld-notice{border:1.5px solid var(--cg-ink);padding:.9rem 1rem;background:var(--cg-panel);max-width:46rem;margin:1.5rem 0 0}
+.ld-auth{max-width:30rem;margin:2rem auto}
+.ld-auth h1{font:700 clamp(1.9rem,4.6vw,2.6rem)/1 var(--cg-font-cond);text-transform:uppercase;margin:0 0 .4rem}
+.ld-pw{list-style:none;margin:.4rem 0 0;padding:0;display:grid;gap:.2rem;font-size:.9rem}.ld-pw li::before{content:'○\00a0'}.ld-pw li.ok::before{content:'✓\00a0';color:var(--cg-good)}
+.ld-pw .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.ld-chk{display:flex;gap:.7rem;align-items:flex-start;margin-top:1rem}.ld-chk input{width:1.4rem;height:1.4rem;accent-color:var(--cg-ink);flex:none;margin-top:.2rem}
+.ld-foot{display:flex;gap:.4rem 1.2rem;flex-wrap:wrap;align-items:center;max-width:1240px;width:100%;margin:0 auto;padding:1.2rem 0 2rem;border-top:1px solid var(--cg-line);font-size:.9rem;color:var(--cg-muted)}
+.ld-foot a{display:inline-flex;align-items:center;min-height:var(--cg-touch)}
+.nvm{outline:2px dashed var(--cg-mark);outline-offset:5px;margin:.6rem 0}
+.nvl{font-size:.82rem;color:var(--cg-muted);margin:.5rem 0 0}.nvl strong{color:var(--cg-mark);text-transform:uppercase;letter-spacing:.06em}
+.dc{max-width:70rem}
+.kt{width:100%;border-collapse:collapse;font-size:.92rem;margin-top:1rem}
+.kt caption{text-align:left;font-weight:600;padding:.2rem 0 .4rem}
+.kt th,.kt td{border-top:1px solid var(--cg-line);padding:.55rem .6rem;vertical-align:top;text-align:left;overflow-wrap:anywhere}
+.kt thead th{border-top:2px solid var(--cg-ink);font:600 .8rem var(--cg-font-cond);letter-spacing:.1em;text-transform:uppercase;color:var(--cg-muted)}
+.kt code{font-size:.85rem}
+@media (max-width:900px){
+ .ld-hero,.ld-demo{grid-template-columns:minmax(0,1fr)}.ld-grid3,.ld-grid2,.ld-steps{grid-template-columns:minmax(0,1fr)}
+ .ld-nav{order:3;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 .6rem}.ld-nav a{min-width:0;overflow-wrap:anywhere;line-height:1.05;font-size:.88rem}
+ .ld-end{gap:.4rem .6rem}
+ .kt thead{position:absolute;left:-9999px}.kt,.kt tbody,.kt tr,.kt td,.kt th{display:block;width:100%}.kt tr{border-top:2px solid var(--cg-ink);padding:.5rem 0}.kt th,.kt td{border-top:0;padding:.25rem 0}
+ .kt td[data-l]::before{content:attr(data-l) ': ';font:600 .78rem var(--cg-font-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--cg-muted)}
+}
+@media (max-width:360px){.ld-nav a{font-size:.74rem;letter-spacing:.02em;overflow-wrap:normal}}
+
+/* ===== sólo de la lámina ===== */
+.proto{background:#fff;color:#111;border-bottom:3px solid #1d4f91;padding:.6rem 1rem;font:14px/1.4 system-ui,sans-serif;display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center}
+.proto label{display:inline-flex;gap:.35rem;align-items:center;max-width:100%}.proto select{font:inherit;min-height:32px;max-width:60vw}.proto b{color:#1d4f91}
+</style>
+</head>
+<body>
+<div class="proto" role="region" aria-label="Controles de la lámina (no forman parte del diseño)"><b>Lámina · ES-360</b>
+ <label>Pantalla <select id="scene"></select></label>
+ <label>Idioma <select id="lang"><option value="es">ES</option><option value="en">EN</option></select></label>
+ <label>Tema <select id="theme"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></label>
+ <label><input type="checkbox" id="marks" checked> Marcas «No verificado»</label>
+ <span>Esta barra y las marcas punteadas no existen en la plataforma.</span></div>
+<div id="root"></div>
+<script>
+// Modelo de textos de la lámina ES-360. Fila: [clave, estado (n nuevo, c cambia, e igual, r retirar), ES, EN, nota «no verificado» (solo ES, es de diseño)]
+const K = [
+ // --- Cabecera y navegación de la portada
+ ['landing.nav.how','e','Cómo funciona','How it works'],
+ ['landing.nav.skillmap','c','SkillMap','SkillMap','Grafía del producto: «SkillMap» (propuesta de Alejo) frente a «Skill Map» en el resto de la plataforma. Decidir una sola.'],
+ ['landing.nav.pros','c','Profesionales','Professionals'],
+ ['landing.nav.plans','r'],
+ ['landing.header.login','c','Iniciar sesión','Sign in'],
+ ['landing.header.create','n','Crear cuenta','Create account'],
+ ['landing.status.available','n','Disponible','Available'],
+ ['landing.status.soon','n','En preparación','In preparation'],
+ // --- Hero
+ ['landing.portada.hero_pre','c','Reconoce lo que sabes hacer a partir de tu ','Recognise what you can do, starting from your '],
+ ['landing.portada.hero_em','c','experiencia.','experience.'],
+ ['landing.portada.lead','c','Cuenta una situación real de tu trabajo. SkillMap te ayuda a reconocer las capacidades que aparecen en ella y a revisar qué evidencia las respalda. Tú decides qué sugerencias aceptar.','Describe a real situation from your work. SkillMap helps you recognise the capabilities in it and review the evidence behind them. You decide which suggestions to accept.','Que una cuenta real pueda contar una situación y recibir sugerencias hoy (flujo de evidencias). La variante de Alejo «…y qué registrar» solo si el mapa deja registrar el resultado.'],
+ ['landing.portada.cta_try','n','Probar un ejemplo','Try an example'],
+ ['landing.portada.cta_create','n','Crear cuenta','Create account'],
+ ['landing.portada.hero_alt','n','Ilustración de un mapa de relieve con un punto marcado: «Tú estás aquí».','Illustration of a relief map with one marked point: “You are here”.'],
+ ['landing.portada.here','e','Tú estás aquí','You are here'],
+ ['landing.portada.legend','e','Leyenda','Legend'],
+ ['landing.portada.leg1','c','Nivel que registraste, con evidencia','Level you recorded, with evidence'],
+ ['landing.portada.leg2','c','Sugerencia que espera tu respuesta','Suggestion waiting for your answer'],
+ ['landing.portada.leg3','c','Aún sin evidencia','No evidence yet'],
+ ['landing.portada.leg4','e','Cada línea gruesa es un nivel','Each thick line is one level'],
+ // --- Demostración fija
+ ['landing.portada.try_title','c','Mira cómo funciona con un ejemplo','See how it works with an example'],
+ ['landing.portada.try_example','c','Ejemplo fijo · no se guarda','Fixed example · not saved'],
+ ['landing.portada.try_label','c','Escena de ejemplo','Example scene'],
+ ['landing.portada.try_value','c','El pedido iba tarde. Avisé al equipo y reorganizamos la entrega.','The order was running late. I told the team and we rearranged the delivery.','Pasa de cuadro editable a cita de solo lectura: se retiran el estado de la escena, maxLength y try_empty. Así nadie cree que su texto fue analizado.'],
+ ['landing.portada.try_note','c','Es un ejemplo fijo: la sugerencia ya está preparada. Nada de esto se envía ni se guarda.','This is a fixed example: the suggestion is already prepared. None of this is sent or saved.'],
+ ['landing.portada.try_mark','c','Ver la sugerencia','See the suggestion'],
+ ['landing.portada.try_own','c','Crear cuenta para registrar una escena','Create an account to record a scene','Que, tras crear la cuenta, la persona llegue a registrar una escena. Hoy el enlace va a /login?mode=register y no dice qué sigue.'],
+ ['landing.portada.try_empty','r'],
+ ['landing.portada.hint_title','c','Posible sugerencia','Possible suggestion'],
+ ['landing.portada.hint_body','c','Se apoya en la frase «reorganizamos la entrega». Es algo para que revises, no una evaluación.','It rests on the phrase “we rearranged the delivery”. It is something for you to review, not an assessment.'],
+ ['landing.portada.hint_q','n','¿La frase respalda la sugerencia?','Does the phrase support the suggestion?'],
+ ['landing.portada.hint_yes','c','Sí, la respalda','Yes, it supports it'],
+ ['landing.portada.hint_no','c','No estoy de acuerdo','I disagree'],
+ ['landing.portada.hint_ok','c','En tu cuenta, para que suba en el mapa registrarías tu nivel con evidencia. Aquí no se guarda nada. Así se vería un nivel 1:','In your account, to raise it on the map you would record your level with evidence. Nothing is saved here. This is how level 1 would look:','Antes decía «Anotada», que contradice «no se guarda».'],
+ ['landing.portada.hint_no_ok','c','Entendido: la sugerencia se descarta y no se anota nada.','Understood: the suggestion is discarded and nothing is noted.'],
+ ['landing.portada.see_rise','e','Ver cómo sube','See it rise'],
+ ['landing.portada.rise_alt','e','Ejemplo del relieve: un punto en nivel 1 empieza a levantarse.','Sample relief: a point at level 1 begins to rise.'],
+ // --- Cómo funciona
+ ['landing.portada.steps_title','e','Cómo funciona','How it works'],
+ ['landing.portada.steps_heading','n','De una experiencia a una capacidad','From an experience to a capability'],
+ ['landing.portada.st1','c','1 · Describe una situación real','1 · Describe a real situation'],
+ ['landing.portada.st1b','c','Cuenta qué ocurrió y qué hiciste.','Say what happened and what you did.'],
+ ['landing.portada.st2','c','2 · Revisa las sugerencias','2 · Review the suggestions'],
+ ['landing.portada.st2b','c','Mira qué parte de tu relato respalda cada una.','See which part of your account supports each one.'],
+ ['landing.portada.st3','c','3 · Decide qué aceptar','3 · Decide what to accept'],
+ ['landing.portada.st3b','c','Tú eliges qué sugerencias incorporar a tu mapa.','You choose which suggestions go into your map.','Usar el nombre exacto del control que exista en pantalla (aceptar, confirmar, registrar).'],
+ ['landing.portada.steps_note','n','El mapa organiza la evidencia que compartes. No es una certificación profesional ni una medida de tu valor o potencial.','The map organises the evidence you share. It is not a professional certification or a measure of your worth or potential.'],
+ ['landing.portada.photo','r'],
+ // --- Qué puedes hacer en Elevation
+ ['landing.features.label','c','Qué puedes hacer en Elevation','What you can do in Elevation'],
+ ['landing.features.title','c','Acompañamiento personal, a tu ritmo','Personal support, at your pace'],
+ ['landing.features.intro','n','Puedes conversar con el asistente de Elevation, escribir en tu diario y definir tus valores, intereses y límites. Avanzas a tu ritmo y decides qué información compartir.','You can talk with the Elevation assistant, write in your journal and set out your values, interests and limits. You move at your pace and decide what information to share.','«Decides qué información compartir»: confirmar que cada fuente (chat, diario, hoja de vida) pide permiso por separado.'],
+ ['landing.features.conversation.title','c','Conversación','Conversation'],
+ ['landing.features.conversation.body','c','Una pregunta a la vez. Puedes pausar o cerrar cuando quieras.','One question at a time. You can pause or close whenever you like.','Que pausar y cerrar existan en producción.'],
+ ['landing.features.journal.title','c','Diario','Journal'],
+ ['landing.features.journal.body','c','Crea, edita o borra tus entradas. Tú eliges si el asistente puede consultar una.','Create, edit or delete your entries. You choose whether the assistant may read one.','Que borrar entradas y elegir una para la conversación estén disponibles en producción.'],
+ ['landing.features.compass.title','c','Tu brújula','Your compass'],
+ ['landing.features.compass.body','c','Define los valores, intereses y límites que quieres tener presentes.','Set out the values, interests and limits you want to keep in mind.'],
+ ['landing.soon.title','n','En preparación','In preparation'],
+ ['landing.soon.intro','n','Todavía no puedes usar estas funciones.','You cannot use these features yet.'],
+ ['landing.features.exercises.title','c','Ejercicios breves','Short exercises'],
+ ['landing.features.exercises.body','e','Ejercicios cortos de reflexión, valores o reconocimiento de logros, con propósito, duración y opción de omitirlos.','Short exercises on reflection, values or recognising achievements, with purpose, duration and an option to skip.','Estado real de la función. La lista de funciones de producto (instructivo, paso 1) manda.'],
+ ['landing.features.data.title','e','Tus datos','Your data'],
+ ['landing.features.data.body','e','Exporta un resumen profesional o elimina tu cuenta y sus derivados.','Export a professional summary or delete your account and derived data.','En main ya existe la página «Mis datos» (descarga y cierre de cuenta) y el CMS dice «En preparación». Contrastar con producción antes de fijar el estado.'],
+ // --- SkillMap
+ ['landing.skillmap.label','c','SkillMap','SkillMap'],
+ ['landing.skillmap.title','c','Organiza tus experiencias en un mapa de capacidades','Organise your experiences into a map of capabilities'],
+ ['landing.skillmap.intro','n','SkillMap te ayuda a relacionar ejemplos de tu experiencia con capacidades que podrías estar demostrando. Puedes revisar la evidencia asociada y decidir qué aceptar.','SkillMap helps you link examples from your experience to capabilities you may be showing. You can review the related evidence and decide what to accept.'],
+ ['landing.skillmap.p1.title','n','La evidencia importa','Evidence matters'],
+ ['landing.skillmap.p1.body','n','Cada sugerencia indica qué parte de tu experiencia la respalda.','Each suggestion shows which part of your experience supports it.'],
+ ['landing.skillmap.p2.title','n','Lo que no has contado no es una carencia','What you have not told us is not a gap'],
+ ['landing.skillmap.p2.body','n','Si todavía no hay evidencia, el mapa lo muestra como información pendiente, no como falta de capacidad.','If there is no evidence yet, the map shows it as pending information, not as a lack of capability.'],
+ ['landing.skillmap.p3.title','n','Tú decides','You decide'],
+ ['landing.skillmap.p3.body','n','Puedes aceptar o descartar sugerencias. El mapa no certifica tus competencias ni predice si conseguirás empleo.','You can accept or discard suggestions. The map does not certify your skills or predict whether you will find work.'],
+ ['landing.skillmap.routes.title','c','Rutas profesionales','Career routes'],
+ ['landing.skillmap.routes.body','c','Tres rutas posibles para explorar, con fuentes y fechas. Sin porcentajes de empleabilidad ni de reemplazo por IA.','Three possible routes to explore, with sources and dates. No employability or AI-replacement percentages.','Que las rutas sigan «En preparación» (hoy así dice el CMS). Si pasan a Disponible, vuelve el detalle continuidad / adyacente / exploratoria.'],
+ ['landing.skillmap.experiment.title','c','Un experimento corto','A short experiment'],
+ ['landing.skillmap.experiment.body','c','Un experimento de 20 a 45 minutos para probar una ruta antes de invertir en ella.','A 20-to-45-minute experiment to test a route before investing in it.'],
+ ['landing.skillmap.ai.title','c','Tareas y era de la IA','Tasks and the age of AI'],
+ ['landing.skillmap.ai.body','e','Entender cómo cambian las tareas de los roles que exploras y qué capacidades de criterio siguen importando. No predecimos qué profesión desaparecerá.','Understand how the tasks of the roles you explore are changing and which judgement skills still matter. We do not predict which profession will disappear.'],
+ // --- Idiomas
+ ['landing.langs.title','n','Una experiencia en español e inglés','An experience in Spanish and English'],
+ ['landing.langs.body','n','La interfaz está disponible en español e inglés.','The interface is available in Spanish and English.','Si la experiencia completa está en ambos idiomas, se puede decir «Toda la experiencia». La frase sobre diferencias por país solo si existen y se pueden explicar.'],
+ // --- Próximo paso
+ ['landing.next.title','n','Empieza por lo que necesitas','Start with what you need'],
+ ['landing.next.body','n','Crea una cuenta para usar las funciones disponibles y conocer las opciones de acompañamiento.','Create an account to use the available features and learn about the support options.','Que el registro esté abierto. Si el acceso es por invitación, se usa la variante B.'],
+ ['landing.next.login','n','Ya tengo una cuenta: iniciar sesión','I already have an account: sign in'],
+ ['landing.next.pilot.title','n','Elevation está en piloto cerrado','Elevation is in a closed pilot','Variante B, solo si el acceso es por invitación. Decide el PO. El canal para pedir acceso no está definido y no se inventa aquí.'],
+ ['landing.next.pilot.body','n','Por ahora el acceso es por invitación. Si recibiste un enlace de invitación, úsalo para crear tu cuenta.','For now, access is by invitation. If you received an invitation link, use it to create your account.'],
+ // --- Profesionales
+ ['landing.pros.title','c','¿Eres profesional y quieres solicitar acceso?','Are you a professional and want to request access?'],
+ ['landing.pros.intro','c','Completa la solicitud con tus datos profesionales y adjunta tu hoja de vida. El equipo de Elevation revisará la información y se comunicará contigo por correo para explicarte los siguientes pasos.','Fill in the request with your professional details and attach your CV. The Elevation team will review the information and contact you by email to explain the next steps.','Quién ve la hoja de vida, si hay revisión por una junta, qué credenciales se verifican y si hay plazo. No se promete acceso ni fecha.'],
+ ['landing.pros.cta','c','Solicitar acceso profesional','Request professional access'],
+ ['landing.pros.cta_note','c','Enviar la solicitud no crea una cuenta ni da acceso automático.','Sending the request does not create an account or give automatic access.'],
+ // --- Cierre
+ ['landing.footer.notice','c','Elevation ofrece acompañamiento y orientación profesional con inteligencia artificial. No es terapia, no ofrece atención médica y no sustituye la atención psicológica, médica ni de emergencia.','Elevation offers support and career guidance with artificial intelligence. It is not therapy, does not provide medical care and does not replace psychological, medical or emergency care.'],
+ ['landing.footer.privacy','n','Aviso de privacidad','Privacy notice','El enlace del marco «Privacidad» hoy lleva a /#privacidad y el documento está en /privacidad. Decidir un destino; el texto del enlace debe coincidir.'],
+ ['landing.faq.a9','c','Por ahora no hay pago en línea: crear una cuenta no te cobra nada.','There is no online payment for now: creating an account does not charge you anything.','Sustituye la respuesta que remite a «la página de planes». Revisar con negocio si «¿Cuánto cuesta?» sigue en las preguntas.'],
+ // --- Registro y acceso
+ ['access.sign_in','c','Iniciar sesión','Sign in'],
+ ['btn_login','c','Iniciar sesión','Sign in','Hoy: «Entrar a mi espacio» / «Enter my space».'],
+ ['login_subtitle','c','Tu acompañamiento no clínico y tu mapa de capacidades.','Your non-clinical support and your skills map.','Hoy: «Un espacio solo para ti», que se lee como promesa de privacidad total. Reutiliza el texto ya aprobado de access.tagline.'],
+ ['landing.access.register','e','Crear cuenta','Create account'],
+ ['access.no_payment','e','Por ahora no hay pago en línea: crear una cuenta no te cobra nada.','There is no online payment for now: creating an account does not charge you anything.','Alejo propone «Crear una cuenta es gratis». Solo si negocio confirma que crear y mantener la cuenta no cuesta ni pasa sola a un plan de pago. Mientras tanto se queda el texto actual, que ya es exacto.'],
+ ['access.privacy_note','c','Tu profesional no puede leer tus conversaciones con el asistente ni tu diario. Para responderte, el asistente usa inteligencia artificial: lo que escribes se procesa con un proveedor externo. Los detalles están en el','Your professional cannot read your conversations with the assistant or your journal. To reply, the assistant uses artificial intelligence: what you write is processed by an external provider. The details are in the','Proveedor externo, qué datos se envían y quién del equipo de Elevation puede acceder: lo confirma Mauricio (técnica) y debe cuadrar con el aviso (pendientes 3, 4 y 7). Aquí no se afirma nada sobre el equipo.'],
+ ['access.privacy_link','c','aviso de privacidad','privacy notice'],
+ ['landing.access.password_policy','c','Usa al menos 8 caracteres con mayúscula, minúscula, número y un carácter especial. Evita contraseñas comunes.','Use at least 8 characters with an uppercase letter, a lowercase letter, a number and a special character. Avoid common passwords.'],
+ ['landing.access.pw.max_bytes','r'],
+ ['landing.access.pw.missing.max_bytes','c','acortarla (las tildes y los emojis ocupan más espacio)','make it shorter (accents and emojis take up more room)'],
+ ['landing.access.pw.too_long','n','Tu contraseña es demasiado larga. Acórtala: las tildes y los emojis ocupan más espacio que otras letras.','Your password is too long. Shorten it: accented letters and emojis take up more room than other characters.','El límite de 72 bytes (hash) lo confirma Tecnología. Si no es necesario, se retira el límite. No se sustituye «bytes» por «caracteres» porque no son equivalentes.'],
+ ['landing.access.reset.send','c','Enviar enlace para restablecer la contraseña','Send link to reset your password'],
+ // --- Mis datos (dataCopy.ts)
+ ['data.intro','c','Aquí puedes llevarte una copia de tus datos o pedir que cerremos tu cuenta.','Here you can take a copy of your data or ask us to close your account.','Hoy termina en «Solo tú los ves».'],
+ ['resume_wh_2','c','Al proveedor de IA solo llega texto. El PDF original se guarda cifrado y tú puedes verlo, descargarlo o borrarlo.','Only text reaches the AI provider. The original PDF is stored encrypted, and you can view, download or delete it.','Hoy (resumeCopy.ts): «…y solo tú puedes verlo…». Se deja de afirmar exclusividad. Cifrado en reposo y quién del equipo accede: lo confirma Mauricio (técnica).'],
+ ['resume_hist_private','c','Están cifradas. No llegan a ningún profesional sin tu autorización aparte.','They are stored encrypted. They do not reach any professional without your separate permission.','Hoy: «Solo tú puedes verlas…». Que la autorización por profesional sea aparte y revocable lo verifica QA (caso de revocación).'],
+ ['resume_kept_saved','c','Tu hoja de vida quedó guardada y cifrada.','Your résumé was saved and encrypted.','Hoy: «…cifrada, solo para ti» / «…just for you».'],
+ ['journal.private (journalCopy.ts)','c','Privado · Tú decides si el asistente lo usa','Private · You decide whether the assistant uses it','Hoy: «Privado · Solo para ti». Cuadra con «Tú eliges si el asistente puede consultar una entrada». Mismo criterio que en registro.'],
+ ['data.exportBody','c','Un archivo JSON con lo que guardamos de ti. Prepara el archivo y luego descárgalo; queda disponible unos minutos.','A JSON file with what we keep about you. Prepare the file, then download it; it stays available for a few minutes.','Hoy termina en «y solo tú lo ves». Se puede decir «solo tu cuenta puede descargarlo» si Tecnología lo confirma.']
+]
+const KM = Object.fromEntries(K.map(r => [r[0], r]))
+const ST = { n: ['Nuevo', 'cg-chip--wait'], c: ['Cambia', ''], e: ['Igual', ''], r: ['Retirar', 'cg-chip--bad'] }
+
+const RET = [
+ ['Sección de planes y precios', 'LandingPlans.tsx, PlanCards.tsx y las 25 claves landing.pricing.*; landing.nav.plans; landing.faq.plans', 'Muestra «Plan de prueba A/B (sintético)», «Dato de prueba» y «USD · / mes» junto a «Empieza sin costo y cambia de plan cuando lo necesites». Parece una oferta real y la contradice.', 'Triaje de Infra: los planes salen de la base de staging (slug qa-sintetico-a); el texto «cambia de plan» está en shared/landing-content.json.'],
+ ['Nota de la fotografía pendiente', 'landing.portada.photo (ES y EN) y su bloque', 'Es una nota de diseño («Espacio reservado para fotografía real… no se genera con IA»), no contenido para quien usa el servicio.', 'Triaje de Infra: está en shared/landing-content.json en ES y EN.'],
+ ['Rótulo duplicado «Qué ofrece a las personas»', 'landing.features.label y landing.features.title (idénticos)', 'Se lee dos veces seguidas. Pasan a «Qué puedes hacer en Elevation» y «Acompañamiento personal, a tu ritmo».', 'shared/landing-content.json, filas landing.features.label/title.'],
+ ['Estado del proyecto y objetivos internos', 'landing.project.* y LandingProject.tsx', 'Cuenta objetivos internos y dice que no hay cifras de eficacia: no guía ninguna acción de la persona.', 'Alejo, hallazgo 11.'],
+ ['Arquitectura del producto', 'landing.modules.connection, landing.skillmap.connection y landing.pros.bridge.* (el mismo texto, tres veces)', '«Elevation es la experiencia principal y Skill Map su módulo profesional…» describe el diseño interno, no lo que obtiene la persona.', 'Alejo, hallazgo 11; el texto idéntico está en las tres claves.'],
+ ['Numeración de secciones', 'landing.*.number (03, 04, 05, 06, 07, 08, 09, 11, 12, 13, 14)', 'Los números saltan y no sirven a quien navega.', 'shared/landing-content.json.'],
+ ['Tercer estado de disponibilidad', 'landing.pros.1–6.status «Disponibilidad por confirmar», landing.pros.bridge.status «Próximamente», landing.trust.coming «Consulta disponibilidad»', 'La escala es una sola: «Disponible / En preparación». Las seis tarjetas del panel profesional pasan a la solicitud real y salen de la portada.', 'Alejo, hallazgo 9.'],
+ ['Estados repetidos por función', 'landing.features.*.status, landing.skillmap.status, landing.modules.skillmap.status, landing.skillmap.routes.*.status, landing.join.soon', 'Se reemplazan por landing.status.available y landing.status.soon.', 'Un par de claves en vez de una por tarjeta.'],
+ ['Pasos de «Cómo vincularte»', 'landing.join.* (title, people, steps 1–4, soon, create, professionals, professional_body, professional_pending, professional_cta)', 'El paso 4 aparece «En preparación» y «Empieza por la puerta que prefieras» no nombra las opciones. «Una junta valida tus credenciales» no está confirmado. Lo cubren «Próximo paso» y «Profesionales».', 'Alejo, hallazgos 5 y 12.'],
+ ['Detalle técnico del mapa', 'landing.skillmap.capabilities.*, landing.skillmap.evidence.* (5 claves), landing.skillmap.autonomy.* (10 claves)', 'Capacidades «transversales y de dominio», cuatro estados de evidencia y cuatro niveles de autonomía son conceptos del producto que la portada no aterriza. Pasan a ayuda dentro del mapa (decisión de producto).', 'Alejo, hallazgo 10.'],
+ ['Detalle de las tres rutas', 'landing.skillmap.routes.continuity|adjacent|exploratory.* (title, status, pending)', 'Mientras las rutas estén «En preparación» basta una tarjeta. El detalle vuelve cuando sean Disponibles.', 'Alejo, hallazgos 9 y 10.'],
+ ['Cuadro editable de la demostración', 'try_label como campo, try_empty, maxLength y el estado de la escena en TryScene', 'La sugerencia es fija y no analiza lo que se escriba: el cuadro editable hace creer que sí.', 'try_note actual: «no analiza lo que escribas aquí»; Alejo, hallazgo 7.'],
+ ['Texto antiguo de portada y héroe', 'landing.hero.*, landing.doors.*, landing.example.*, landing.problem.*, landing.journey.*', 'Son del diseño anterior (ES-61…74). LandingPage.tsx ya renderiza el héroe de portada y LandingTail. Retirar solo si se confirma que ningún componente los usa.', 'LandingPage.tsx importa Hero (portada) y LandingTail; HeroDoors, ExampleStrip y LandingJourney no aparecen en LandingTail. No verificado en tiempo de ejecución.'],
+ ['Aviso clínico repetido', 'landing.pricing.notice (duplicado de landing.footer.notice)', 'Se conserva una sola vez, en el cierre. Alejo pide no repetirlo donde distrae.', 'Alejo, hallazgo 17.'],
+ ['Línea «Máximo 72 bytes» en la lista de requisitos', 'landing.access.pw.max_bytes', '«Bytes» es un término técnico y la nota queda desconectada de la acción. El límite se avisa solo cuando se supera.', 'Alejo, hallazgo 15.'],
+ ['«Solo tú los ves» y «Un espacio solo para ti»', 'access.privacy_note, login_subtitle, dataCopy.ts (intro y exportBody), resumeCopy.ts (resume_wh_2, resume_hist_private, resume_kept_saved «solo para ti»), journalCopy.ts («Privado · Solo para ti»)', 'Puede entenderse como que ni la IA ni proveedores procesan el contenido. Se dice qué ve cada actor.', 'Triaje de Infra y aviso de privacidad (proveedor de IA).']
+]
+
+const CLAIMS = [
+ ['El profesional no lee el chat ni el diario', 'Registro (nota de privacidad), «¿Mis conversaciones son privadas?», landing.trust.2', 'Que el servidor lo impide en cada acceso. Es regla del producto; falta verificar el cumplimiento real.', 'Mauricio (técnica)'],
+ ['La IA procesa lo que escribes con un proveedor externo', 'Registro (nota de privacidad), «¿Qué hace la IA?»', 'Proveedor, país, qué datos se envían por llamada, conservación y entrenamiento (aviso, pendientes 3 y 4).', 'Mauricio (técnica), abogado'],
+ ['Quién del equipo de Elevation puede acceder y para qué', 'No se afirma en la portada ni en el registro', 'El aviso lo debe decir (§6). Mientras no esté confirmado, los textos nuevos no dicen nada del equipo.', 'Mauricio, Alejo, abogado'],
+ ['Crear una cuenta es gratis', 'Registro (access.no_payment)', 'Que crear y mantener la cuenta no cuesta ni pasa sola a un plan de pago.', 'Alejo (negocio)'],
+ ['Exportar y eliminar los datos', 'landing.features.data, landing.trust.4, «¿Puedo borrar mis datos?»', 'Estado real en producción, plazos y qué pasa con copias de respaldo (aviso §9 y §10).', 'Mauricio (técnica), abogado'],
+ ['Límite de 72 bytes en la contraseña', 'Registro, landing.access.pw.too_long', 'Si el límite es técnico (hash). Si no lo es, se retira.', 'Mauricio (técnica)'],
+ ['Hojas de vida y diario: cifrados y sin acceso de profesionales no autorizados', 'resumeCopy.ts (resume_wh_2, resume_hist_private, resume_kept_saved), journalCopy.ts (chip «Privado»)', 'Cifrado en reposo; que un profesional solo vea una hoja con autorización aparte y revocable; que no se afirme exclusividad frente al equipo de Elevation ni al proveedor de IA (a la IA solo llega texto sin datos de contacto, según resume_wh_1).', 'Mauricio (técnica), QA-5 (caso de revocación), abogado'],
+ ['Pausar, cerrar, borrar entradas y elegir una entrada para la conversación', 'landing.features.conversation y journal', 'Que cada acción exista en producción.', 'Mauricio (técnica)'],
+ ['Contar una situación real y recibir sugerencias; aceptar o registrar', 'Hero, «Cómo funciona», CTA de la demostración', 'Flujo real de una cuenta: nombre exacto del control y qué se guarda.', 'Mauricio (técnica), Alejo'],
+ ['Estado de cada función (Disponible / En preparación)', 'Todas las tarjetas de la portada', 'Lista de funciones de producto con cuatro datos por función (instructivo, paso 1).', 'Alejo (producto)'],
+ ['Interfaz completa en español e inglés', 'Idiomas', 'Que no queden textos sin traducir; si hay diferencias por país, explicarlas.', 'QA, Alejo'],
+ ['Registro abierto o por invitación', 'Próximo paso (variante A o B)', 'Decisión del PO. Define qué bloque se publica.', 'Alejo (PO)'],
+ ['Solicitud profesional: quién ve la hoja de vida, junta, credenciales, plazo y conservación', 'Profesionales y formulario /profesionales', 'Proceso real. Hasta confirmarlo no se promete acceso ni fecha. El consentimiento del formulario debe cuadrar con el aviso (§7).', 'Alejo (negocio), abogado'],
+ ['Mensaje de seguridad y recurso local de crisis', 'Términos («Si estás mal»), landing.trust.5', 'No se redacta aquí. Recurso local: VERIFICAR con producto y responsables de seguridad.', 'Mauricio, Alejo, abogado']
+]
+
+// ===== Lámina ES-360: render =====
+const SCENES = [['landing','Portada completa'],['demo-idle','Demostración · inicial'],['demo-hint','Demostración · sugerencia'],['demo-yes','Demostración · «Sí, la respalda»'],['demo-rise','Demostración · cómo sube'],['demo-no','Demostración · «No estoy de acuerdo»'],['next-b','Próximo paso · variantes A y B'],['register','Registro'],['register-err','Registro · errores'],['register-pw','Registro · contraseña incompleta'],['register-pw-long','Registro · contraseña demasiado larga'],['login','Iniciar sesión'],['forgot','Recuperar contraseña'],['forgot-sent','Recuperar contraseña · enviado'],['retire','Qué se retira'],['claims','Afirmaciones que deben cuadrar'],['keys','Mapa de claves i18n']]
+const Q = new URLSearchParams(location.hash.slice(1))
+let scene = Q.get('scene') || 'landing', lang = Q.get('lang') || 'es', theme = Q.get('theme') || 'system', marks = Q.get('marks') !== '0'
+const x = k => { const r = KM[k]; if (!r || r[1] === 'r') return '??' + k; return lang === 'es' ? r[2] : r[3] }
+const L = (es, en) => lang === 'es' ? es : en
+const lk = (t, cls, a) => '<a class="' + (cls || '') + '" href="#" onclick="return false"' + (a || '') + '>' + t + '</a>'
+const btn = (t, cls, a) => '<button type="button" class="cg-btn ' + (cls || '') + '" ' + (a || '') + '>' + t + '</button>'
+const chip = (t, cls) => '<span class="cg-chip ' + (cls || '') + '">' + t + '</span>'
+const avail = () => chip('✓ ' + x('landing.status.available'), 'cg-chip--ok')
+const soon = () => chip(x('landing.status.soon'))
+const nv = (k, html) => { const r = KM[k]; if (!marks || !r || !r[4]) return html; return '<div class="nvm">' + html + '<p class="nvl" lang="es"><strong>No verificado.</strong> ' + r[4] + '</p></div>' }
+const card = (inner, cls) => '<div class="cg-card pg-card ' + (cls || '') + '">' + inner + '</div>'
+
+function relief(raised) {
+  const rings = [150, 124, 98, 74, 52, 30].map((r, i) => '<ellipse cx="180" cy="130" rx="' + r + '" ry="' + Math.round(r * .68) + '" fill="none" stroke="' + (i % 3 === 0 ? 'var(--cg-ink)' : 'var(--cg-line)') + '" stroke-width="' + (i % 3 === 0 ? 2.6 : 1.2) + '"/>').join('')
+  const dot = raised ? '<circle cx="196" cy="116" r="7" fill="var(--cg-mark)"/><circle cx="196" cy="116" r="13" fill="none" stroke="var(--cg-mark)" stroke-width="2"/>' : '<circle cx="204" cy="122" r="7" fill="var(--cg-mark)"/><circle cx="150" cy="150" r="7" fill="none" stroke="var(--cg-ink)" stroke-width="2" stroke-dasharray="3 3"/><circle cx="238" cy="150" r="5" fill="none" stroke="var(--cg-muted)" stroke-width="1.5" stroke-dasharray="1 3"/>'
+  const lab = raised ? '' : '<text x="212" y="108" font-size="13" font-weight="700" fill="var(--cg-ink)" font-family="system-ui,sans-serif">' + x('landing.portada.here') + '</text>'
+  return '<svg viewBox="0 0 360 260" role="img" aria-label="' + (raised ? x('landing.portada.rise_alt') : x('landing.portada.hero_alt')) + '">' + rings + dot + lab + '</svg>'
+}
+const ico = {
+  l1: '<svg viewBox="0 0 26 20" aria-hidden="true"><circle cx="13" cy="10" r="6" fill="var(--cg-mark)"/></svg>',
+  l2: '<svg viewBox="0 0 26 20" aria-hidden="true"><circle cx="13" cy="10" r="6" fill="none" stroke="var(--cg-ink)" stroke-width="2" stroke-dasharray="3 3"/></svg>',
+  l3: '<svg viewBox="0 0 26 20" aria-hidden="true"><circle cx="13" cy="10" r="5" fill="none" stroke="var(--cg-muted)" stroke-width="1.6" stroke-dasharray="1 3"/></svg>',
+  l4: '<svg viewBox="0 0 26 20" aria-hidden="true"><path d="M2 10h22" stroke="var(--cg-ink)" stroke-width="3"/></svg>'
+}
+
+function frame(inner, withNav) {
+  const nav = withNav ? '<nav class="ld-nav" aria-label="' + L('Navegación principal', 'Main navigation') + '">' + lk(x('landing.nav.how')) + lk(x('landing.nav.skillmap')) + lk(x('landing.nav.pros')) + '</nav>' : ''
+  return '<div class="cg-frame">' + lk(L('Saltar al contenido', 'Skip to content'), 'cg-skip') +
+    '<header class="ld-head">' + lk('Elevation', 'cg-brand', ' aria-label="' + L('Elevation, inicio', 'Elevation, home') + '"') + nav +
+    '<div class="ld-end"><div class="cg-lang" role="group" aria-label="' + L('Idioma', 'Language') + '"><button type="button" class="cg-lang__btn" aria-pressed="' + (lang === 'es') + '">ES</button><button type="button" class="cg-lang__btn" aria-pressed="' + (lang === 'en') + '">EN</button></div>' +
+    lk(x('landing.header.login'), 'cg-btn cg-btn--ghost') + lk(x('landing.header.create'), 'cg-btn') + '</div></header>' +
+    '<main class="ld-main" id="main" tabindex="-1">' + inner + '</main>' +
+    '<footer class="ld-foot">' + lk(x('landing.footer.privacy')) + lk(L('Manifiesto ético', 'Ethics manifesto')) + '<span>© 2026</span></footer></div>'
+}
+
+// ---- Portada
+function hero() {
+  const legend = '<ul class="ld-legend" aria-label="' + x('landing.portada.legend') + '"><li>' + ico.l1 + x('landing.portada.leg1') + '</li><li>' + ico.l2 + x('landing.portada.leg2') + '</li><li>' + ico.l3 + x('landing.portada.leg3') + '</li><li>' + ico.l4 + x('landing.portada.leg4') + '</li></ul>'
+  return '<section class="ld-hero" aria-labelledby="h1"><div><h1 class="ld-h1" id="h1">' + x('landing.portada.hero_pre') + '<em>' + x('landing.portada.hero_em') + '</em></h1>' +
+    nv('landing.portada.lead', '<p class="ld-lead">' + x('landing.portada.lead') + '</p>') +
+    '<div class="pg-actions">' + lk(x('landing.portada.cta_try'), 'cg-btn') + lk(x('landing.portada.cta_create'), 'cg-btn cg-btn--ghost') + '</div></div>' +
+    '<figure class="ld-relief">' + relief(false) + '<figcaption>' + legend + '</figcaption></figure></section>'
+}
+function hintCard(st) {
+  if (st === 'idle') return ''
+  let b = ''
+  if (st === 'hint') b = '<p>' + x('landing.portada.hint_body') + '</p><p><strong>' + x('landing.portada.hint_q') + '</strong></p><div class="pg-actions">' + btn(x('landing.portada.hint_yes'), 'cg-btn--ghost') + btn(x('landing.portada.hint_no'), 'cg-btn--ghost') + '</div>'
+  if (st === 'yes') b = '<p>' + x('landing.portada.hint_ok') + '</p><div class="pg-actions">' + btn(x('landing.portada.see_rise'), 'cg-btn--ghost') + '</div>'
+  if (st === 'rise') b = '<p>' + x('landing.portada.hint_ok') + '</p>' + relief(true)
+  if (st === 'no') b = '<p>' + x('landing.portada.hint_no_ok') + '</p>'
+  return card('<p class="cg-tag">' + x('landing.portada.hint_title') + '</p>' + b)
+}
+function demo(st) {
+  return '<section class="ld-sec" id="demo" aria-labelledby="dm"><h2 class="ld-h2" id="dm">' + x('landing.portada.try_title') + '</h2><div class="ld-demo">' +
+    card('<p class="cg-tag">' + x('landing.portada.try_label') + ' ' + chip(x('landing.portada.try_example')) + '</p><blockquote class="ld-quote">' + x('landing.portada.try_value') + '</blockquote><p class="cg-hint">' + x('landing.portada.try_note') + '</p>' +
+      nv('landing.portada.try_value', '') + '<div class="pg-actions">' + btn(x('landing.portada.try_mark')) + nv('landing.portada.try_own', lk(x('landing.portada.try_own'), 'cg-btn cg-btn--ghost')) + '</div>') +
+    '<div aria-live="polite">' + hintCard(st) + '</div></div></section>'
+}
+function how() {
+  const s = n => '<li>' + nv('landing.portada.st' + n + 'b', '<h3>' + x('landing.portada.st' + n) + '</h3><p>' + x('landing.portada.st' + n + 'b') + '</p>') + '</li>'
+  return '<section class="ld-sec" id="how" aria-labelledby="hw"><p class="cg-tag">' + x('landing.portada.steps_title') + '</p><h2 class="ld-h2" id="hw">' + x('landing.portada.steps_heading') + '</h2><ol class="ld-steps">' + s(1) + s(2) + s(3) + '</ol><p class="cg-hint" style="margin-top:1rem;font-size:.95rem">' + x('landing.portada.steps_note') + '</p></section>'
+}
+function feat(k, status, k2) {
+  return card('<h3>' + x('landing.features.' + k + '.title') + '</h3><p>' + x('landing.features.' + k + '.body') + '</p><p>' + status + '</p>')
+}
+function what() {
+  return '<section class="ld-sec" id="what" aria-labelledby="wt"><p class="cg-tag">' + x('landing.features.label') + '</p><h2 class="ld-h2" id="wt">' + x('landing.features.title') + '</h2>' +
+    nv('landing.features.intro', '<p class="ld-lead">' + x('landing.features.intro') + '</p>') +
+    '<div class="ld-grid3">' + nv('landing.features.conversation.body', feat('conversation', avail())) + nv('landing.features.journal.body', feat('journal', avail())) + feat('compass', avail()) + '</div>' +
+    '<div class="ld-sub"><h3>' + x('landing.soon.title') + '</h3><p class="cg-hint">' + x('landing.soon.intro') + '</p><div class="ld-grid2" style="margin-top:.8rem">' + nv('landing.features.exercises.body', feat('exercises', soon())) + nv('landing.features.data.body', feat('data', soon())) + '</div></div></section>'
+}
+function skillmap() {
+  const p = n => card('<h3>' + x('landing.skillmap.p' + n + '.title') + '</h3><p>' + x('landing.skillmap.p' + n + '.body') + '</p>')
+  const soonc = k => card('<h3>' + x('landing.skillmap.' + k + '.title') + '</h3><p>' + x('landing.skillmap.' + k + '.body') + '</p><p>' + soon() + '</p>')
+  return '<section class="ld-sec" id="skillmap" aria-labelledby="sm"><p class="cg-tag">' + x('landing.skillmap.label') + ' ' + avail() + '</p><h2 class="ld-h2" id="sm">' + x('landing.skillmap.title') + '</h2><p class="ld-lead">' + x('landing.skillmap.intro') + '</p>' +
+    '<div class="ld-grid3">' + p(1) + p(2) + p(3) + '</div>' +
+    '<div class="ld-sub"><h3>' + x('landing.soon.title') + '</h3><p class="cg-hint">' + x('landing.soon.intro') + '</p><div class="ld-grid3" style="margin-top:.8rem">' + nv('landing.skillmap.routes.body', soonc('routes')) + soonc('experiment') + soonc('ai') + '</div></div></section>'
+}
+function langs() {
+  return '<section class="ld-sec" aria-labelledby="lg"><h2 class="ld-h2" id="lg">' + x('landing.langs.title') + '</h2>' + nv('landing.langs.body', '<p class="ld-lead" style="margin:0">' + x('landing.langs.body') + '</p>') + '</section>'
+}
+function nextBlock(v) {
+  if (v === 'b') return nv('landing.next.pilot.title', card('<h2 class="ld-h2">' + x('landing.next.pilot.title') + '</h2><p>' + x('landing.next.pilot.body') + '</p><div class="pg-actions">' + lk(x('landing.next.login'), 'cg-btn cg-btn--ghost') + '</div>'))
+  return nv('landing.next.body', card('<h2 class="ld-h2">' + x('landing.next.title') + '</h2><p>' + x('landing.next.body') + '</p><div class="pg-actions">' + lk(x('landing.header.create'), 'cg-btn') + lk(x('landing.next.login'), 'cg-btn cg-btn--ghost') + '</div>'))
+}
+function pros() {
+  return '<section class="ld-sec" id="pros" aria-labelledby="pr"><h2 class="ld-h2" id="pr">' + x('landing.pros.title') + '</h2>' + nv('landing.pros.intro', '<p class="ld-lead">' + x('landing.pros.intro') + '</p>') +
+    '<div class="pg-actions">' + lk(x('landing.pros.cta'), 'cg-btn cg-btn--ghost') + '</div><p class="cg-hint" style="margin-top:.6rem">' + x('landing.pros.cta_note') + '</p></section>'
+}
+const closing = () => '<section class="ld-sec" aria-label="' + L('Aviso', 'Notice') + '"><p class="ld-notice" style="margin:0">' + x('landing.footer.notice') + '</p></section>'
+function landing() { return hero() + demo('idle') + how() + what() + skillmap() + langs() + '<section class="ld-sec" id="next">' + nextBlock('a') + '</section>' + pros() + closing() }
+
+// ---- Acceso
+const AC = {
+  name: L('Nombre', 'Name'), email: L('Correo electrónico', 'Email address'), pass: L('Contraseña', 'Password'),
+  show: L('Mostrar', 'Show'), errName: L('Escribe tu nombre.', 'Enter your name.'), errEmail: L('Escribe un correo válido, por ejemplo nombre@ejemplo.com.', 'Enter a valid email, for example name@example.com.'),
+  errTerms: L('Para crear tu cuenta necesitas aceptar el aviso de privacidad y los términos.', 'To create your account you need to accept the privacy notice and the terms.'),
+  haveAcc: L('¿Ya tienes cuenta?', 'Already have an account?'), noAcc: L('¿Aún no tienes cuenta?', 'Do not have an account yet?'),
+  forgot: L('¿Olvidaste tu contraseña?', 'Forgot your password?'), reqTitle: L('Tu contraseña debe tener:', 'Your password must have:'),
+  rules: [[L('Al menos 8 caracteres', 'At least 8 characters')], [L('Una mayúscula (A-Z)', 'One uppercase letter (A-Z)')], [L('Una minúscula (a-z)', 'One lowercase letter (a-z)')], [L('Un número (0-9)', 'One number (0-9)')], [L('Un carácter especial (! ? # $ % & * …); el espacio no cuenta', 'One special character (! ? # $ % & * …); a space does not count')]]
+}
+function fld(id, label, type, val, err, extra) {
+  return '<div class="cg-field"><label class="cg-label" for="' + id + '">' + label + '</label><input class="cg-input" id="' + id + '" type="' + type + '" value="' + (val || '') + '"' + (err ? ' aria-invalid="true" aria-describedby="' + id + '-e"' : '') + (extra || '') + '>' + (err ? '<p class="cg-error" id="' + id + '-e" role="alert">' + err + '</p>' : '') + '</div>'
+}
+function pwField(val, ok, tooLong) {
+  const rules = '<ul class="ld-pw" id="pw-req"><li class="vh" style="list-style:none"></li>' + AC.rules.map((r, i) => '<li' + (ok[i] ? ' class="ok"' : '') + '>' + r[0] + ' <span class="vh">(' + (ok[i] ? L('cumplido', 'met') : L('pendiente', 'pending')) + ')</span></li>').join('') + '</ul>'
+  const miss = ok.map((o, i) => o ? null : [L('al menos 8 caracteres', 'at least 8 characters'), L('una mayúscula', 'an uppercase letter'), L('una minúscula', 'a lowercase letter'), L('un número', 'a number'), L('un carácter especial', 'a special character')][i]).filter(Boolean)
+  const msg = tooLong ? x('landing.access.pw.too_long') : (miss.length ? L('Tu contraseña necesita: ', 'Your password needs: ') + miss.join(', ') + '.' : '')
+  return '<div class="cg-field"><label class="cg-label" for="pw">' + AC.pass + '</label><div style="display:flex;gap:.5rem"><input class="cg-input" id="pw" type="password" value="' + val + '" aria-describedby="pw-hint pw-req' + (msg ? ' pw-e' : '') + '"' + (msg ? ' aria-invalid="true"' : '') + ' autocomplete="new-password" style="flex:1;min-width:0">' + btn(AC.show, 'cg-btn--ghost') + '</div>' +
+    '<p class="cg-hint" id="pw-hint">' + x('landing.access.password_policy') + '</p><p class="cg-hint">' + AC.reqTitle + '</p>' + rules + (msg ? '<p class="cg-error" id="pw-e" role="alert">' + msg + '</p>' : '') + '</div>'
+}
+function terms(err) {
+  return '<div class="ld-chk"><input type="checkbox" id="terms"' + (err ? ' aria-invalid="true" aria-describedby="terms-e"' : '') + '><label for="terms">' + L('He leído y acepto el ', 'I have read and accept the ') + lk(L('aviso de privacidad', 'privacy notice')) + L(' y los ', ' and the ') + lk(L('términos de uso', 'terms of use')) + '.</label></div>' + (err ? '<p class="cg-error" id="terms-e" role="alert">' + AC.errTerms + '</p>' : '')
+}
+function authCard(title, intro, inner) { return '<section class="ld-auth cg-card" aria-labelledby="at"><h1 id="at">' + title + '</h1>' + (intro ? '<p class="cg-hint" style="font-size:1rem;margin-bottom:.6rem">' + intro + '</p>' : '') + inner + '</section>' }
+function register(kind) {
+  const err = kind === 'err', pw = kind === 'pw', long = kind === 'long'
+  const name = fld('nm', AC.name, 'text', err ? '' : 'Ana Ejemplo', err ? AC.errName : '', ' autocomplete="name"')
+  const email = fld('em', AC.email, 'email', err ? 'ana@ejemplo' : 'ana@example.test', err ? AC.errEmail : '', ' autocomplete="email"')
+  const pass = long ? pwField('••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••ñññ', [1, 1, 1, 1, 1].map(Boolean), true) : pwField(err ? '' : pw ? 'Abc123' : '', pw ? [0, 1, 1, 1, 0].map(Boolean) : [0, 0, 0, 0, 0].map(Boolean), false)
+  const inner = name + email + (err ? pwField('', [0, 0, 0, 0, 0].map(Boolean), false).replace(/<p class="cg-error" id="pw-e"[^>]*>[^<]*<\/p>/, '') : pass) + terms(err) +
+    nv('access.no_payment', '<p class="cg-hint" style="margin-top:1rem">' + x('access.no_payment') + '</p>') +
+    '<div class="pg-actions">' + btn(x('landing.access.register')) + '</div>' +
+    nv('access.privacy_note', '<p class="cg-hint" style="margin-top:1rem">' + x('access.privacy_note') + ' ' + lk(x('access.privacy_link')) + '.</p>') +
+    '<p style="margin-top:1rem">' + AC.haveAcc + ' <button type="button" class="cg-linkbtn">' + x('access.sign_in') + '</button></p>'
+  return authCard(x('landing.access.register'), '', inner)
+}
+function login() {
+  const inner = fld('em', AC.email, 'email', 'ana@example.test', '', ' autocomplete="email"') + '<div class="cg-field"><label class="cg-label" for="pw">' + AC.pass + '</label><div style="display:flex;gap:.5rem"><input class="cg-input" id="pw" type="password" autocomplete="current-password" style="flex:1;min-width:0">' + btn(AC.show, 'cg-btn--ghost') + '</div></div>' +
+    '<div class="pg-actions">' + btn(x('btn_login')) + '</div><p style="margin-top:1rem">' + lk(AC.forgot) + '</p><p>' + AC.noAcc + ' <button type="button" class="cg-linkbtn">' + x('landing.access.register') + '</button></p>'
+  return authCard(x('access.sign_in'), nv('login_subtitle', x('login_subtitle')), inner)
+}
+function forgot(sent) {
+  const intro = L('Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva.', 'Enter your account email and we will send you a link to choose a new password.')
+  const inner = fld('em', AC.email, 'email', 'ana@example.test', '', ' autocomplete="email"') + (sent ? '<p role="status" class="cg-banner">' + L('Si existe una cuenta con ese correo, te enviaremos un enlace. Caduca en 30 minutos.', 'If an account exists for that email, we will send you a link. It expires in 30 minutes.') + '</p>' : '') +
+    '<div class="pg-actions">' + btn(x('landing.access.reset.send'), '', sent ? 'disabled' : '') + '</div><p style="margin-top:1rem">' + lk(L('Volver a iniciar sesión', 'Back to sign in')) + '</p>'
+  return authCard(L('Recuperar contraseña', 'Reset your password'), intro, inner)
+}
+
+// ---- Documentos de revisión
+function dochead(tag, title, lead) { return '<div class="pg-head" style="max-width:52rem"><p class="cg-tag" lang="es">' + tag + '</p><h1 class="pg-title" lang="es">' + title + '</h1><p class="pg-lead" lang="es">' + lead + '</p></div>' }
+function retire() {
+  return '<div class="dc">' + dochead('ES-360 · Qué se retira', 'Lista de elementos a retirar', 'Todo lo de esta tabla sale de la portada y del acceso para quien usa el servicio. «Evidencia» indica de dónde sale cada dato; lo que no pude comprobar en ejecución está dicho.') +
+    '<table class="kt" lang="es"><caption>' + RET.length + ' elementos</caption><thead><tr><th scope="col">Elemento</th><th scope="col">Dónde</th><th scope="col">Motivo</th><th scope="col">Evidencia</th></tr></thead><tbody>' +
+    RET.map(r => '<tr><th scope="row">' + r[0] + '</th><td data-l="Dónde">' + r[1] + '</td><td data-l="Motivo">' + r[2] + '</td><td data-l="Evidencia">' + r[3] + '</td></tr>').join('') + '</tbody></table></div>'
+}
+function claims() {
+  return '<div class="dc">' + dochead('ES-360 · Cuadre con el aviso y los términos', 'Afirmaciones del producto que deben cuadrar', 'No se reescribe el aviso de privacidad ni los términos: van al abogado. Esta lista dice qué afirmaciones de la portada y del registro dependen de ellos, qué hay que confirmar y quién lo confirma.') +
+    '<table class="kt" lang="es"><caption>' + CLAIMS.length + ' afirmaciones</caption><thead><tr><th scope="col">Afirmación</th><th scope="col">Dónde aparece</th><th scope="col">Qué hay que confirmar</th><th scope="col">Quién</th></tr></thead><tbody>' +
+    CLAIMS.map(r => '<tr><th scope="row">' + r[0] + '</th><td data-l="Dónde">' + r[1] + '</td><td data-l="Confirmar">' + r[2] + '</td><td data-l="Quién">' + r[3] + '</td></tr>').join('') + '</tbody></table></div>'
+}
+function keys() {
+  const rows = K.map(r => {
+    const s = ST[r[1]]
+    return '<tr><th scope="row"><code>' + r[0] + '</code></th><td data-l="Estado">' + chip(s[0], s[1]) + '</td><td data-l="ES" lang="es">' + (r[1] === 'r' ? '—' : r[2]) + '</td><td data-l="EN" lang="en">' + (r[1] === 'r' ? '—' : r[3]) + '</td><td data-l="Verificación" lang="es">' + (r[4] ? '<strong>No verificado.</strong> ' + r[4] : (r[1] === 'e' ? 'Texto vigente' : '—')) + '</td></tr>'
+  }).join('')
+  const cnt = c => K.filter(r => r[1] === c).length
+  return '<div class="dc">' + dochead('ES-360 · Mapa i18n', 'Clave → ES → EN', 'Claves de shared/landing-content.json, del catálogo i18n y de accessCopy.ts / dataCopy.ts. Nuevas: ' + cnt('n') + ' · Cambian: ' + cnt('c') + ' · Iguales (se listan por contexto): ' + cnt('e') + ' · Se retiran: ' + cnt('r') + ' filas (agrupan más claves en la lista «Qué se retira»). El inglés se adapta por sentido, no palabra por palabra.') +
+    '<table class="kt"><caption lang="es">' + K.length + ' filas</caption><thead><tr><th scope="col" lang="es">Clave</th><th scope="col" lang="es">Estado</th><th scope="col">ES</th><th scope="col">EN</th><th scope="col" lang="es">Verificación</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+}
+
+function body() {
+  switch (scene) {
+    case 'landing': return frame(landing(), true)
+    case 'demo-idle': return frame(demo('idle'), true)
+    case 'demo-hint': return frame(demo('hint'), true)
+    case 'demo-yes': return frame(demo('yes'), true)
+    case 'demo-rise': return frame(demo('rise'), true)
+    case 'demo-no': return frame(demo('no'), true)
+    case 'next-b': return frame('<section class="ld-sec"><p class="cg-tag" lang="es">Variante A · registro abierto</p>' + nextBlock('a') + '</section><section class="ld-sec"><p class="cg-tag" lang="es">Variante B · acceso por invitación (decide el PO)</p>' + nextBlock('b') + '</section>', true)
+    case 'register': return frame(register(''), false)
+    case 'register-err': return frame(register('err'), false)
+    case 'register-pw': return frame(register('pw'), false)
+    case 'register-pw-long': return frame(register('long'), false)
+    case 'login': return frame(login(), false)
+    case 'forgot': return frame(forgot(false), false)
+    case 'forgot-sent': return frame(forgot(true), false)
+    case 'retire': return frame(retire(), false)
+    case 'claims': return frame(claims(), false)
+    case 'keys': return frame(keys(), false)
+  }
+  return frame(landing(), true)
+}
+function render() {
+  document.documentElement.lang = lang
+  const root = document.getElementById('root')
+  root.innerHTML = '<div class="cg"' + (theme !== 'system' ? ' data-theme="' + theme + '"' : '') + '>' + body() + '</div>'
+  history.replaceState(null, '', '#scene=' + scene + '&lang=' + lang + '&theme=' + theme + (marks ? '' : '&marks=0'))
+}
+function init() {
+  const sel = document.getElementById('scene'); sel.innerHTML = SCENES.map(s => '<option value="' + s[0] + '">' + s[1] + '</option>').join(''); sel.value = scene
+  document.getElementById('lang').value = lang; document.getElementById('theme').value = theme; document.getElementById('marks').checked = marks
+  sel.onchange = e => { scene = e.target.value; render() }
+  document.getElementById('lang').onchange = e => { lang = e.target.value; render() }
+  document.getElementById('theme').onchange = e => { theme = e.target.value; render() }
+  document.getElementById('marks').onchange = e => { marks = e.target.checked; render() }
+  window.addEventListener('hashchange', () => { const q = new URLSearchParams(location.hash.slice(1)); scene = q.get('scene') || scene; lang = q.get('lang') || lang; theme = q.get('theme') || theme; marks = q.get('marks') !== '0'; sel.value = scene; document.getElementById('lang').value = lang; document.getElementById('theme').value = theme; document.getElementById('marks').checked = marks; render() })
+  render()
+}
+init()
+
+</script>
+</body>
+</html>
