@@ -15,8 +15,6 @@
 @font-face { font-family: 'Barlow Condensed Opt'; font-style: normal; font-weight: 600; font-display: optional; src: url('@fontsource/barlow-condensed/files/barlow-condensed-latin-600-normal.woff2') format('woff2'); }
 @font-face { font-family: 'Barlow Condensed Opt'; font-style: normal; font-weight: 700; font-display: optional; src: url('@fontsource/barlow-condensed/files/barlow-condensed-latin-700-normal.woff2') format('woff2'); }
 .cg.prg { --cg-font-cond: 'Barlow Condensed Opt', 'Barlow Condensed Fallback', 'Arial Narrow', system-ui, sans-serif; --cg-font-sans: 'Barlow Opt', 'Barlow Fallback', system-ui, sans-serif; }
-/* E272-1: con barra de desplazamiento clásica, al llegar los datos aparecía la barra y el texto de la cabecera cambiaba de renglón; el hueco queda reservado. */
-:root:has(.prg) { scrollbar-gutter: stable; }
 .prg { min-width: 0; } /* ES-329: el marco y la altura de pantalla los pone PersonLayout/PersonScreen */
 .prg-main { display: grid; gap: var(--cg-s4); align-content: start; }
 .prg-main:focus-visible, .prg-main h1:focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 4px; }
