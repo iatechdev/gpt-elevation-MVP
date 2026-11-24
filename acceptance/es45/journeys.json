@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "ticket": "ES-45",
+  "synthetic": true,
+  "journeys": [
+    {
+      "id": "SYN-01",
+      "locale": "es",
+      "entry": "exploration",
+      "context": {
+        "es": "Docencia ficticia",
+        "en": "Fictional teaching"
+      },
+      "steps": [
+        {
+          "caseId": "E45-02",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-03",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-05",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-06",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-08",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-09",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-10",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-12",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-13",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-14",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-15",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-17",
+          "variantId": "es-journey"
+        }
+      ],
+      "notes": {
+        "es": "Caso hipotético para cobertura de pruebas. No representa a ninguna persona del piloto ni acredita resultados reales.",
+        "en": "Hypothetical test coverage case. Does not represent a pilot participant or demonstrate real outcomes."
+      }
+    },
+    {
+      "id": "SYN-02",
+      "locale": "es",
+      "entry": "direct",
+      "context": {
+        "es": "Atención al público ficticia",
+        "en": "Fictional customer service"
+      },
+      "steps": [
+        {
+          "caseId": "E45-02",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-03",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-07",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-08",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-09",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-10",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-12",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-13",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-15",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-17",
+          "variantId": "es-journey"
+        }
+      ],
+      "notes": {
+        "es": "Caso hipotético para cobertura de pruebas. No representa a ninguna persona del piloto ni acredita resultados reales.",
+        "en": "Hypothetical test coverage case. Does not represent a pilot participant or demonstrate real outcomes."
+      }
+    },
+    {
+      "id": "SYN-03",
+      "locale": "es",
+      "entry": "direct",
+      "context": {
+        "es": "Logística ficticia",
+        "en": "Fictional logistics"
+      },
+      "steps": [
+        {
+          "caseId": "E45-02",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-03",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-07",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-08",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-09",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-10",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-12",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-13",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-15",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-19",
+          "variantId": "es-before"
+        }
+      ],
+      "notes": {
+        "es": "Caso hipotético para cobertura de pruebas. No representa a ninguna persona del piloto ni acredita resultados reales.",
+        "en": "Hypothetical test coverage case. Does not represent a pilot participant or demonstrate real outcomes."
+      }
+    },
+    {
+      "id": "SYN-04",
+      "locale": "es",
+      "entry": "direct",
+      "context": {
+        "es": "Administración ficticia",
+        "en": "Fictional administration"
+      },
+      "steps": [
+        {
+          "caseId": "E45-02",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-03",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-07",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-08",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-04",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-09",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-10",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-12",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-13",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-20",
+          "variantId": "es-double-send"
+        },
+        {
+          "caseId": "E45-15",
+          "variantId": "es-journey"
+        }
+      ],
+      "notes": {
+        "es": "Caso hipotético para cobertura de pruebas. No representa a ninguna persona del piloto ni acredita resultados reales.",
+        "en": "Hypothetical test coverage case. Does not represent a pilot participant or demonstrate real outcomes."
+      }
+    },
+    {
+      "id": "SYN-05",
+      "locale": "es",
+      "entry": "exploration",
+      "context": {
+        "es": "Comercio ficticio; solo acompañamiento",
+        "en": "Fictional retail; accompaniment only"
+      },
+      "steps": [
+        {
+          "caseId": "E45-02",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-03",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-05",
+          "variantId": "es-journey"
+        },
+        {
+          "caseId": "E45-26",
+          "variantId": "es-journey"
+        }
+      ],
+      "notes": {
+        "es": "Caso hipotético para cobertura de pruebas. No representa a ninguna persona del piloto ni acredita resultados reales.",
+        "en": "Hypothetical test coverage case. Does not represent a pilot participant or demonstrate real outcomes."
+      }
+    },
+    {
+      "id": "SYN-06",
+      "locale": "en",
+      "entry": "direct",
+      "context": {
+        "es": "Formación ficticia",
+        "en": "Fictional training"
+      },
+      "steps": [
+        {
+          "caseId": "E45-02",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-03",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-07",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-08",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-09",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-10",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-12",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-13",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-14",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-15",
+          "variantId": "en-journey"
+        },
+        {
+          "caseId": "E45-17",
+          "variantId": "en-journey"
+        }
+      ],
+      "notes": {
+        "es": "Caso hipotético para cobertura de pruebas. No representa a ninguna persona del piloto ni acredita resultados reales.",
+        "en": "Hypothetical test coverage case. Does not represent a pilot participant or demonstrate real outcomes."
+      }
+    }
+  ]
+}
