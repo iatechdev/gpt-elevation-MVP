@@ -1,0 +1,31 @@
+{
+ "pcLink_directo": [
+  26,
+  26,
+  26,
+  26,
+  26
+ ],
+ "hojasCss_directo": 9,
+ "pcLink_spa": [
+  26,
+  26,
+  26,
+  26,
+  26
+ ],
+ "hojasCss_spa": [
+  6,
+  12
+ ],
+ "portada": [
+  [
+   "608 L140 maxW 608px",
+   "pt-hero__in"
+  ],
+  [
+   "1080 L180 maxW 1280px",
+   "landing-footer-inner"
+  ]
+ ]
+}

@@ -1,0 +1,13 @@
+// Genera la matriz de estructura de página (markdown) desde datos/mediciones-chromium.json
+const d = require('../datos/mediciones-chromium.json').filter(x => !x.error && x.lang === 'es' && x.theme === 'light')
+const css = {
+  'p01-portada': 'Marco público; hero a 1240; resto 1080/1280 (landingScope.css:21,83)', 'p02-login': '.ac-card 30rem (accessCartografia.css:3)', 'p03-olvide': '.ac-card 30rem', 'p04-reset': '.ac-card 30rem', 'p05-invitacion': '.ac-card 30rem',
+  'p06-profesionales': '.pa 46rem (applicationCartografia.css:2)', 'p07-manifiesto': '.manifesto 40,8rem (manifesto.css:4)', 'p08-privacidad': '.lg 40,8rem (legal.css:16)', 'p09-terminos': '.lg 40,8rem', 'p10-design-system': '.cg-page 1240 propio (cartografia.css:173)',
+  'u01-dashboard': 'sin max-width: ocupa todo', 'u02-chat': '.chat-main 760 (space.css:53) + .chat-header-in 680 (space.css:152)', 'u03-diario': '.pg sin tope', 'u04-diario-nuevo': '.pg sin tope', 'u05-onboarding': '.cg-onboarding 40rem centrado (onboardingCartografia.css:12)', 'u06-hojas-vida': '.pg-stack 46rem (pages.css:6)', 'u07-hoja-actualizar': 'redirige a onboarding', 'u08-checkin': '.ck 46rem centrado (checkin.css:2)', 'u09-progreso': '.prg ~46rem + gutter (progress.css:19)', 'u10-evidencias': '.pg-stack 46rem', 'u11-evidencia-nueva': '.pg-stack 46rem', 'u12-mapa': 'sin tope', 'u13-rutas': 'sin tope', 'u14-experimentos': 'sin tope', 'u15-plan-carrera': 'sin tope', 'u16-ejercicios': '.pg-stack 46rem', 'u17-puente': 'sin tope', 'u18-herramientas': 'sin tope', 'u19-mis-datos': '.pg-stack 46rem', 'u20-mi-plan': 'sin tope', 'u21-brujula': '.pg-stack 46rem', 'u22-catalogo-rutas': 'sin tope (.rc 72rem en gestor)', 'u23-revisiones': '.rv-stack 46rem (person-reviews.css:30)', 'u24-feedback': '.prg ~46rem + gutter', 'u25-mi-profesional': '.pg-stack 46rem' }
+const clean = r => r && r.contentL < 0 ? { ...r, contentW: 0, contentL: 0, contentR: 0, contentOffset: 0, _t: 1 } : r
+const g = (s, w) => clean(d.find(x => x.screen === s && x.width === w))
+const f = r => r && r._t ? 'n/d (campo trampa fuera de pantalla)' : r ? `${r.contentW}px (izq ${r.contentL} / der ${r.contentR})` : 'n/d'
+const lines = ['| Pantalla | Ruta | Columna de contenido a 1440 | a 1024 | a 390 | Desfase a 1440 (px) | Ancho de línea (car.) | Origen del ancho |', '|---|---|---|---|---|---|---|---|']
+for (const s of [...new Set(d.map(x => x.screen))]) { const a = g(s, 1440), b = g(s, 1024), c = g(s, 390); if (!a) continue
+  lines.push(`| ${s} | ${a.finalPath} | ${f(a)} | ${f(b)} | ${f(c)} | ${a.contentOffset} | ${a.cplMedian ?? '—'} / ${a.cplMax ?? '—'} | ${css[s] || ''} |`) }
+console.log(lines.join('\n'))
