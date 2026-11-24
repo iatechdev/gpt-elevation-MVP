@@ -7,9 +7,11 @@
   --color-primary: var(--cg-mark); --color-primary-content: var(--cg-ground); --color-neutral: var(--cg-ink); --color-neutral-content: var(--cg-ground); --color-error: var(--cg-err);
   --radius-selector: 0; --radius-field: 0; --radius-box: 0;
   --elv-line: var(--cg-line);
-  color-scheme: inherit; min-height: 100svh; /* ES-402: la pantalla reserva una pantalla de alto: el pie ya está fuera de vista al cargar y no salta cuando llega el formulario (CLS 0,14 → ≤ 0,1 a 320/390 px) */ background: transparent; color: var(--cg-ink); font: 1rem/1.6 var(--cg-font-sans); padding: 1.4rem 0 2rem;
+  color-scheme: inherit; min-height: 0; background: transparent; color: var(--cg-ink); font: 1rem/1.6 var(--cg-font-sans); padding: 1.4rem 0 2rem;
 }
 .participant-context-scope.cg-onboarding { max-width: 40rem; margin-inline: auto; }
+/* ES-402/ES-403: SOLO «Tu punto de partida» (/app/onboarding) reserva una pantalla de alto: el pie ya está fuera de vista al cargar y no salta cuando llega el formulario (CLS 0,14 → ≤ 0,1 a 320/390 px). "Actualizar mi hoja de vida" comparte el tema pero no la reserva (le añadía ~145 px de hueco). */
+.participant-context-scope.cg-onboarding.cg-onboarding--start { min-height: 100svh; }
 .cg-onboarding h1 { font: 700 clamp(2rem, 5vw, 3rem)/1.05 var(--cg-font-cond); letter-spacing: 0.02em; text-transform: uppercase; }
 .cg-onboarding h2, .cg-onboarding h3 { font-family: var(--cg-font-cond); font-weight: 600; letter-spacing: 0.03em; }
 .cg-onboarding :focus-visible { outline: var(--cg-focus) solid var(--cg-mark); outline-offset: 2px; }

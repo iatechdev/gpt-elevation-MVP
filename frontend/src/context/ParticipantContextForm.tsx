@@ -151,7 +151,7 @@ function OnboardingContent() {
     </div>
   )
   // ES-159: el marco de persona pone el encabezado, «saltar al contenido», el idioma y el main; aquí solo va el contenido (con el tema de Cartografía).
-  return <div className="participant-context-scope cg-onboarding">
+  return <div className="participant-context-scope cg-onboarding cg-onboarding--start">
     <div>
       <h1>{t('context_title')}</h1><p>{t('context_intro')}</p>
       {phase === 'loading' ? <p role="status">{t('context_loading')}</p>
