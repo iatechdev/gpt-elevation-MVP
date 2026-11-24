@@ -1,0 +1,19 @@
+// [QA-Claude-3] Latencia de los endpoints de una pantalla: 6 clientes concurrentes (tamaño del piloto) durante SECS segundos contra el backend REAL + PostgreSQL desechable. Solo datos sintéticos, 0 IA.
+// Uso: SET=inicio|profesional|admin-usuarios|admin-catalogo SECS=30 BASE=<db> node qa/lat.cjs   (env como run.sh; no usa navegador)
+const L = require('./lib3.cjs'); const { call, dbq, mk, info, ck, sleep } = L
+const SECS = +(process.env.SECS || 30), CONC = +(process.env.CONC || 6), SET = process.env.SET || 'inicio'
+const q = (a, p) => { const s = [...a].sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(s.length * p))] }
+;(async () => {
+  await L.DB.connect(); let calls, tokens = []
+  if (SET === 'inicio') { for (let i = 0; i < CONC; i++) { const U = await mk('user', 'LAT-' + i); await call('POST', '/api/mood/checkin', U.token, { mood: 3 }); for (let d = 1; d <= 20; d++) await dbq('INSERT INTO "MoodLogs"(checkin_mood,checkout_mood,date,"UserId","createdAt","updatedAt") VALUES(3,4,(current_date - $1::int),$2,now(),now())', [d, U.id]); tokens.push(U.token) } calls = ['/api/user/progress', '/api/user/plan/me', '/api/sessions/user/upcoming', '/api/sessions/user/my-therapist', '/api/recommendations'].map(p => ['GET', p]) }
+  if (SET === 'profesional') { const T = await mk('therapist', 'LATPRO'); for (let i = 0; i < CONC; i++) { const U = await mk('user', 'LAT-' + i); await dbq('UPDATE "Users" SET "therapistId"=$1 WHERE id=$2', [T.id, U.id]); for (let s = 0; s < 12; s++) await dbq('INSERT INTO "TherapySessions"("therapistId","patientId","scheduledAt",duration,status,"patientMoodAfter","createdAt","updatedAt") VALUES($1,$2,now() - ($3 || \' days\')::interval,50,\'completed\',3,now(),now())', [T.id, U.id, String(s + 1)]); tokens.push(U.token) } calls = [['GET', '/api/sessions/user/my-therapist'], ['GET', '/api/consents']] }
+  if (SET === 'admin-usuarios') { for (let i = 0; i < 500; i++) await dbq('INSERT INTO "Users"(name,email,password,role,active,"onboardingCompleted","createdAt","updatedAt") VALUES($1,$2,\'x\',\'user\',true,true,now(),now())', ['Persona sintética ' + i, `lat${i}-${Date.now()}@example.test`]); for (let i = 0; i < CONC; i++) tokens.push((await mk('superadmin', 'LATSU-' + i)).token); calls = [['GET', '/api/admin/usuarios'], ['GET', '/api/admin/matching/pending'], ['GET', '/api/admin/plan-requests/admin?status=pending']] }
+  if (SET === 'admin-metrics') { for (let i = 0; i < CONC; i++) tokens.push((await mk('superadmin', 'LATSM-' + i)).token); calls = [['GET', '/api/admin/metrics'], ['GET', '/api/admin/usuarios/alerts']] }
+  if (SET === 'admin-catalogo') { for (let i = 0; i < CONC; i++) tokens.push((await mk('admin', 'LATAD-' + i)).token); calls = [['GET', '/api/admin/route-catalog']] }
+  const stats = {}; const end = Date.now() + SECS * 1000; let errs = 0
+  await Promise.all(tokens.map(async tk => { while (Date.now() < end) for (const [m, p] of calls) { const t0 = Date.now(); const r = await call(m, p, tk).catch(() => ({ s: 0 })); (stats[p] ??= []).push(Date.now() - t0); if (r.s >= 500 || r.s === 0) errs++ ; await sleep(20) } }))
+  for (const [p, a] of Object.entries(stats)) info(`P-5 ${p}: n=${a.length} p50=${q(a, 0.5)} ms p95=${q(a, 0.95)} ms máx=${Math.max(...a)} ms`)
+  const worst = Math.max(...Object.values(stats).map(a => q(a, 0.95))); ck(`P-5 [${SET}] p95 ≤ 500 ms con ${CONC} clientes concurrentes durante ${SECS} s (peor p95 = ${worst} ms)`, worst <= 500, worst); ck(`P-5 [${SET}] sin respuestas 5xx ni cortes (${errs})`, errs === 0, errs)
+  const pool = await dbq('SELECT count(*)::int n FROM pg_stat_activity WHERE datname=current_database()'); info('P-6 conexiones abiertas a la base tras la carga:', pool[0].n)
+  await L.done(); process.exit(0)
+})().catch(e => { console.log('EXCEPCION', e.stack || e.message); process.exit(1) })

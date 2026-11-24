@@ -1,0 +1,4 @@
+// [QA-Claude-3] Sirve el build con lib3.serve y ejecuta (async, sin bloquear el servidor) el script de comprobación del PR frontend/scripts/<SCRIPT>; imprime su salida. Uso: FRONT=<frontend> SCRIPT=es237-2b-check.cjs PHASE=main node qa/run-dev-check.cjs
+const L = require('./lib3.cjs'); const cp = require('child_process')
+;(async () => { const srv = await L.serve(); const c = cp.spawn('node', ['scripts/' + (process.env.SCRIPT || 'es237-2b-check.cjs')], { cwd: process.env.FRONT, env: { ...process.env, BASE: 'http://localhost:5273', API: process.env.API || 'http://127.0.0.1:8197', AXE_PATH: process.env.AXE } })
+  c.stdout.on('data', d => process.stdout.write(d)); c.stderr.on('data', d => process.stdout.write(d)); c.on('close', code => { console.log('SALIDA', code); srv?.close?.(); process.exit(0) }) })()

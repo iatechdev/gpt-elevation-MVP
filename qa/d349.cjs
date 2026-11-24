@@ -1,0 +1,2 @@
+const L = require('./lib3.cjs')
+;(async () => { await L.launch(); const srv = await L.serve(); const r = await fetch('http://127.0.0.1:8197/__test/persona', { method: 'POST' }).then(x => x.json()); const p = await L.open({ token: r.token, name: 'x', role: 'user' }, { lang: 'es', w: 390, url: '/app/next-step', wait: 3000 }); console.log('TEXTO', (await p.evaluate(() => document.querySelector('main')?.innerText || '')).replace(/\s+/g, ' ').slice(0, 600)); console.log('URL', await p.evaluate(() => location.pathname)); srv.close(); process.exit(0) })()

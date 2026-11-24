@@ -1,0 +1,5 @@
+const L = require('./lib3.cjs'); const { call, mk } = L
+;(async () => { await L.DB.connect(); const SA = await mk('superadmin', 'SA-386'); const d = await call('GET', '/api/admin/skill-catalog', SA.token); const arr = Array.isArray(d.j) ? d.j : (d.j.catalogs || d.j.versions || []); const id = arr.find(c => c.status === 'draft')?.id ?? 1; console.log('lista', d.s, JSON.stringify(d.j).slice(0, 150), 'id', id)
+  const lvl = n => ({ es: 'Nivel ' + n + ' sintético', en: 'Level ' + n + ' synthetic' })
+  for (const [nm, body] of [['solo es', { type: 'domain', labels: { es: 'Análisis sintético' }, rubric: { levels: { 1: lvl(1), 2: { es: 'Solo ES' } } }, territories: [] }], ['sin rubric', { type: 'domain', labels: { es: 'Análisis sintético' }, territories: [] }], ['mínimo', { type: 'domain', labels: { es: 'Análisis sintético', en: 'Synthetic analysis' }, rubric: { levels: { 1: lvl(1) } }, territories: [] }]]) { const b = await call('PUT', `/api/admin/skill-catalog/${id}/skills/analisis_${nm.replace(/ /g, '_')}`, SA.token, body); console.log(nm, b.s, b.tx.slice(0, 200)) }
+  await L.done(); process.exit(0) })()
