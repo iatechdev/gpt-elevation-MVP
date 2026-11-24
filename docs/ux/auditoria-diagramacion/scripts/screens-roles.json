@@ -1,0 +1,17 @@
+[
+{"id":"r01-prof-panel","path":"/therapist/dashboard","role":"profesional","acct":"prof"},
+{"id":"r02-prof-facilitacion","path":"/facilitation","role":"profesional","acct":"prof"},
+{"id":"r03-prof-misdatos","path":"/app/data","role":"profesional","acct":"prof"},
+{"id":"r04-admin-resumen","path":"/admin/dashboard","role":"admin","acct":"admin"},
+{"id":"r05-admin-prompts","path":"/admin/prompts","role":"admin","acct":"admin"},
+{"id":"r06-admin-contenido","path":"/admin/content","role":"admin","acct":"admin"},
+{"id":"r07-admin-usuarios","path":"/admin/users","role":"admin","acct":"admin"},
+{"id":"r08-admin-metricas","path":"/admin/metrics","role":"admin","acct":"admin"},
+{"id":"r09-admin-manifiesto","path":"/admin/manifest","role":"admin","acct":"admin"},
+{"id":"r10-admin-rutas","path":"/admin/route-catalog","role":"admin","acct":"admin"},
+{"id":"r11-admin-habilidades","path":"/admin/skill-catalog","role":"admin","acct":"admin"},
+{"id":"r12-admin-piloto","path":"/admin/pilot-metrics","role":"admin","acct":"admin"},
+{"id":"r13-super-resumen","path":"/admin/dashboard","role":"superadmin","acct":"super"},
+{"id":"r14-board-manifiesto","path":"/manifiesto","role":"junta","acct":"board"},
+{"id":"r15-board-misdatos","path":"/app/data","role":"junta","acct":"board"}
+]
