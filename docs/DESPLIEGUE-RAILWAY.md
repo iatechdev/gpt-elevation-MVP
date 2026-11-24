@@ -40,6 +40,23 @@ No verificado: `DAILY_API_KEY` aparece en el código; si el piloto usa videollam
 
 **Almacenamiento de documentos (ES-268, Supabase Storage).** Sustituye a Google Cloud Storage. Variables (las carga Mauricio en Railway, por entorno; nunca en Git ni en el chat): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_STORAGE_BUCKET` (bucket **privado**, sin políticas para anon/authenticated) y, opcional, `STORAGE_SIGNED_URL_TTL_SECONDS` (900 por defecto, entre 60 y 3600). Los entornos de PR usan un bucket distinto del de producción. Sin esas variables la subida responde 503 `storage_unavailable`. Prueba de humo con datos sintéticos: `node backend/scripts/smoke-storage.cjs` (desde `backend/`, con las variables del entorno; `SMOKE_WAIT_EXPIRY=true` comprueba también la expiración).
 
+## Correo transaccional por SMTP (ES-371)
+El API envía por correo el restablecimiento de contraseña (`routes/passwordReset.js`) y las invitaciones (`routes/invitations.js`); no hay otros correos del sistema. Ambos pasan por `utils/mailer.js`, que elige el proveedor con `MAIL_PROVIDER`. Sin esa variable no se envía nada y se conserva el modo anterior: el enlace lo entrega el operador (el token no se devuelve ni se registra).
+
+Variables (solo en el servicio `backend` de Railway, por entorno; las carga Mauricio, nunca van en Git, en el PR ni en el chat):
+
+| Variable | Para qué sirve | Nota |
+|---|---|---|
+| `MAIL_PROVIDER` | Activa el envío | `smtp` (único soportado hoy) |
+| `MAIL_FROM` | Remitente | `correo@dominio` o `Nombre <correo@dominio>`; debe ser un buzón del dominio autenticado |
+| `SMTP_HOST` | Servidor del buzón | Con `NODE_ENV=production` un host local se rechaza |
+| `SMTP_PORT` | Puerto | 587 con STARTTLS; 465 con `SMTP_SECURE=true` |
+| `SMTP_SECURE` | TLS | `true` = TLS desde el inicio (465); `false` = STARTTLS obligatorio (sin TLS no se envía) |
+| `SMTP_USER` y `SMTP_PASS` | Credenciales | Van juntas o ninguna; `SMTP_PASS` es secreto |
+| `SMTP_TIMEOUT_MS` | Plazo total de un envío | Opcional, 5000 por defecto, acotado entre 500 y 60000 |
+
+DNS del dominio del remitente (lo configura quien administra el dominio, antes del piloto): **SPF** (registro TXT que autoriza al servidor SMTP), **DKIM** (clave que publica el proveedor del buzón) y **DMARC** (registro TXT `_dmarc`, empezando en `p=none` y subiendo a `quarantine` cuando los informes salgan limpios). Sin ellos los mensajes de restablecimiento caen en spam. No verificado: el DNS real del dominio y la entrega a un buzón real (las pruebas usan un servidor SMTP local en memoria).
+
 ## Servicio `worker` (ES-87), un Dockerfile por servicio
 El worker de análisis de IA corre como un servicio aparte de Railway, con el mismo código del repositorio pero **otro arranque** (`node backend/worker.js`, sin puerto ni healthcheck). No puede usar el `Dockerfile` del API, cuyo `CMD` arranca el servidor: en staging, el primer despliegue del worker arrancó el API y falló con `JWT_SECRET must be configured` porque el worker (a propósito) no recibe esa variable. Tampoco se pudo fijar el comando de arranque por la CLI de Railway (`railway environment edit` respondió «No changes to apply») ni por `railway.json`, así que se usa un Dockerfile propio.
 
