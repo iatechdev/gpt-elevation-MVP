@@ -1,0 +1,33 @@
+// QA-Claude-2 — PR #377 (ES-237 paso 3): mutaciones sobre un clon en la cabeza del PR. Capa 1: la suite de CI del frontend (test/*.test.mjs). Capa 2 (solo las que sobreviven): la integración con servidor REAL de Dev (scripts/es237-api-integration.cjs).
+// Uso: CLONE=<clon en la cabeza del PR> node qa/mut377.cjs   (restaura cada archivo)
+const fs = require('fs'); const path = require('path'); const { spawnSync } = require('child_process'); const R = process.env.CLONE; const FR = path.join(R, 'frontend')
+const SC = 'frontend/src/career/serverClient.ts', PG = 'frontend/src/career/CareerPages.tsx', CP = 'frontend/src/career/copy.ts', AD = 'frontend/src/career/adapter.ts', CSS = 'frontend/src/career/career.css'
+const unit = () => { const files = fs.readdirSync(path.join(FR, 'test')).filter((f) => f.endsWith('.test.mjs')).map((f) => 'test/' + f); const r = spawnSync('node', ['--test', ...files], { cwd: FR, encoding: 'utf8', maxBuffer: 1 << 26 }); const m = /ℹ fail ([0-9]+)/.exec(r.stdout); return m ? Number(m[1]) : -1 }
+const integ = () => { const r = spawnSync('node', ['scripts/es237-api-integration.cjs'], { cwd: FR, encoding: 'utf8', maxBuffer: 1 << 26, env: { ...process.env, ES237_BACKEND_DIR: '../backend', NODE_PATH: '../backend/node_modules' } }); const ok = /([0-9]+) comprobaciones OK/.exec(r.stdout); return ok ? 0 : 1 }
+const M = [
+  ['M1 la propuesta no se congela con el intento (cada reintento pide otra)', SC, 'proposed ??= await proposePlan(', 'proposed = await proposePlan('],
+  ['M2 aceptar siempre con expectedVersion 0 (ignora la última versión del plan)', SC, "savePlan(opts(), { requestId, expectedVersion: latest, action: 'accept'", "savePlan(opts(), { requestId, expectedVersion: 0, action: 'accept'"],
+  ['M3 un 422/400 del plan ya no dice «invalidPlan»', SC, "if (kind === 'plan' && (error.kind === 'invalid' || (error.kind === 'rejected' && error.status === 422))) return new FixtureError('invalidPlan')", ''],
+  ['M4 sin disponibilidad confirmada se inventa «60 min · America/Bogota» en modo servidor', PG, "if (c.state.source === 'api') return av && av.weeklyMinutes > 0 && av.timeZone ? `${c.t('availability')}: ${av.weeklyMinutes} ${c.t('minutes').toLowerCase()}${dot}${c.t('zone')}: ${av.timeZone}` : ''", "if (c.state.source === 'api') return `${c.t('availability')}: ${av?.weeklyMinutes ?? 60} ${c.t('minutes').toLowerCase()}${dot}${c.t('zone')}: ${av?.timeZone ?? 'America/Bogota'}`"],
+  ['M5 el formulario de recordatorios y las notificaciones se pintan también con datos reales', PG, "{!real && <><CheckField disabled={blocked} checked={c.state.notifications}", "{true && <><CheckField disabled={blocked} checked={c.state.notifications}"],
+  ['M6 se quita el texto «pendiente» de los recordatorios en modo servidor', PG, "{real && <p role=\"status\">{c.t('pending')}</p>}", ''],
+  ['M7 «Proponer plan» no pide la propuesta al servidor', PG, "if (real && selected) void c.send({ type: 'propose', experimentId: selected.id })", ''],
+  ['M8 el texto de disponibilidad dice «sintética» (no aprobado)', CP, "availability: ['Disponibilidad semanal confirmada', 'Confirmed weekly availability']", "availability: ['Disponibilidad sintética confirmada', 'Synthetic availability confirmed']"],
+  ['M9 el título de recursos cambia (no aprobado)', CP, "resource: ['Recursos del catálogo', 'Catalog resources']", "resource: ['Recursos recomendados', 'Recommended resources']"],
+  ['M10 el texto de la vista preliminar vuelve al anterior', CP, "preview: ['Vista preliminar. Tus restricciones, elecciones, experimentos y plan se guardan en tu cuenta; los recordatorios todavía no.'", "preview: ['Vista preliminar. Tus restricciones, elecciones y experimentos se guardan en tu cuenta; el plan y los recordatorios todavía no.'"],
+  ['M11 no se envían los recursos elegidos (resourceRefs vacío)', SC, "resourceRefs: a.resources ?? []", "resourceRefs: []"],
+  ['M12 completar envía siempre la acción de 7 días', SC, "actionKey: `step_${input.key}`, completionEvidence: input.text", "actionKey: 'step_7', completionEvidence: input.text"],
+  ['M13 pausar envía la acción «complete»', SC, "{ action: 'pause' as const, planId: plan.id }", "{ action: 'complete' as const, planId: plan.id, actionKey: 'step_7', completionEvidence: 'x' }"],
+  ['M14 el límite semanal vuelve a 60 minutos fijos', PG, "validActions(chosen, budget, new Date(), proposalView?.weeklyMinutes || 60)", "validActions(chosen, budget, new Date(), 60)"],
+  ['M15 los recursos se enlazan aunque no sean https', PG, "{r.url.startsWith('https://') && <a className=\"pc-link\" href={r.url} {...external}>{c.t('openSource')}</a>}", "{r.url && <a className=\"pc-link\" href={r.url} {...external}>{c.t('openSource')}</a>}"],
+  ['M16 el presupuesto se envía siempre en USD', SC, "const budget = amount === null ? null : { amount, currency: input.currency }", "const budget = amount === null ? null : { amount, currency: 'USD' }"],
+  ['M17 un resultado incierto del plan se trata como error confirmado (saveError)', SC, "if (isUncertain(error)) return new FixtureError(kind === 'read' ? 'saveError' : 'lostAck')", "if (isUncertain(error)) return new FixtureError('saveError')"],
+  ['M18 los enlaces de recurso pierden su tamaño mínimo (< 24 px)', CSS, '.pc-link { display: inline-flex; align-items: center; min-height: 1.5rem; }', '.pc-link { display: inline; }'],
+  ['M19 el simulador del recordatorio reaparece: «pending» deja de ser el gesto por defecto', SC, "default: throw new FixtureError('pending')", "default: return { kind: 'write', run: async () => undefined }"],
+  ['M20 la disponibilidad del plan aceptado vuelve a ser fija (sin la del servidor)', AD, "return { availability: { weeklyMinutes: p.availability.weeklyMinutes, timeZone: p.availability.timeZone }, id: record.id", "return { id: record.id"],
+]
+{ const base = unit(); console.log('línea base (suite de CI) sin mutar: fallos =', base); if (base !== 0) { console.log('LA LÍNEA BASE NO ESTÁ VERDE: se detiene'); process.exit(2) } }
+let d1 = 0, d2 = 0, surv = 0; for (const [name, file, from, to] of M) { const f = path.join(R, file); const orig = fs.readFileSync(f, 'utf8'); const o = orig.split('\r\n').join('\n'); if (!o.includes(from)) { console.log('NO APLICA  ', name); continue }
+  fs.writeFileSync(f, o.split(from).join(to)); let u, i = null; try { u = unit(); if (u === 0) i = integ() } finally { fs.writeFileSync(f, orig) }
+  if (u !== 0) { d1++; console.log('DETECTADA (CI)        ', name, `(fallos=${u})`) } else if (i !== 0) { d2++; console.log('DETECTADA (integración)', name) } else { surv++; console.log('SOBREVIVE             ', name) } }
+console.log(`${d1} por la suite de CI, ${d2} más por la integración con servidor real, ${surv} sobreviven de ${M.length}`)

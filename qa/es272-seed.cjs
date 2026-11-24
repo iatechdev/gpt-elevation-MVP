@@ -1,0 +1,22 @@
+// QA-Claude-2: siembra para ES-173 (PR #272) con la API REAL (:8090) y datos SINTÉTICOS: personas A (6 días de ánimo con tendencias subir/bajar/igual/nulos, calificaciones, 3 recomendaciones),
+// G (mismos datos pero con recomendaciones HOSTILAS: HTML, categoría hostil y 1 900 caracteres sin espacios), B (otra persona con su propio ánimo), E (sin datos), F (para emparejamiento/opinión),
+// terapeutas T1 (nombre normal) y T2 (nombre HTML hostil). Los registros de ánimo, calificaciones y recomendaciones se insertan por SQL con las columnas reales (no hay ruta que cree fechas pasadas).
+// Env: SEED (salida), DATABASE_URL, DATA_ENCRYPTION_KEY (la misma del servidor) y BACKEND (carpeta del backend).
+const fs = require('fs'), crypto = require('crypto'), { createRequire } = require('module')
+const fromBackend = createRequire(process.env.BACKEND + '/package.json'); const { Client } = fromBackend('pg'); const { encriptarV2 } = fromBackend('./utils/crypto')
+const API = 'http://localhost:8090', PASS = crypto.randomBytes(9).toString('hex') + 'Aa1!', tag = Date.now().toString(36); let n = 0
+const call = async (m, p, t, b) => { const r = await fetch(API + p, { method: m, headers: { 'content-type': 'application/json', ...(t ? { Authorization: 'Bearer ' + t } : {}) }, body: b === undefined ? undefined : JSON.stringify(b) }); const tx = await r.text(); let j = null; try { j = JSON.parse(tx) } catch {} return { s: r.status, j, tx } }
+const DB = new Client({ connectionString: process.env.DATABASE_URL })
+const mk = async (role, name) => { n++; const email = `qa2-p272-${tag}-${n}@example.test`; const r = await call('POST', '/api/register', null, { name: 'x', email, password: PASS }); if (r.s >= 300) throw new Error('registro ' + r.s + r.tx.slice(0, 100)); const id = (await DB.query('SELECT id FROM "Users" WHERE email=$1', [email])).rows[0].id; await DB.query('UPDATE "Users" SET name=$3, "onboardingCompleted"=true, role=$2, active=true WHERE id=$1', [id, role, name]); return { id, name, email, role, pass: PASS, token: (await call('POST', '/api/login', null, { email, password: PASS })).j?.token } }
+const day = k => new Date(Date.now() - k * 86400000).toISOString().split('T')[0]
+const moods = async (U, rows) => { for (const [k, a, b] of rows) await DB.query('INSERT INTO "MoodLogs" ("UserId",date,checkin_mood,checkout_mood,"createdAt","updatedAt") VALUES ($1,$2,$3,$4,now(),now())', [U.id, day(k), a, b]) }
+const rates = async (U, rows) => { for (const [k, r] of rows) await DB.query('INSERT INTO "SessionRatings" ("UserId",date,rating,"createdAt","updatedAt") VALUES ($1,$2,$3,now(),now())', [U.id, day(k), r]) }
+const recs = async (U, rows) => { for (const [cat, content, seen] of rows) await DB.query('INSERT INTO "WellnessRecommendations" ("UserId",content,category,"generatedAt","seenByUser","seenByTherapist","createdAt","updatedAt") VALUES ($1,$2,$3,now(),$4,false,now(),now())', [U.id, encriptarV2(content), cat, seen]) }
+;(async () => {
+  await DB.connect(); const A = await mk('user', 'PERSONA-A-272'), G = await mk('user', 'PERSONA-G-272'), B = await mk('user', 'PERSONA-B-272'), E = await mk('user', 'PERSONA-E-272'), F = await mk('user', 'PERSONA-F-272'), H = await mk('user', 'PERSONA-H-272')
+  const T1 = await mk('therapist', 'Profesional Sintético Uno'), T2 = await mk('therapist', '<img src=x onerror="window.__pwn=7">Hostil'), T3 = await mk('therapist', 'Prof'.padEnd(70, 'z'))
+  const M = [[0, 2, 4], [1, 4, 2], [2, 3, 3], [3, null, 3], [4, 3, null], [5, 5, 5]]; const R = [[0, 5], [1, 4], [2, 3]]
+  await moods(A, M); await rates(A, R); await recs(A, [['mindfulness', 'Respira con calma antes de empezar la jornada.', false], ['habit', 'Anota un avance pequeño cada tarde.', true], ['otra_categoria_rara', 'Texto de una categoría no catalogada.', true]])
+  await moods(G, M); await rates(G, R); await recs(G, [['x<b>hostil</b>', '<img src=x onerror="window.__pwn=1"><script>window.__pwn=2</script> **negrita** &amp; ' + 'w'.repeat(1900), false]])
+  await moods(B, [[0, 1, 1], [1, 1, 1]]); await rates(B, [[0, 1]]); await recs(B, [['habit', 'Recomendación PRIVADA de B: no debe verla A.', false]])
+  fs.writeFileSync(process.env.SEED, JSON.stringify({ A, G, B, E, F, H, T1, T2, T3, days: { a: M.map(r => day(r[0])), ratings: R.map(r => day(r[0])) } })); console.log('semilla 272 OK'); await DB.end() })().catch(e => { console.error('ERROR', e.message); process.exit(1) })
