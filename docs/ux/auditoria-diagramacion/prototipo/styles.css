@@ -141,3 +141,7 @@ table.t{width:100%;border-collapse:collapse}.t th,.t td{border-bottom:1px solid 
 @media (max-width:900px){.hero--home{grid-template-columns:1fr}.hero--home .hero__map{min-height:16rem}.hd .end .btn,.hd .end .ghostbtn{padding:0 var(--s3)}.hd .wrap{gap:var(--s2)}}
 .cta .row a:not(.btn),.band a:not(.btn),.page-head a:not(.btn),.card>a:not(.btn):not(.ghostbtn){display:inline-flex;align-items:center;min-height:var(--cg-touch)}
 @media (max-width:600px){.hd .end>.ghostbtn{display:none}.hd .wrap{gap:var(--s2)}.brand{font-size:1.45rem}}
+
+/* corrección: mapa de la portada completo en tablet/móvil, pasos apilados, cabecera sin duplicar llamadas */
+.step--stack{grid-template-columns:1fr;gap:var(--s2)}
+@media (max-width:900px){.hero__map,.hero--home .hero__map{min-height:0;height:min(72vw,26rem)}.hd .end>.btn{display:none}.hero__map svg{background:var(--cg-panel)}}
