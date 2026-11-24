@@ -23,4 +23,6 @@
 .pt-try-skel { min-height: 60rem; margin-top: 1.4rem; }
 @media (min-width: 900px) { .pt-try-skel { min-height: 40rem; } }
 .pt-hero a.cg-btn { color: var(--cg-ground); }
+.pt-hero a.cg-btn--ghost { color: var(--cg-ink); } /* ES-404: «Crear cuenta» (ghost) salía del color del fondo y no se leía */
+.pt-hero a.cg-btn--ghost:hover { color: var(--cg-mark); }
 .pt-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.8rem; align-items: center; }
