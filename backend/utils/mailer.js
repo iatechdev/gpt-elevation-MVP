@@ -3,7 +3,9 @@
 // el nombre llega en MAIL_PROVIDER y MAIL_FROM es el remitente verificado. Sin proveedor no se envía nada.
 // Nunca se escribe el enlace, el token ni el destinatario en logs.
 
-const providers = {};
+// ES-371: `smtp` (buzón del equipo en staging). Otros proveedores se registran aquí cuando se decidan.
+const { sendSmtp } = require('./mailSmtp');
+const providers = { smtp: sendSmtp };
 
 const MESSAGES = {
   es: {

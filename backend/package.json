@@ -69,6 +69,7 @@
     "test:insights:pg": "node --test test/integration/es-121-postgres.cjs",
     "test:reset-link-truth:pg": "node --test test/integration/es-379-postgres.cjs",
     "test:operator-link:pg": "node --test test/integration/es-376-postgres.cjs",
+    "test:smtp-route:pg": "node --test test/integration/es-371-postgres.cjs",
     "test:passwordreset:pg": "node --test test/integration/es-132-postgres.cjs",
     "test:contact-entries:pg": "node --test test/integration/es-193-postgres.cjs",
     "test:prompt-review:pg": "node --test test/integration/es-191-postgres.cjs",
@@ -146,6 +147,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
+    "nodemailer": "10.6.0",
     "pdfjs-dist": "4.10.38",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
@@ -156,6 +158,7 @@
     "embedded-postgres": "17.10.0-beta.17",
     "eslint": "10.15.0",
     "globals": "17.14.0",
-    "js-yaml": "4.3.2"
+    "js-yaml": "4.3.2",
+    "smtp-server": "3.21.4"
   }
 }
