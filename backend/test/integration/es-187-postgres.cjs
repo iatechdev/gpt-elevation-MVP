@@ -4,7 +4,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { randomBytes } = require('node:crypto');
-const http = require('node:http');
 const { Sequelize } = require('sequelize');
 
 test('ES-187 PostgreSQL: edición concurrente del mismo elemento = una gana y el resto recibe item_changed con la versión vigente', { timeout: 90000 }, async (t) => {

@@ -7,17 +7,18 @@ import fs from 'node:fs'
 const css = fs.readFileSync(new URL('../src/legal/legal.css', import.meta.url), 'utf8')
 const faces = [...css.matchAll(/@font-face \{([^}]+)\}/g)].map(m => m[1])
 
-test('ES-354: Barlow y Barlow Condensed del contenido legal usan font-display: swap con los mismos archivos que cartografia/fonts.css', () => {
+// ES-380: font-display pasa de swap a optional (la fuente que llega tarde ya no reflua el texto legal; ver es-380-legal-optional). Se conserva: los mismos tres archivos que cartografia/fonts.css y el unicode-range latino.
+test('ES-354: Barlow y Barlow Condensed del contenido legal usan font-display: optional (ES-380) con los mismos archivos que cartografia/fonts.css', () => {
   const real = faces.filter(f => /@fontsource/.test(f))
   assert.equal(real.length, 3)
-  for (const face of real) { assert.match(face, /font-display: swap/); assert.match(face, /@fontsource\/barlow(-condensed)?\/files\/barlow(-condensed)?-latin-(400|600|700)-normal\.woff2/); assert.match(face, /unicode-range: U\+0000-00FF/) }
+  for (const face of real) { assert.match(face, /font-display: optional/); assert.match(face, /@fontsource\/barlow(-condensed)?\/files\/barlow(-condensed)?-latin-(400|600|700)-normal\.woff2/); assert.match(face, /unicode-range: U\+0000-00FF/) }
   const fonts = fs.readFileSync(new URL('../src/cartografia/fonts.css', import.meta.url), 'utf8')
   for (const file of css.match(/@fontsource\/[a-z-]+\/files\/[a-z0-9-]+\.woff2/g)) assert.ok(fonts.includes(file), `${file} ya lo usa cartografia/fonts.css (no se descarga un archivo más)`)
-  assert.doesNotMatch(css, /font-display: (optional|auto|block)/)
+  assert.doesNotMatch(css, /font-display: (swap|auto|block)/)
 })
 
 test('ES-354: las reservas locales llevan el size-adjust medido (98 % / 96 % / 80 %) y .lg las usa tras la fuente real', () => {
-  const fallbacks = faces.filter(f => /local\('Arial'\)/.test(f))
+  const fallbacks = faces.filter(f => /local\('Arial'\)/.test(f) && !f.includes('Fallback Wide')) // ES-375: la reserva ancha (96 %, desde 680 px) se prueba en es-375-legal-ancho
   assert.equal(fallbacks.length, 3)
   assert.match(fallbacks[0], /'Barlow Legal Fallback'[^}]*font-weight: 400 500; size-adjust: 98%/)
   assert.match(fallbacks[1], /'Barlow Legal Fallback'[^}]*font-weight: 600 700; size-adjust: 96%/)

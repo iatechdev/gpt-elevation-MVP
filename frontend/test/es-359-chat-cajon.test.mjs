@@ -26,7 +26,7 @@ test('PR4: el chat registra «Conversación» (sin repetir «Mi progreso»), abr
 })
 
 test('PR4: «Cerrar sesión» de los menús del marco abre la despedida (check-out) y el chat cierra con signOut()', () => {
-  assert.match(page, /registerLeaveGuard\(\(\) => \{ if \(!live\.current\.canLeave\(\)\) return true; setShowCheckout\(true\); return true \}, \{ ownLinks: true \}\)/)
+  assert.match(page, /registerLeaveGuard\(\(\) => \{ if \(!live\.current\.canLeave\(\)\) \{ notifyStay\(\); return true \} setShowCheckout\(true\); return true \}, \{ ownLinks: true \}\)/)
   assert.ok(page.includes('await signOut(BACKEND)') && !page.includes("localStorage.removeItem('elevation_token')"))
   assert.match(page, /await handleLogout\(\)/)
 })

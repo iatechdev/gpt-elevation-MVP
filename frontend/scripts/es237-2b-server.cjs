@@ -42,9 +42,9 @@ const { once } = require('node:events')
     if (process.env.NO_CATALOG !== '1') await seedDemo({ env: { ALLOW_SYNTHETIC_CATALOG: 'true', DEMO_USER_PASSWORD: randomBytes(12).toString('hex') } })
     const baseContext = { preferredLanguage: 'es', residenceCountry: 'CO', targetMarket: 'DK', timeZone: 'America/Bogota', profession: 'Docencia sintética', interests: null, availabilityMinutesPerWeek: 90, careerGoal: null, careerConstraints: null, sector: null, totalYearsExperience: null, experience: [], education: [], declaredSkills: [], languages: [] }
     let counter = 0
-    const persona = async () => {
+    const persona = async (noAvailability = false) => { // noAvailability: contexto SIN disponibilidad semanal (ES-398)
       const user = await User.create({ name: 'SYNTHETIC persona', email: `persona${++counter}-${randomBytes(4).toString('hex')}@example.invalid`, password: randomBytes(32).toString('hex'), role: 'user', active: true })
-      const valid = validateContextRequest({ schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: baseContext }); assert.ok(!valid.error, JSON.stringify(valid))
+      const valid = validateContextRequest({ schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: noAvailability ? { ...baseContext, availabilityMinutesPerWeek: null } : baseContext }); assert.ok(!valid.error, JSON.stringify(valid))
       await ParticipantContext.create({ content: encriptarV2(JSON.stringify(valid.context)), completedAt: new Date(), UserId: user.id, version: 1 })
       return { token: issueToken(user), userId: user.id }
     }
@@ -52,7 +52,12 @@ const { once } = require('node:events')
     app.use((req, res, next) => { res.set({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS' }); if (req.method === 'OPTIONS') return res.status(204).end(); next() })
     app.use(express.json())
     app.get('/api/session', verificarToken, (req, res) => res.json({ role: 'user', onboardingCompleted: true }))
-    app.post('/__test/persona', async (req, res) => res.json(await persona()))
+    app.post('/__test/persona', async (req, res) => res.json(await persona(req.query.noavail === '1')))
+    app.post('/__test/disponibilidad', async (req, res) => { // SOLO DE PRUEBA (ES-398): la persona completa su disponibilidad semanal en «Mi contexto»
+      const row = await ParticipantContext.findOne({ where: { UserId: Number(req.query.userId) } }); assert.ok(row)
+      const valid = validateContextRequest({ schemaVersion: 2, expectedVersion: 0, action: 'save_draft', context: baseContext }); assert.ok(!valid.error)
+      await row.update({ content: encriptarV2(JSON.stringify(valid.context)), version: row.version + 1 }); res.json({ ok: true })
+    })
     app.use('/api/experiments', verificarToken, fromBackend('./routes/careerPlan').experiments); app.use('/api/career-plan', verificarToken, fromBackend('./routes/careerPlan').plans)
     app.use('/api/routes', verificarToken, fromBackend('./routes/routes')); app.use('/api/route-catalog', verificarToken, fromBackend('./routes/routeCatalog'))
     server = app.listen(Number(process.env.PORT) || 0, '127.0.0.1'); await once(server, 'listening')

@@ -50,7 +50,6 @@ test('ES-276 PostgreSQL + HTTP: la purga y la exportación cubren TherapistPerso
   } };
   require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
-  const { setConsent } = require('../../utils/consent');
   const { verificarToken, verificarAdmin, verificarSuperAdmin, verificarTerapeuta } = require('../../middlewares/auth');
   const express = require('express');
   const api = express(); api.use(express.json());

@@ -190,7 +190,7 @@ router.post('/prompt/:id/rollback', verificarSuperAdmin, validId, async (req, re
 // ==========================================
 const LOCALES = ['es', 'en', 'any'];
 const ruleId = (req, res, next) => (isRouteId(req.params.id) ? next() : res.status(404).json({ error: 'Regla no encontrada. / Rule not found.' }));
-const validPhrase = (value) => typeof value === 'string' && value.length <= 160 && fold(value).replace(/[*\s|]/g, '').length >= 3;
+const validPhrase = (value) => typeof value === 'string' && value.length <= 160 && fold(value).replace(/[*\s|~]/g, '').length >= 3;
 const ruleSchema = { category: (v) => CATEGORIES.includes(v), locale: (v) => LOCALES.includes(v), phrase: validPhrase };
 const ruleJson = (r) => ({ id: r.id, category: r.category, locale: r.locale, phrase: r.phrase, active: r.active, source: r.source, updatedBy: r.updatedBy, updatedAt: r.updatedAt });
 const uniqueConflict = (error) => error && error.name === 'SequelizeUniqueConstraintError';

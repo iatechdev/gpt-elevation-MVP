@@ -229,5 +229,5 @@ module.exports = {
   PURPOSES, SCOPES, STATUSES, DEFAULT_SCOPE, REQUIRED_VERSION, THERAPIST_SCOPE, therapistScope, REVIEWER_SCOPE, reviewerScope, isValidScope,
   ConsentRequiredError, isPurpose, isEffective,
   hasConsent, isGrantedIn, withConsent, setConsent, grantIn, listConsents, listHistory, requireConsent,
-  revokeForDeletion, revokeTherapistSharing, therapistScope,
+  revokeForDeletion, revokeTherapistSharing,
 };

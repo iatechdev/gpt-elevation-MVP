@@ -234,7 +234,7 @@ test('ES-22 chat: la reserva se ajusta al uso real y se registra la llamada sin 
   assert.ok(Number.isInteger(row.latencyMs) && row.latencyMs >= 0);
   assert.equal(row.costMicros, null); // sin precios verificados no se inventa un costo
   assert.ok(row.reservedTokens > 150);
-  assert.equal(row.errorCode, null ?? row.errorCode);
+  assert.equal(row.errorCode ?? null, null, "una llamada completada no registra código de error");
   assert.doesNotMatch(JSON.stringify(row), /hola|carrera|Respuesta sintética|Synthetic system prompt/);
   // Tiempo de espera y reintentos acotados por llamada.
   assert.deepEqual(provider.calls[0].options, { timeout: 45000, maxRetries: 1 });

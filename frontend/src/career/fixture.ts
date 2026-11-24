@@ -48,7 +48,7 @@ export type Command =
   | { type: 'notifications'; enabled: boolean }
   | { type: 'reminder'; planId: number; key: number; localTime: string; accepted: boolean }
   | { type: 'ack' | 'cancel'; id: number }
-export class FixtureError extends Error { code: 'saveError' | 'lostAck' | 'conflict' | 'pending' | 'validate' | 'invalidPlan' | 'reminderInvalid' | 'expired' | 'routesChanged' | 'catalogUnavailable'; constructor(code: FixtureError['code']) { super(code); this.code = code } }
+export class FixtureError extends Error { code: 'saveError' | 'lostAck' | 'conflict' | 'pending' | 'validate' | 'invalidPlan' | 'reminderInvalid' | 'expired' | 'routesChanged' | 'catalogUnavailable' | 'needsContext'; constructor(code: FixtureError['code']) { super(code); this.code = code } }
 export const isCurrent = (s: State, e: Experiment) => e.basis === s.basis
 // Razones acumuladas desde la base en que se creó la versión; basisLog[n - 1] explica el paso a la base n.
 export const reasonsFor = (s: State, e: Experiment): Reason[] => e.reasons ?? [...new Set(s.basisLog.slice(e.basis).flat())]

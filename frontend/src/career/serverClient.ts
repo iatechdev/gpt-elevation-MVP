@@ -13,11 +13,14 @@ import type { Command, PlanProposalView, State } from './fixture.ts'
 export type CareerClient = { subscribe: (fn: () => void) => () => void; snapshot: () => State; load: () => Promise<void>; send: (input: Command, requestId: string) => Promise<number | undefined> }
 type Operation = () => Promise<number | undefined>
 
+const CONTEXT_CODES = new Set(['availability_unknown', 'timezone_unknown', 'context_incomplete'])
 /** Traduce un fallo del cliente HTTP a un código de pantalla. Lo que no es un CareerApiError (p. ej. una cancelación) se deja pasar. */
 export function toScreenError(error: unknown, kind: 'read' | 'write' | 'choose' | 'plan' = 'write'): unknown {
   if (!(error instanceof CareerApiError)) return error
   if (error.kind === 'expired') return new FixtureError('expired')
   if (isUncertain(error)) return new FixtureError(kind === 'read' ? 'saveError' : 'lostAck')
+  // ES-398: 409 con un código de contexto incompleto = la persona debe completar «Mi contexto»; no es un conflicto de versión ni deja la pantalla bloqueada.
+  if (error.kind === 'conflict' && error.code && CONTEXT_CODES.has(error.code)) return new FixtureError('needsContext')
   // Plan: los errores de negocio con código (needs_cost_confirmation, needs_scope_reduction, budget_exceeded, invalid_dependencies, resource_time_unknown, needs_availability) y las entradas inválidas dicen «revisa fechas, dependencias, esfuerzo y costos».
   if (kind === 'plan' && (error.kind === 'invalid' || (error.kind === 'rejected' && error.status === 422))) return new FixtureError('invalidPlan')
   if (kind === 'choose' && (error.kind === 'conflict' || error.code === 'route_not_proposed')) return new FixtureError('routesChanged')

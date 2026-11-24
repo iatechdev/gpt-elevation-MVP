@@ -1,6 +1,7 @@
 // ES-214 (E208-1): el detector de teléfonos del servidor atrapa las escrituras que QA reportó como falsos negativos y sigue sin tocar años, precios, fechas, «3 meses» ni cantidades.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const { containsPhoneNumber } = require('../utils/promptSafety');
 
 // Casos del informe de QA de ES-208 (E208-1) y variantes de la misma familia.
@@ -42,7 +43,7 @@ test('ES-214: la normalización no rompe con entradas raras y no cuelga con text
   for (const value of ['', null, undefined, 0, 'a'.repeat(100000), '1 '.repeat(5000), '\u0000\ud800', '٠١٢٣٤٥٦٧٨٩'.repeat(50)]) assert.equal(typeof containsPhoneNumber(value), 'boolean');
   const started = Date.now();
   containsPhoneNumber('1 2 3 4 5 6 7 8 9 '.repeat(5000) + 'En Estados Unidos, ' + '9'.repeat(5000));
-  assert.ok(Date.now() - started < 1500, 'tiempo de detección acotado');
+  perfAssert('ES-214 detección en texto largo', Date.now() - started, 1500);
   assert.equal(containsPhoneNumber('٠١٢٣٤٥٦٧٨٩'), true); // 10 dígitos árabe-índicos = teléfono
 });
 

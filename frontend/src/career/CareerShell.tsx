@@ -17,8 +17,8 @@ import { Dialog } from '../cartografia/interactive'
 import './career.css'
 
 const enabled = import.meta.env.VITE_ENABLE_CAREER_PREVIEW === 'true'
-// ES-237 (2b): con VITE_CAREER_SOURCE=api las pantallas leen y escriben contra el servidor; sin ella sigue el simulador (se retira en el paso 4).
-const serverMode = import.meta.env.VITE_CAREER_SOURCE === 'api'
+// ES-237 (paso 4): el modo servidor es el predeterminado; el simulador solo se alcanza con VITE_CAREER_SOURCE=fixture (pruebas de navegador heredadas; se retira en el paso 5).
+const serverMode = import.meta.env.VITE_CAREER_SOURCE !== 'fixture'
 const token = () => { try { return localStorage.getItem('elevation_token') ?? '' } catch { return '' } }
 export function CareerEntry() {
   const { lang } = useLanguage()
@@ -119,7 +119,8 @@ function CareerSession({ session }: { session: string }) {
         {dirtyCount > 1 && <p className="pc-warn" role="status">{t('otherDraft')}</p>}
         <div ref={notice} tabIndex={-1} aria-live="polite" className={error ? 'cg-error' : ''}>
           {(busy || error || message) && <p>{busy ? t(state.loaded ? 'saving' : 'loading') : error ? t(error) : message ? t(message) : null}</p>}
-          {error && error !== 'validate' && <button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void load()}>{uncertain ? t('recover') : t('retry')}</button>}
+          {error === 'needsContext' && <p><Link className="pc-link" to="/app/onboarding">{t('contextLink')}</Link></p>}
+          {error && error !== 'validate' && error !== 'needsContext' && <button type="button" className="cg-btn cg-btn--ghost" disabled={busy} onClick={() => void load()}>{uncertain ? t('recover') : t('retry')}</button>}
         </div>
         {!state.loaded ? <p role="status">{error ? t('empty') : t('loading')}</p> : <CareerContext.Provider value={{ state, client, reload: () => void load(), lang, t, busy, uncertain, dirty: dirty || dirtyCount > 0, setDirty: setDirtyValue, otherDirty, send, navigate }}><div aria-busy={busy}><Outlet /></div></CareerContext.Provider>}
       </>}

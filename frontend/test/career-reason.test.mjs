@@ -34,7 +34,7 @@ test('QA-34: un envío vacío del experimento llega a la aplicación (sin valida
 })
 
 test('QA-34: un error de validación no ofrece «Reintentar lectura» (solo los fallos de lectura o de guardado)', () => {
-  assert.match(read('../src/career/CareerShell.tsx'), /\{error && error !== 'validate' && <button type="button"/)
+  assert.match(read('../src/career/CareerShell.tsx'), /\{error && error !== 'validate' && error !== 'needsContext' && <button type="button"/)
 })
 
 test('QA-34: sin bandera o sin sesión las pestañas del recorrido no se muestran antes del aviso', () => {

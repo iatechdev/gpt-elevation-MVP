@@ -4,6 +4,7 @@
 //   ES179_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54391/postgres node --test test/integration/es-179-postgres.cjs
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert } = require('../perf-gate.cjs'); // ES-383: los techos de tiempo informan; solo fallan con PERF_STRICT=1 (npm run test:perf)
 const crypto = require('node:crypto');
 const { once } = require('node:events');
 const path = require('node:path');
@@ -249,14 +250,14 @@ test('ES-179 PostgreSQL + HTTP: start idempotente, una nota en vivo, cierre ató
       ...Array.from({ length: 12 }, () => http(tA, 'POST', `/api/sessions/therapist/${one}/start`)),
     ]);
     assert.deepEqual([...new Set(starts.map((r) => r.status))], [200], JSON.stringify(starts.map((r) => r.status)));
-    assert.equal(bystander.r.status, 200); assert.ok(bystander.ms < 2500, `la petición ajena esperó ${bystander.ms} ms`);
-    assert.ok(Date.now() - startedAll < 6000, 'los inicios terminan sin esperar al tiempo de espera del pool');
+    assert.equal(bystander.r.status, 200); perfAssert('ES-179 petición ajena durante 12 inicios', bystander.ms, 2500);
+    perfAssert('ES-179 12 inicios de la misma sesión', Date.now() - startedAll, 6000);
     // (b) 12 inicios de 12 sesiones DISTINTAS (cada una crea su sala)
     const many = await Promise.all(Array.from({ length: 12 }, () => mkSession(tA, p1)));
     const t1 = Date.now();
     const all = await Promise.all(many.map((id) => http(tA, 'POST', `/api/sessions/therapist/${id}/start`)));
     assert.deepEqual([...new Set(all.map((r) => r.status))], [200], JSON.stringify(all.map((r) => r.status)));
-    assert.ok(Date.now() - t1 < 6000, `12 inicios tardaron ${Date.now() - t1} ms`);
+    perfAssert('ES-179 12 inicios de sesiones distintas', Date.now() - t1, 6000);
     // (c) 12 cierres de LA MISMA sesión y 12 cierres de sesiones distintas
     const body = { therapistNote: 'Nota de cierre sintética válida.', patientMoodAfter: 4 };
     const closing = await Promise.all(Array.from({ length: 12 }, () => http(tA, 'POST', `/api/sessions/therapist/${one}/end`, body)));
@@ -265,7 +266,7 @@ test('ES-179 PostgreSQL + HTTP: start idempotente, una nota en vivo, cierre ató
     const t2 = Date.now();
     const ends = await Promise.all(open.map((id) => http(tA, 'POST', `/api/sessions/${'therapist'}/${id}/end`, body)));
     assert.deepEqual([...new Set(ends.map((r) => r.status))], [200], JSON.stringify(ends.map((r) => r.status)));
-    assert.ok(Date.now() - t2 < 8000, `12 cierres tardaron ${Date.now() - t2} ms`);
+    perfAssert('ES-179 12 cierres de sesiones distintas', Date.now() - t2, 8000);
   });
 
   await t.test('la persona no puede leer las notas de la sesión (ninguna ruta de persona las devuelve)', async () => {

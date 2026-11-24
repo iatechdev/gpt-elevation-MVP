@@ -97,7 +97,7 @@ test('eliminar (ES-274): los textos dicen que se conserva lo que escribió el pr
 })
 
 test('enlace de restablecimiento: se decide por el code del servidor (superadmin_only / superadmin_target), no por su texto', () => {
-  const ok = fixture('es-186-reset-link.json'); assert.equal(logic.resetLinkResult(ok.status, ok.body).ok, true)
+  const ok = fixture('es-186-reset-link.json'); assert.equal(ok.body.emailSent, false); assert.equal(logic.resetLinkResult(ok.status, ok.body).ok, false, 'sin proveedor el servidor dice emailSent:false (ES-379): no es un éxito') // ES-379: la suite del servidor no tiene proveedor
   const target = fixture('es-186-reset-link-superadmin-403.json')
   assert.equal(target.body.code, 'superadmin_target'); assert.match(logic.resetLinkResult(target.status, target.body).message, /otro superadmin/)
   const only = fixture('es-186-reset-link-superadmin-only.json')

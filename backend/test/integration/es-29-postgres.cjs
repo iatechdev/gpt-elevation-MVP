@@ -3,6 +3,7 @@
 // Uso (en backend/):  ES29_TEST_DATABASE_URL=postgres://elevation:elevation_local@127.0.0.1:54329/postgres npm run test:skillmap:pg
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert } = require('../perf-gate.cjs'); // ES-383: los techos de tiempo informan; solo fallan con PERF_STRICT=1 (npm run test:perf)
 const { randomBytes } = require('node:crypto');
 const { Sequelize } = require('sequelize');
 
@@ -136,16 +137,21 @@ test('ES-29 PostgreSQL: catálogo, índices únicos parciales, concurrencia de e
     const DELAY = 400;
     const refsOf = async (userId) => { const e = await evidence.create(userId, evBody()); return [{ evidenceId: e.id, version: 1 }]; };
     const original = Assessment.create;
-    Assessment.create = async function slow(...args) { await new Promise((resolve) => setTimeout(resolve, DELAY)); return original.apply(this, args); };
+    // ES-383: la serie/paralelo se prueba contando cuántas altas están EN VUELO a la vez (1 = en serie; >1 = en paralelo), no con milisegundos: la carga de la máquina no la altera.
+    let inFlight = 0; let maxInFlight = 0;
+    Assessment.create = async function slow(...args) { inFlight += 1; maxInFlight = Math.max(maxInFlight, inFlight); try { await new Promise((resolve) => setTimeout(resolve, DELAY)); return await original.apply(this, args); } finally { inFlight -= 1; } };
     try {
       const same = await refsOf(7); const t0 = Date.now();
       await Promise.all([1, 2, 3].map((level) => skillMap.selfAssess(7, { skillKey: 'comunicacion', level, evidenceRefs: same, requestId: rid() })));
       const sameMs = Date.now() - t0;
-      assert.ok(sameMs >= DELAY * 2.5, `la misma persona se atiende de una en una: 3 altas tardaron ${sameMs} ms (≥ ${DELAY * 2.5})`);
+      assert.equal(maxInFlight, 1, 'la misma persona se atiende de una en una: nunca hay dos altas en vuelo');
+      assert.ok(sameMs >= DELAY * 2.5, `3 altas en serie tardaron ${sameMs} ms (≥ ${DELAY * 2.5}; una cota inferior no se rompe con la carga)`);
+      maxInFlight = 0;
       const refs = await Promise.all([8, 9, 10, 11].map(refsOf)); const t1 = Date.now();
       await Promise.all([8, 9, 10, 11].map((userId, i) => skillMap.selfAssess(userId, { skillKey: 'comunicacion', level: 2, evidenceRefs: refs[i], requestId: rid() })));
       const diffMs = Date.now() - t1;
-      assert.ok(diffMs < DELAY * 2.5, `personas distintas van en paralelo: 4 altas tardaron ${diffMs} ms (< ${DELAY * 2.5}; en serie serían ≥ ${DELAY * 4})`);
+      assert.ok(maxInFlight >= 2, `personas distintas van en paralelo: hubo hasta ${maxInFlight} altas en vuelo a la vez`);
+      perfAssert('ES-29 4 altas de personas distintas en paralelo', diffMs, DELAY * 2.5); // en serie serían ≥ DELAY × 4
     } finally { Assessment.create = original; }
   });
 

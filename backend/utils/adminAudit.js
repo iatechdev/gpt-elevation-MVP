@@ -1,9 +1,10 @@
 // ES-186 (parte B) · Escritura de la auditoría de administración. Se llama DENTRO de la transacción de la acción (pasar `transaction`).
 // Solo ids y claves de acción: nunca contraseñas, tokens, enlaces ni correos.
 const AdminAuditEntry = require('../AdminAuditEntry');
+const { isValidOperatorId } = require('./operatorId');
 
 const ACTIONS = new Set([
-  'user.update', 'user.delete', 'user.delete_request', 'user.assign_therapist', 'user.set_plan', 'user.unlock', 'user.reset_link',
+  'user.update', 'user.delete', 'user.delete_request', 'user.assign_therapist', 'user.set_plan', 'user.unlock', 'user.reset_link', 'user.operator_link',
   'invitation.create', 'invitation.revoke', 'matching.confirm', 'plan_request.approve', 'plan_request.reject',
 ]);
 const RESULTS = new Set(['ok', 'denied', 'failed']);
@@ -14,10 +15,16 @@ async function recordAdminAction({ actor, action, targetType = null, targetId = 
   if (!ACTIONS.has(action)) throw new Error(`Acción de auditoría desconocida: ${action}`);
   if (!RESULTS.has(result)) throw new Error(`Resultado de auditoría desconocido: ${result}`);
   if (targetType !== null && !TARGET_TYPES.has(targetType)) throw new Error('Tipo de objetivo de auditoría desconocido.');
+  // ES-386/ES-393: la etiqueta de operador solo la escribe el actor «operator» (el script issue-link); ningún otro llamador puede guardar texto en actorLabel. Y debe ser un identificador válido
+  // (rol/guardia con prefijo conocido, forma cerrada, sin forma de clave o token); cualquier otra cosa se descarta, no se guarda.
+  const label = actor?.role === 'operator' && isValidOperatorId(actor.label) ? actor.label : null;
+  // Solo se incluye la columna cuando HAY etiqueta: con una cuenta de la aplicación (el caso de siempre) la escritura no toca `actorLabel`, así que un servidor nuevo sigue auditando aunque la migración
+  // aún no se haya aplicado (migrate-deploy corre antes del arranque, pero esto evita una ventana de fallos). `returning` pide solo las columnas que existen desde antes.
   return AdminAuditEntry.create({
     actorId: Number.isInteger(actor?.id) ? actor.id : null, actorRole: typeof actor?.role === 'string' ? actor.role.slice(0, 16) : null,
+    ...(label ? { actorLabel: label } : {}),
     action, targetType, targetId: Number.isInteger(targetId) ? targetId : null, result,
-  }, { transaction });
+  }, { transaction, ...(label ? {} : { fields: ['actorId', 'actorRole', 'action', 'targetType', 'targetId', 'result'], returning: ['id', 'actorId', 'actorRole', 'action', 'targetType', 'targetId', 'result', 'createdAt'] }) });
 }
 
 // Una acción NEGADA no cambia nada que revertir: se registra aparte y sin bloquear la respuesta (un fallo de auditoría aquí no convierte el 403 en 500).

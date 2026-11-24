@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
+    "lint": "eslint .",
     "test": "node --require ./test/quiet-console.cjs --test test/*.test.cjs",
     "test:context:postgres": "node scripts/test-context-postgres.cjs",
     "db:local": "node scripts/db-local.cjs",
@@ -26,6 +27,7 @@
     "test:superadmin-access:pg": "node --test test/integration/es-334-postgres.cjs",
     "test:bridge-source-consent:pg": "node --test test/integration/es-233-postgres.cjs",
     "test:landing-concurrency:pg": "node --test test/integration/es-279-postgres.cjs",
+    "test:landing-seed-refresh:pg": "node --test test/integration/es-378-postgres.cjs",
     "test:purge-hardening:pg": "node --test test/integration/es-283-postgres.cjs",
     "test:transversal:pg": "node --test test/integration/es-282-postgres.cjs",
     "test:pricing-validation:pg": "node --test test/integration/es-278-postgres.cjs",
@@ -65,6 +67,8 @@
     "test:evidence:pg": "node --test test/integration/es-27-postgres.cjs",
     "test:integration:pg": "node --test test/integration/es-integration-consent-hooks.cjs",
     "test:insights:pg": "node --test test/integration/es-121-postgres.cjs",
+    "test:reset-link-truth:pg": "node --test test/integration/es-379-postgres.cjs",
+    "test:operator-link:pg": "node --test test/integration/es-376-postgres.cjs",
     "test:passwordreset:pg": "node --test test/integration/es-132-postgres.cjs",
     "test:contact-entries:pg": "node --test test/integration/es-193-postgres.cjs",
     "test:prompt-review:pg": "node --test test/integration/es-191-postgres.cjs",
@@ -78,6 +82,7 @@
     "check:prompt-duplicates": "node scripts/checkPromptDuplicates.cjs",
     "test:experiment-read:pg": "node --test test/integration/es-216-postgres.cjs",
     "test:admin-rank:pg": "node --test test/integration/es-215-postgres.cjs",
+    "test:perf": "node scripts/test-perf.cjs",
     "test:session-version:pg": "node --test test/integration/es-366-postgres.cjs",
     "test:admin-unlock:pg": "node --test test/integration/es-217-postgres.cjs",
     "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",
@@ -121,7 +126,8 @@
     "check:workflows": "node scripts/check-workflows.cjs",
     "db:adopt": "node scripts/adopt-existing-schema.cjs",
     "db:migrate:deploy": "node scripts/migrate-deploy.cjs",
-    "test:migrate-deploy:pg": "node --test test/integration/es-115-postgres.cjs"
+    "test:migrate-deploy:pg": "node --test test/integration/es-115-postgres.cjs",
+    "test:crisis-consumers:pg": "node --test test/integration/es-389-postgres.cjs"
   },
   "keywords": [],
   "author": "",
@@ -149,6 +155,8 @@
   },
   "devDependencies": {
     "embedded-postgres": "17.10.0-beta.17",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
     "js-yaml": "4.3.2",
     "smtp-server": "3.21.4"
   }

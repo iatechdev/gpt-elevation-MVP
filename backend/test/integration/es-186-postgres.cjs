@@ -24,7 +24,6 @@ function contractFixture(name, status, body) {
   assert.equal(saved.status, status, name);
   assert.ok(sameShape(shapeOf(saved.body), shapeOf(body)), `la respuesta cambió de forma respecto de ${name}; regenera con ES186_WRITE_FIXTURE=1 y revisa la pantalla`);
 }
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('ES-186 PostgreSQL + HTTP: invitaciones y enlace de restablecimiento con la forma real de la respuesta', { timeout: 240000 }, async (t) => {
   assert.ok(process.env.ES186_TEST_DATABASE_URL, 'Se requiere ES186_TEST_DATABASE_URL (clúster desechable en loopback)');
@@ -128,7 +127,7 @@ test('ES-186 PostgreSQL + HTTP: invitaciones y enlace de restablecimiento con la
 
   await t.test('enlace de restablecimiento: superadmin = 202 sin enlace; admin = 403; cuenta inexistente = 404 — forma real guardada', async () => {
     const ok = await http(sup, 'POST', `/api/admin/usuarios/${victim.id}/reset-link`, { locale: 'es' });
-    assert.equal(ok.status, 202); assert.equal(Object.keys(ok.body).join(), 'message');
+    assert.equal(ok.status, 202); assert.deepEqual(Object.keys(ok.body).sort(), ['emailSent', 'message', 'reason']); assert.equal(ok.body.emailSent, false); assert.equal(ok.body.reason, 'unavailable'); assert.match(ok.body.message, /^No se pudo enviar el correo .* \/ The email could not be sent /); // ES-379: sin proveedor en esta suite; la forma con envío, límite y cuenta no apta la fija es-379-postgres
     assert.doesNotMatch(JSON.stringify(ok.body), /token|#/i, 'la respuesta no lleva el enlace');
     contractFixture('es-186-reset-link.json', ok.status, ok.body);
     assert.equal((await http(adm, 'POST', `/api/admin/usuarios/${victim.id}/reset-link`, {})).status, 403);

@@ -14,7 +14,7 @@ function nominal() {
   return { corpus, rubric, report, review };
 }
 test('ES-44 corpus has exactly 30 unique cases, 24 ES/6 EN, >=10 nontechnical and >=5 adversarial', () => {
-  const result = validateCorpus(source); assert.equal(result.valid, true); assert.deepEqual(result.counts, { total: 30, es: 24, en: 6, nonTechnical: 21, adversarial: 8 });
+  const result = validateCorpus(source); assert.equal(result.valid, true); assert.deepEqual(result.counts, { total: 30, es: 24, en: 6, nonTechnical: 21, adversarial: 10 });
   assert.equal(validateRubric(sourceRubric), true); assert.equal(sourceRubric.status, 'draft'); assert.equal(sourceRubric.approvedBy, null);
 });
 test('ES-44 schema rejects unknown fields, types, duplicate refs, IDs and insufficient coverage', () => {

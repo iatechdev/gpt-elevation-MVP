@@ -57,6 +57,7 @@ test('ES-192 PostgreSQL: invitación por enlace y contraseña con las reglas del
   });
 
   await require('../../migrations/20261112010000-es186-admin-audit.cjs').up(sequelize); // ES-186 B: auditoría de administración y Invitations.requestId (las rutas los usan)
+  await require('../../migrations/20261123010000-es386-audit-actor-label.cjs').up(sequelize); // ES-386: el modelo de auditoría ya lleva actorLabel
   const mailer = require('../../utils/mailer');
   const sent = [];
   mailer.providers.test = async (message) => { sent.push(message); };

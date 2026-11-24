@@ -33,7 +33,7 @@ async function createAdapter() {
     const { verificarToken } = require('../../middlewares/auth');
     app.use('/api/evidence', verificarToken, require('../../routes/evidence'));
     app.use('/api/skill-map', verificarToken, require('../../routes/skillMap'));
-    for (const name of ['User', 'Consent', 'ConsentEvent', 'DiaryEntry', 'CareerContextVersion', 'BridgeTransfer']) require('../../' + name);
+    for (const name of ['User', 'Consent', 'ConsentEvent', 'DiaryEntry', 'CareerContextVersion', 'BridgeTransfer', 'AiJob']) require('../../' + name);
     await sequelize.sync();
     const User = require('../../User'); const Turn = require('../../ChatTurn'); const Diary = require('../../DiaryEntry');
     const Evidence = require('../../Evidence'); const Versions = require('../../EvidenceVersion'); const Assessment = require('../../SkillAssessment');
@@ -62,7 +62,7 @@ async function createAdapter() {
         const userId = 1000 + Number(c.caseId.slice(-3)); const foreignId = 2000 + Number(c.caseId.slice(-3));
         for (const id of [userId, foreignId]) await User.create({ id, role: 'user', name: 'Synthetic ES44 actor', email: `es44-${id}@example.invalid`, password: 'synthetic-no-login' });
         const token = sessions.issueToken({ id: userId, role: 'user' }); const foreignToken = sessions.issueToken({ id: foreignId, role: 'user' });
-        await consent.setConsent(userId, 'professional_bridge', 'granted'); await consent.setConsent(foreignId, 'professional_bridge', 'granted');
+        for (const id of [userId, foreignId]) for (const purpose of ['professional_bridge', 'insights_chat', 'insights_diary']) await consent.setConsent(id, purpose, 'granted'); // ES-395: la evidencia/habilidad con origen del chat exige insights_chat ademas del puente
         const sources = new Map();
         for (const s of c.input.sources) {
           const owner = s.owner === 'self' ? userId : foreignId;
@@ -108,7 +108,7 @@ async function createAdapter() {
                 assert.equal((await send('GET', '/api/evidence/' + evidenceId, other)).status, 404);
                 assert.equal((await send('DELETE', '/api/evidence/' + evidenceId, other)).status, 404);
               }
-              assert.equal((await send('GET', '/api/evidence/' + evidenceId, '')).status, 403); assert.equal(calls.length, before);
+              assert.equal((await send('GET', '/api/evidence/' + evidenceId, '')).status, 401); assert.equal(calls.length, before);
               await sessions.revokeToken(require('jsonwebtoken').decode(foreignToken)); assert.equal((await send('GET', '/api/evidence', foreignToken)).status, 401);
             } else if (id === 'safety_source_excluded') {
               const risk = sources.get('risk-turn'); const before = calls.length; const result = await send('POST', '/api/evidence/proposals', token, { turnIds: [risk.id], locale: c.locale }); assert.equal(result.status, 422); assert.equal(result.body.code, 'no_usable_source'); assert.equal(calls.length, before);

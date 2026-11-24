@@ -8,6 +8,9 @@ export const copy = {
   saveError: ['No se confirmó el guardado. Tu borrador sigue aquí.', 'The save was not confirmed. Your draft remains here.'],
   lostAck: ['No pudimos comprobar si se guardó. Recupera el estado antes de repetir.', 'We could not verify whether it was saved. Retrieve the state before retrying.'],
   conflict: ['La versión o el fundamento cambió. Recupera y revisa el estado.', 'The version or basis changed. Retrieve and review the state.'],
+  // ES-398: el servidor pide completar el contexto (disponibilidad semanal, zona horaria); no es un conflicto de versión.
+  needsContext: ['Falta información de tu contexto, por ejemplo tu disponibilidad semanal o tu zona horaria. Complétala en Mi contexto y vuelve a intentarlo.', 'Some of your context is missing, such as your weekly availability or time zone. Complete it in My context and try again.'],
+  contextLink: ['Mi contexto', 'My context'],
   pending: ['El contrato del servicio está pendiente. No hay un resultado confirmado.', 'The service contract is pending. There is no confirmed result.'],
   saved: ['Guardado solo en esta simulación', 'Saved only in this simulation'], saving: ['Guardando…', 'Saving…'],
   unsaved: ['Cambios sin guardar', 'Unsaved changes'], leave: ['Salir sin guardar', 'Leave without saving'], keep: ['Seguir editando', 'Keep editing'],

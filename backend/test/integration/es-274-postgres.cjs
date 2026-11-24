@@ -50,7 +50,6 @@ test('ES-274 PostgreSQL + HTTP: la purga conserva solo lo que escribió el profe
   } };
   require('../../associations')();
   const { issueToken } = require('../../utils/sessions');
-  const { setConsent } = require('../../utils/consent');
   const { verificarToken, verificarAdmin, verificarSuperAdmin, verificarTerapeuta } = require('../../middlewares/auth');
   const express = require('express');
   const api = express(); api.use(express.json());
@@ -92,7 +91,6 @@ test('ES-274 PostgreSQL + HTTP: la purga conserva solo lo que escribió el profe
   const rights = require('../../utils/dataRights');
   const { requestDeletion } = rights;
   const { processDeletion } = require('../../utils/deletionProcessor');
-  const User = require('../../User');
   const ClinicalNote = require('../../ClinicalNote'); const TherapySession = require('../../TherapySession'); const SessionNote = require('../../SessionNote');
   const MatchingRequest = require('../../MatchingRequest'); const MoodLog = require('../../MoodLog');
 

@@ -46,26 +46,33 @@ const REASONS = {
 };
 
 // Minúsculas, sin tildes, sin apóstrofos y con espacios simples: la comparación no depende de cómo se escriba.
-// Los puntos, dos puntos, signos y saltos de línea se vuelven `|` (corte de oración, usado por la negación).
+// Los puntos, dos puntos y signos se vuelven `|` (corte de oración, usado por la negación; ninguna frase lo cruza).
+// ES-382: un salto de línea se vuelve `~`: para las FRASES es un espacio (toRegExp deja pasar un `~` entre palabras; antes `|` partía «Ignora\nlas instrucciones» y evadía la revisión) y para la NEGACIÓN sigue siendo corte de oración.
 const fold = (text) => normalizeText(text).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-  .replace(/['’`]/g, '').replace(/[.;:!?\n]+/g, ' | ').replace(/[^a-z0-9%*|\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  .replace(/['’`]/g, '').replace(/[.;:!?]+/g, ' | ').replace(/[^a-z0-9%*|\s]/g, ' ').replace(/\s+/g, (run) => (run.includes('\n') ? ' ~ ' : ' ')).trim();
+
+// ES-384: plegado «flojo». normalizeText QUITA los controles (VT, FF, NEL, FS–US...) y los invisibles (ZWSP...): «ignore[VT]previous» queda «ignorepreviousinstructions» y la frase no coincide; «*», «%» y «|» escritos entre palabras la rompen igual.
+// En este plegado los controles e invisibles son un ESPACIO y «*», «%», «|» del texto son un salto suave («~»: no corta la frase, sí la negación). El plegado normal se conserva (detecta invisibles DENTRO de una palabra: «Ign[ZWSP]ora»); se marca si cualquiera coincide.
+const LOOSE_CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g;
+const LOOSE_INVISIBLE = /[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/g;
+const foldLoose = (text) => fold(String(text).replace(LOOSE_CONTROL, ' ').replace(LOOSE_INVISIBLE, ' ').replace(/(?<=\S)\*+|\*+(?=\S)/g, ' ').replace(/[*|]|(?<![0-9])%/g, '\n')); // QA-448-1: «*» pegado a una palabra («**prescribe**», «ignore*previous») es un ESPACIO (énfasis markdown: no corta la negación); «*» suelto, «|» y «%» son salto suave. «%» pegado a un número («100% éxito») es parte de la frase y se conserva
 
 // Frase de la regla -> expresión. `*` solo vale al FINAL de una palabra (prefijo: «diagnos*»); en cualquier otro sitio se ignora.
 // Así cada comodín va seguido de un espacio o del final y la coincidencia no retrocede: sin riesgo de ReDoS aunque la frase
 // la escriba una persona administradora (probado con `*a*a*a…b` y `(a+)+$` en test/es-191-review.test.cjs).
 const toRegExp = (phrase) => {
   const folded = fold(phrase);
-  if (!folded.replace(/[*\s|]/g, '')) return null;
-  const words = folded.split(' ').filter((w) => w.replace(/\*/g, '')).map((w) => {
+  if (!folded.replace(/[*\s|~]/g, '')) return null;
+  const words = folded.split(' ').filter((w) => w !== '~' && w.replace(/\*/g, '')).map((w) => {
     const stem = w.replace(/\*/g, '').replace(/[.\\+?^${}()|[\]]/g, '\\$&');
     return w.endsWith('*') ? `${stem}[a-z0-9]*` : stem;
   });
-  return new RegExp(`(?:^|[^a-z0-9])(${words.join(' ')})(?![a-z0-9])`, 'g');
+  return new RegExp(`(?:^|[^a-z0-9])(${words.join(' (?:~ )?')})(?![a-z0-9])`, 'g');
 };
 
 const negated = (text, index) => {
   // La negación solo cuenta dentro de la misma oración: `|` marca el corte.
-  const before = text.slice(0, index).split('|').pop().split(' ').filter(Boolean).slice(-NEGATION_WINDOW);
+  const before = text.slice(0, index).split(/[|~]/).pop().split(' ').filter(Boolean).slice(-NEGATION_WINDOW);
   return before.some((word) => NEGATORS.has(word));
 };
 
@@ -99,20 +106,27 @@ function reviewPrompt(content, rules) {
   const raw = normalizeText(content);
   if (raw.length < MIN_CHARS) return { outcome: 'rejected', reasons: [{ code: 'too_short' }] };
   if (raw.length > maxChars()) return { outcome: 'rejected', reasons: [{ code: 'too_long' }] };
-  const text = fold(raw);
+  const texts = [fold(raw), foldLoose(content)];
   const seen = new Set();
   for (const rule of rules) {
     if (!CATEGORIES.includes(rule.category)) continue;
     const re = toRegExp(rule.phrase);
     if (!re) continue;
-    for (const m of text.matchAll(re)) {
-      const start = m.index + m[0].indexOf(m[1]);
-      if (NEGATABLE.has(rule.category) && negated(text, start)) continue;
-      if (seen.has(`${rule.category}:${rule.id}`)) break;
-      seen.add(`${rule.category}:${rule.id}`);
-      reasons.push({ code: rule.category, category: rule.category, ruleId: rule.id, phrase: String(rule.phrase).slice(0, 160) });
-      break;
-    }
+    const scan = (text) => {
+      let total = 0; let open = 0;
+      for (const m of text.matchAll(re)) {
+        total += 1;
+        const start = m.index + m[0].indexOf(m[1]);
+        if (!(NEGATABLE.has(rule.category) && negated(text, start))) open += 1;
+      }
+      return { total, open };
+    };
+    // El plegado flojo es la lectura fiel (palabras separadas): manda la negación que ve. El normal solo aporta lo que el flojo no ve (invisibles DENTRO de una palabra: más coincidencias que el flojo).
+    const [strict, loose] = texts.map(scan);
+    const hit = loose.open > 0 || (strict.open > 0 && strict.total > loose.total);
+    if (!hit || seen.has(`${rule.category}:${rule.id}`)) continue;
+    seen.add(`${rule.category}:${rule.id}`);
+    reasons.push({ code: rule.category, category: rule.category, ruleId: rule.id, phrase: String(rule.phrase).slice(0, 160) });
   }
   if (redactSecrets(raw) !== raw) reasons.push({ code: 'secret' });
   if (hasPersonalData(raw)) reasons.push({ code: 'personal_data' });

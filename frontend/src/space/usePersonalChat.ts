@@ -17,6 +17,7 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
   const [picker, setPicker] = useState(new URLSearchParams(window.location.search).get('journal') === 'choose')
   const [pickerLoading, setPickerLoading] = useState(false); const [pickerError, setPickerError] = useState(false)
   const [intent, setIntent] = useState<Intent | null>(() => (token ? loadPending(token) : null)); const [retryable, setRetryable] = useState(false)
+  const [sentBase, setSentBase] = useState<number | null>(null) // ES-396: cuántos mensajes tenía el hilo al enviar (null si el envío pendiente se restauró tras recargar)
   const lock = useRef(false); const alive = useRef(true)
   // ES-162: petición de envío en curso (para «Dejar de esperar»), demora, y el texto de la respuesta nueva que anuncia el lector de pantalla (solo tras un envío).
   const [waiting, setWaiting] = useState(false); const [slow, setSlow] = useState(false)
@@ -65,15 +66,17 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     const timer = window.setTimeout(() => setSlow(true), SLOW_AFTER_MS)
     return () => window.clearTimeout(timer)
   }, [waiting])
+  // ES-396: el historial nuevo y el fin del envío pendiente se aplican en el MISMO bloque síncrono (un solo render): la burbuja provisional del mensaje propio se cambia por la del servidor sin duplicarse.
   const confirm = async (sent?: Intent) => {
-    const rows = await reload()
+    const rows = await history(token)
     if (!current()) return
+    setMessages(rows); setLoaded(true)
     // ES-162: la respuesta nueva se anuncia solo cuando llega tras un envío (nunca al cargar el historial ni al cambiar de idioma).
     const last = rows[rows.length - 1]
     if (sent && last?.role === 'bot') { setAnnouncement(last.text); setAnnounceKey(k => k + 1) }
     // ES-142: «Continuar» envía un texto fijo; si en la caja hay otro borrador, se conserva con su selección de diario.
-    if (sent && input.trim() !== sent.message) { setIntent(null); setRetryable(false); setNotice({ k: 'confirmed' }); return }
-    setIntent(null); setInput(''); setSelected([]); setPicker(false); setEntries([]); setRetryable(false); setNotice({ k: 'confirmed' })
+    if (sent && input.trim() !== sent.message) { setIntent(null); setSentBase(null); setRetryable(false); setNotice({ k: 'confirmed' }); return }
+    setIntent(null); setSentBase(null); setInput(''); setSelected([]); setPicker(false); setEntries([]); setRetryable(false); setNotice({ k: 'confirmed' })
   }
   const post = async (body: Intent) => {
     const controller = new AbortController(); abortRef.current = controller; stoppedRef.current = false; setWaiting(true); setSlow(false)
@@ -101,7 +104,7 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
       if (!current()) return
       if (latest.some((e, index) => e.updatedAt !== selected[index].updatedAt)) { setSelected([]); setNotice({ k: 'contextChanged' }); return }
       const body = makeIntent(input, lang, selected.map(e => e.id), undefined, mode)
-      setIntent(body); setRetryable(false)
+      setIntent(body); setSentBase(messages.length); setRetryable(false)
       await post(body)
     } catch (error) { if (current()) { setSelected([]); fail(error, { k: 'contextChanged' }) } }
     finally { if (current()) setBusy(false); lock.current = false }
@@ -113,7 +116,7 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     lock.current = true; setBusy(true); setNotice(null)
     try {
       const body = makeIntent(c.continueMessage, lang, [], undefined, mode)
-      setIntent(body); setRetryable(false)
+      setIntent(body); setSentBase(messages.length); setRetryable(false)
       await post(body)
     } catch (error) { if (current()) fail(error, { k: 'sendError' }) }
     finally { if (current()) setBusy(false); lock.current = false }
@@ -138,6 +141,6 @@ export function usePersonalChat(lang: 'es' | 'en', enabled = true, mode?: 'compa
     try { await post(intent) } finally { if (current()) setBusy(false); lock.current = false }
   }
   const canLeave = () => expired || (!input && !intent) || window.confirm(c.leave)
-  return { waiting, slow, stop, announcement, announceKey, messages, input, setInput, busy, expired, loaded, notice: noticeText(notice, lang), alert: isAlert(notice), selected, setSelected, entries, picker, setPicker, pickerLoading, pickerError, intent, retryable, send, continueReply, check, retry, loadPicker, reload, canLeave, c }
+  return { sentBase, waiting, slow, stop, announcement, announceKey, messages, input, setInput, busy, expired, loaded, notice: noticeText(notice, lang), alert: isAlert(notice), selected, setSelected, entries, picker, setPicker, pickerLoading, pickerError, intent, retryable, send, continueReply, check, retry, loadPicker, reload, canLeave, c }
 }
 export type PersonalChat = ReturnType<typeof usePersonalChat>

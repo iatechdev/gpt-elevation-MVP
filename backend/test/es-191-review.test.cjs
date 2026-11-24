@@ -1,6 +1,7 @@
 // ES-191: la revisión automática de las guías de la IA (algoritmo puro). Sin base de datos ni proveedor: las reglas se pasan como datos.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { perfAssert } = require('./perf-gate.cjs'); // ES-383: el techo de tiempo informa; solo falla con PERF_STRICT=1 (npm run test:perf)
 const { INITIAL_RULES } = require('../migrations/20261107000000-es191-prompt-review.cjs');
 const { reviewPrompt, describeReasons, loadActiveRules, PromptReviewError, REASONS, maxChars } = require('../utils/promptReview');
 
@@ -59,7 +60,7 @@ test('ES-191: vacío, corto, no texto y enorme (100 000 y 5 millones de caracter
   assert.deepEqual(codes('x'.repeat(100000)), ['too_long']);
   const started = Date.now();
   assert.deepEqual(codes('a '.repeat(2500000)), ['too_long']);
-  assert.ok(Date.now() - started < 1000, 'el rechazo por tamaño no recorre el texto');
+  perfAssert('ES-191 rechazo por tamaño (no recorre el texto)', Date.now() - started, 1000);
   const weird = BASE + '\u0000‮😀￿'.repeat(50) + ' ñandú — «comillas» 日本語 العربية';
   assert.doesNotThrow(() => reviewPrompt(weird, RULES));
   assert.equal(reviewPrompt('a'.repeat(maxChars()) , RULES).outcome, 'passed'); // el límite exacto es válido
@@ -70,7 +71,7 @@ test('ES-191: una frase administrable con comodines no se puede usar para colgar
   const text = BASE + 'a'.repeat(19000);
   const started = Date.now();
   assert.doesNotThrow(() => reviewPrompt(text, evil));
-  assert.ok(Date.now() - started < 3000, 'la revisión termina en tiempo acotado');
+  perfAssert('ES-191 frase con comodines (sin ReDoS)', Date.now() - started, 3000);
 });
 
 test('ES-191: los motivos salen legibles en ES y EN y sin texto de la persona', () => {

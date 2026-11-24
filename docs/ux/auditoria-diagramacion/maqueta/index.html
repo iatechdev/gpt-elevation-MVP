@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maqueta · Sistema de diagramación único (propuesta ES-405)</title>
+<style>
+/* Maqueta estática de la PROPUESTA (no es código de producto). Tokens existentes de Cartografía (--cg-*) + los nuevos marcados «nuevo». */
+:root{--cg-ground:#e7ece8;--cg-panel:#f2f5f2;--cg-ink:#14201c;--cg-muted:#475550;--cg-line:#b9c3bd;--cg-mark:#1d4f91;--cg-err:#a8321d;--cg-good:#1f5f46;--cg-contour:#8f5a33;
+--cg-touch:2.875rem;
+/* nuevos (propuesta) */
+--cg-wrap:1240px;--cg-gutter:clamp(1rem,2.5vw,2rem);--cg-side:14.5rem;--cg-gap:1.5rem;
+--cg-w-read:44rem;--cg-w-form:40rem;--cg-w-card:30rem;--cg-w-room:48rem;
+--cg-s1:.25rem;--cg-s2:.5rem;--cg-s3:.75rem;--cg-s4:1rem;--cg-s6:1.5rem;--cg-s8:2rem;--cg-s12:3rem;--cg-s16:4rem}
+:root[data-theme=dark]{--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-contour:#c9976a;--cg-good:#7dd3a8;--cg-err:#ff8a70}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--cg-ground:#0e1613;--cg-panel:#15201c;--cg-ink:#e9efeb;--cg-muted:#9daaa4;--cg-line:#2a3832;--cg-mark:#7fb0e8;--cg-contour:#c9976a;--cg-good:#7dd3a8;--cg-err:#ff8a70}}
+*{box-sizing:border-box}
+body{margin:0;overflow-wrap:break-word;background:var(--cg-ground);color:var(--cg-ink);font:400 1.0625rem/1.55 system-ui,'Barlow',sans-serif}
+.wrap{width:min(100% - 2*var(--cg-gutter),var(--cg-wrap));margin-inline:auto}
+h1,h2,h3{font-family:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;text-transform:uppercase;line-height:1.05;margin:0 0 .5rem}
+h1{font-size:clamp(2rem,4.6vw,2.8rem)}h2{font-size:1.5rem;margin-top:var(--cg-s12)}h3{font-size:1.15rem}
+p{margin:.4rem 0;max-width:44rem}.muted{color:var(--cg-muted)}
+.bar{display:flex;flex-wrap:wrap;gap:var(--cg-s2) var(--cg-s4);align-items:center;padding:var(--cg-s3) 0;border-bottom:1px solid var(--cg-line)}
+.bar button,.bar a{min-height:var(--cg-touch);min-width:var(--cg-touch);padding:0 var(--cg-s4);border:1.5px solid var(--cg-ink);background:var(--cg-panel);color:var(--cg-ink);font:600 .95rem 'Barlow Condensed',system-ui;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.bar [aria-pressed=true]{background:var(--cg-ink);color:var(--cg-ground)}
+:focus-visible{outline:3px solid var(--cg-mark);outline-offset:3px}
+.skip{position:absolute;left:1rem;top:-10rem;background:var(--cg-panel);border:2px solid var(--cg-ink);padding:.7rem 1rem}.skip:focus{top:1rem}
+/* esquema de página */
+.frame{border:2px solid var(--cg-ink);background:var(--cg-ground);padding:0 var(--cg-gutter) var(--cg-s4);margin:var(--cg-s4) 0;position:relative}
+.frame .hd{display:flex;justify-content:space-between;align-items:center;min-height:56px;border-bottom:1px solid var(--cg-line);font:700 1.3rem 'Barlow Condensed',system-ui;text-transform:uppercase}
+.frame .hd span:last-child{border:1.5px solid var(--cg-ink);padding:.4rem .8rem;font-size:.9rem}
+.frame .body{display:grid;grid-template-columns:var(--cg-side) minmax(0,1fr);gap:var(--cg-gap);margin-top:var(--cg-s4)}
+.frame .side{border-top:2px solid var(--cg-ink)}.frame .side i{display:block;height:46px;border-bottom:1px solid var(--cg-line);font:600 .95rem/46px 'Barlow Condensed',system-ui;font-style:normal;text-transform:uppercase;padding-left:.8rem}
+.frame .main{min-height:260px;position:relative}
+.col{background:var(--cg-panel);border:1.5px dashed var(--cg-mark);padding:var(--cg-s3);font-size:.9rem}
+.col.read{max-width:var(--cg-w-read)}.col.form{max-width:var(--cg-w-form)}.col.room{max-width:var(--cg-w-room)}
+.col.panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--cg-s4);background:none;border:0;padding:0}.col.panel b{display:block;background:var(--cg-panel);border:1.5px dashed var(--cg-mark);padding:var(--cg-s4);font-weight:400}
+.guide{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--cg-err);pointer-events:none}.guide span{position:absolute;top:2px;left:4px;font-size:.7rem;color:var(--cg-err);white-space:nowrap;background:var(--cg-ground)}
+.cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--cg-s6)}
+.cmp .now .hd,.cmp .now .body{max-width:none}
+.now .hd{margin-inline:calc(var(--cg-gutter) * -1 + 4%);padding-inline:0}
+.tag{display:inline-block;font:600 .8rem 'Barlow Condensed',system-ui;letter-spacing:.1em;text-transform:uppercase;color:var(--cg-muted)}
+table{border-collapse:collapse;width:100%;font-size:.95rem;table-layout:fixed}th,td{border:1px solid var(--cg-line);padding:.5rem .6rem;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:var(--cg-panel)}
+code{font-family:Consolas,monospace;font-size:.88em}
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:var(--cg-s4)}
+.card{background:var(--cg-panel);border:1.5px solid var(--cg-ink);padding:var(--cg-s4)}
+.sk i{display:block;height:.9rem;background:var(--cg-line);margin:.5rem 0;opacity:.6}.sk i:nth-child(2){width:80%}.sk i:nth-child(3){width:55%}
+.err{border-color:var(--cg-err)}.err h3{color:var(--cg-err)}.ok{border-color:var(--cg-good)}
+.lyr{display:grid;gap:2px}.lyr div{padding:.4rem .7rem;background:var(--cg-panel);border-left:6px solid var(--cg-mark)}
+.w390{width:min(100%,390px);border:2px solid var(--cg-ink);padding:0 16px 16px;background:var(--cg-ground)}
+.w390 .hd{display:flex;justify-content:space-between;align-items:center;min-height:56px;border-bottom:1px solid var(--cg-line);font:700 1.3rem 'Barlow Condensed',system-ui;text-transform:uppercase}
+.w390 .hd b{border:1.5px solid var(--cg-ink);padding:.5rem .8rem;font-size:.9rem;min-height:var(--cg-touch)}
+@media (max-width:900px){.now .body,.now .hd{margin-inline:0!important;padding-inline:0!important}.cmp{grid-template-columns:1fr}.frame .body{grid-template-columns:1fr}.frame .side{display:none}}
+@media (prefers-reduced-motion:no-preference){.sk i{animation:p 1.4s ease-in-out infinite}@keyframes p{50%{opacity:.25}}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-es="Saltar al contenido" data-en="Skip to content">Saltar al contenido</a>
+<header class="wrap">
+ <div class="bar" role="toolbar" aria-label="Maqueta">
+  <strong>ES-405 · <span data-es="Maqueta de la propuesta" data-en="Proposal mockup">Maqueta de la propuesta</span></strong>
+  <span role="group" aria-label="Idioma / Language"><button aria-pressed="true" data-lang="es">ES</button><button aria-pressed="false" data-lang="en">EN</button></span>
+  <span role="group" aria-label="Tema / Theme"><button aria-pressed="false" data-theme-btn="auto" data-es="Auto" data-en="Auto">Auto</button><button aria-pressed="false" data-theme-btn="light" data-es="Claro" data-en="Light">Claro</button><button aria-pressed="false" data-theme-btn="dark" data-es="Oscuro" data-en="Dark">Oscuro</button></span>
+ </div>
+</header>
+<main id="main" class="wrap" tabindex="-1">
+<p class="tag" data-es="Propuesta para la puerta de diseño · no implementada · requiere aprobación de Mauricio o Alejo" data-en="Proposal for the design gate · not implemented · needs approval from Mauricio or Alejo">Propuesta para la puerta de diseño · no implementada · requiere aprobación de Mauricio o Alejo</p>
+<h1 data-es="Un solo contenedor, cinco tipos de página" data-en="One container, five page types">Un solo contenedor, cinco tipos de página</h1>
+<p data-es="Hoy la cabecera y el pie miden 1240 px y el cuerpo con barra lateral 1480 px, y cada pantalla elige su propio ancho (13 distintos). La propuesta: un único contenedor de 1240 px para cabecera, cuerpo y pie, y cinco tipos de página con ancho definido por token." data-en="Today the header and footer are 1240 px wide and the body with sidebar is 1480 px, and each screen picks its own width (13 different ones). Proposal: one 1240 px container for header, body and footer, and five page types whose width comes from a token.">Hoy la cabecera y el pie miden 1240 px y el cuerpo con barra lateral 1480 px, y cada pantalla elige su propio ancho (13 distintos). La propuesta: un único contenedor de 1240 px para cabecera, cuerpo y pie, y cinco tipos de página con ancho definido por token.</p>
+
+<h2 data-es="1 · Marco a 1440 px: antes y después" data-en="1 · Frame at 1440 px: before and after">1 · Marco a 1440 px: antes y después</h2>
+<div class="cmp">
+ <section aria-labelledby="now-t">
+  <h3 id="now-t" data-es="Antes (medido en staging)" data-en="Before (measured on staging)">Antes (medido en staging)</h3>
+  <div class="frame now" aria-hidden="false">
+   <div class="hd" style="padding-left:6%;padding-right:6%"><span>Elevation.</span><span data-es="Menú de usuario" data-en="User menu">Menú de usuario</span></div>
+   <div class="body" style="margin-left:-4%;margin-right:-2%"><div class="side"><i>Mi panel</i><i>Diario</i><i>Mapa</i></div><div class="main"><div class="col panel"><b>Tarjeta</b><b>Tarjeta</b></div></div></div>
+   <p class="muted" style="font-size:.85rem" data-es="Marca en x=100, barra lateral en x=16, contenido hasta x=1424, menú de usuario hasta x=1340: cuatro bordes distintos." data-en="Brand at x=100, sidebar at x=16, content to x=1424, user menu to x=1340: four different edges.">Marca en x=100, barra lateral en x=16, contenido hasta x=1424, menú de usuario hasta x=1340: cuatro bordes distintos.</p>
+  </div>
+ </section>
+ <section aria-labelledby="new-t">
+  <h3 id="new-t" data-es="Después (propuesta)" data-en="After (proposal)">Después (propuesta)</h3>
+  <div class="frame">
+   <div class="hd"><span>Elevation.</span><span data-es="Menú de usuario" data-en="User menu">Menú de usuario</span></div>
+   <div class="body"><div class="side"><i>Mi panel</i><i>Diario</i><i>Mapa</i></div><div class="main"><div class="col panel"><b>Tarjeta</b><b>Tarjeta</b></div></div></div>
+   <p class="muted" style="font-size:.85rem" data-es="Marca, barra lateral, contenido, menú y pie comparten borde izquierdo y derecho (x=100 y x=1340 a 1440 px). La barra lateral va DENTRO de los 1240 px." data-en="Brand, sidebar, content, menu and footer share the same left and right edges (x=100 and x=1340 at 1440 px). The sidebar sits INSIDE the 1240 px.">Marca, barra lateral, contenido, menú y pie comparten borde izquierdo y derecho (x=100 y x=1340 a 1440 px). La barra lateral va DENTRO de los 1240 px.</p>
+  </div>
+ </section>
+</div>
+
+<h2 data-es="2 · Cinco tipos de página" data-en="2 · Five page types">2 · Cinco tipos de página</h2>
+<table>
+ <thead><tr><th data-es="Tipo" data-en="Type">Tipo</th><th data-es="Ancho (token)" data-en="Width (token)">Ancho (token)</th><th data-es="Alineación" data-en="Alignment">Alineación</th><th data-es="Pantallas de hoy que lo usan" data-en="Screens that would use it">Pantallas de hoy que lo usan</th></tr></thead>
+ <tbody>
+ <tr><td><b>Panel</b></td><td><code>100 %</code> del contenido; rejilla 12 col. (≥901 px: 2–3 col.)</td><td data-es="Borde izquierdo del contenido" data-en="Left edge of content">Borde izquierdo del contenido</td><td>Mi panel, Mapa, Rutas, Experimentos, Plan, Mi plan, Puente, Herramientas, Catálogo, admin</td></tr>
+ <tr><td><b data-es="Formulario / flujo" data-en="Form / flow">Formulario / flujo</b></td><td><code>--cg-w-form</code> 40rem (640 px)</td><td data-es="Izquierda (no centrado)" data-en="Left (not centered)">Izquierda (no centrado)</td><td>Onboarding, Check-in, Evidencia nueva, Hojas de vida, Mis datos, Brújula, Mi profesional, Revisiones, Ejercicios</td></tr>
+ <tr><td><b data-es="Lectura" data-en="Reading">Lectura</b></td><td><code>--cg-w-read</code> 44rem (704 px ≈ 70 car.)</td><td data-es="Izquierda" data-en="Left">Izquierda</td><td>Manifiesto, Privacidad, Términos, Mi progreso, Solicitud profesional</td></tr>
+ <tr><td><b data-es="Tarjeta de acceso" data-en="Access card">Tarjeta de acceso</b></td><td><code>--cg-w-card</code> 30rem (480 px)</td><td data-es="Centrada (excepción deliberada, sin barra lateral)" data-en="Centered (deliberate exception, no sidebar)">Centrada (excepción deliberada, sin barra lateral)</td><td>Entrar, Olvidé, Restablecer, Invitación</td></tr>
+ <tr><td><b data-es="Sala (chat)" data-en="Room (chat)">Sala (chat)</b></td><td>cabecera y barra al 100 %; hilo <code>--cg-w-room</code> 48rem (768 px)</td><td data-es="Izquierda del contenido (decisión D-A abajo)" data-en="Left of content (decision D-A below)">Izquierda del contenido (decisión D-A abajo)</td><td>Conversación</td></tr>
+ </tbody>
+</table>
+
+<h2 data-es="3 · Rejilla y puntos de corte" data-en="3 · Grid and breakpoints">3 · Rejilla y puntos de corte</h2>
+<table>
+ <thead><tr><th>Token</th><th data-es="Valor" data-en="Value">Valor</th><th data-es="Estado" data-en="Status">Estado</th></tr></thead>
+ <tbody>
+ <tr><td><code>--cg-wrap</code></td><td>1240px</td><td data-es="nuevo (hoy repetido 4 veces en shell.css:18,62,72,172)" data-en="new (today repeated 4 times in shell.css:18,62,72,172)">nuevo (hoy repetido 4 veces en shell.css:18,62,72,172)</td></tr>
+ <tr><td><code>--cg-gutter</code></td><td>clamp(1rem, 2.5vw, 2rem)</td><td data-es="nuevo (hoy 16 px fijos en .cg-frame y 12,8 px en la cabecera compacta)" data-en="new (today fixed 16 px in .cg-frame, 12.8 px in the compact header)">nuevo (hoy 16 px fijos en .cg-frame y 12,8 px en la cabecera compacta)</td></tr>
+ <tr><td><code>--cg-side</code> / <code>--cg-gap</code></td><td>14.5rem / 1.5rem</td><td data-es="nuevo (hoy valor suelto en shell.css:172)" data-en="new (today a loose value in shell.css:172)">nuevo (hoy valor suelto en shell.css:172)</td></tr>
+ <tr><td><code>--cg-w-read / form / card / room</code></td><td>44 / 40 / 30 / 48 rem</td><td data-es="nuevos (reemplazan 40, 40,8, 46, 56, 72 rem y 640, 720, 760, 860, 900, 1080, 1152 px)" data-en="new (replace 40, 40.8, 46, 56, 72 rem and 640, 720, 760, 860, 900, 1080, 1152 px)">nuevos (reemplazan 40, 40,8, 46, 56, 72 rem y 640, 720, 760, 860, 900, 1080, 1152 px)</td></tr>
+ <tr><td><code>--cg-s1…s16</code></td><td>4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 px</td><td data-es="existente ampliado (--cg-s3 pasa de 12,8 a 12 px; se añaden s12 y s16)" data-en="existing, extended (--cg-s3 goes from 12.8 to 12 px; s12 and s16 added)">existente ampliado (--cg-s3 pasa de 12,8 a 12 px; se añaden s12 y s16)</td></tr>
+ <tr><td data-es="Puntos de corte" data-en="Breakpoints">Puntos de corte</td><td>480 · 768 · 901 · 1240</td><td data-es="901 se conserva (cambio barra lateral ↔ cajón). Contenido: 1 col. &lt;768; 2 col. 768–1240; 3 col. ≥1240" data-en="901 is kept (sidebar ↔ drawer). Content: 1 col. &lt;768; 2 col. 768–1240; 3 col. ≥1240">901 se conserva (cambio barra lateral ↔ cajón). Contenido: 1 col. &lt;768; 2 col. 768–1240; 3 col. ≥1240</td></tr>
+ </tbody>
+</table>
+
+<h2 data-es="4 · Tipografía y objetivos táctiles" data-en="4 · Type and touch targets">4 · Tipografía y objetivos táctiles</h2>
+<table>
+ <thead><tr><th data-es="Rol" data-en="Role">Rol</th><th data-es="Tamaño" data-en="Size">Tamaño</th><th data-es="Hoy" data-en="Today">Hoy</th></tr></thead>
+ <tbody>
+ <tr><td>H1 (<code>pg-title</code>)</td><td>clamp(2rem, 4.6vw, 2.8rem)</td><td data-es="8 tamaños distintos de h1 (16,8 a 70,4 px)" data-en="8 different h1 sizes (16.8 to 70.4 px)">8 tamaños distintos de h1 (16,8 a 70,4 px)</td></tr>
+ <tr><td>H2 / H3</td><td>1.5rem / 1.15rem</td><td>1.35 / 1.7 / 1.15 rem</td></tr>
+ <tr><td data-es="Cuerpo" data-en="Body">Cuerpo</td><td>1.0625rem (17 px) / 1.55</td><td data-es="Inter 16 px/1,65 en .space-scope; Barlow 17 px en .cg" data-en="Inter 16 px/1.65 in .space-scope; Barlow 17 px in .cg">Inter 16 px/1,65 en .space-scope; Barlow 17 px en .cg</td></tr>
+ <tr><td data-es="Mínimo (etiquetas, pie)" data-en="Minimum (labels, footer)">Mínimo (etiquetas, pie)</td><td>0.8125rem (13 px)</td><td data-es="12,48 y 12,8 px en 15 textos de la portada" data-en="12.48 and 12.8 px on 15 texts of the home page">12,48 y 12,8 px en 15 textos de la portada</td></tr>
+ <tr><td data-es="Línea de lectura" data-en="Line length">Línea de lectura</td><td>45–75 car.</td><td data-es="chat 90 car.; formularios 23–57" data-en="chat 90 chars; forms 23–57">chat 90 car.; formularios 23–57</td></tr>
+ <tr><td data-es="Control interactivo" data-en="Interactive control">Control interactivo</td><td>≥ 46 px de alto (<code>--cg-touch</code>) y ≥ 44 de ancho</td><td data-es="barra lateral 40 px; enlaces .pc-link 26 px; radios 24 px" data-en="sidebar 40 px; .pc-link links 26 px; radios 24 px">barra lateral 40 px; enlaces .pc-link 26 px; radios 24 px</td></tr>
+ </tbody>
+</table>
+
+<h2 data-es="5 · Móvil (390 px) y estados" data-en="5 · Mobile (390 px) and states">5 · Móvil (390 px) y estados</h2>
+<div class="cmp">
+ <div class="w390"><div class="hd"><span>Elevation.</span><b>☰ Menú</b></div><div class="col" style="margin-top:1rem;max-width:none" data-es="Contenido a 358 px (16 px de margen a cada lado), una columna, controles de 46 px." data-en="Content at 358 px (16 px margin each side), one column, 46 px controls.">Contenido a 358 px (16 px de margen a cada lado), una columna, controles de 46 px.</div></div>
+ <div class="states" role="group" aria-label="Estados / States">
+  <div class="card sk" role="status" aria-live="polite"><h3 data-es="Cargando" data-en="Loading">Cargando</h3><i></i><i></i><i></i><span class="muted" data-es="Mismo alto que el contenido final (sin saltos)." data-en="Same height as final content (no jumps).">Mismo alto que el contenido final (sin saltos).</span></div>
+  <div class="card"><h3 data-es="Vacío" data-en="Empty">Vacío</h3><p data-es="Aún no tienes entradas guardadas." data-en="You have no saved entries yet.">Aún no tienes entradas guardadas.</p></div>
+  <div class="card err" role="alert"><h3 data-es="Error" data-en="Error">Error</h3><p data-es="No pudimos cargar esta pantalla. Reintenta." data-en="We couldn't load this screen. Try again.">No pudimos cargar esta pantalla. Reintenta.</p></div>
+  <div class="card ok" role="status"><h3 data-es="Guardado" data-en="Saved">Guardado</h3><p data-es="Tus cambios quedaron guardados." data-en="Your changes were saved.">Tus cambios quedaron guardados.</p></div>
+ </div>
+</div>
+
+<h2 data-es="6 · Regla de capas de CSS" data-en="6 · CSS layer rule">6 · Regla de capas de CSS</h2>
+<p data-es="Hoy solo hay dos @layer (index.css:17 y cartografia.css:41); los demás módulos de CSS van sin capa y se pisan por orden de carga. Orden propuesto (de menor a mayor prioridad):" data-en="Today there are only two @layer blocks (index.css:17 and cartografia.css:41); the other CSS modules are unlayered and override each other by load order. Proposed order (lowest to highest priority):">Hoy solo hay dos @layer (index.css:17 y cartografia.css:41); los 52 módulos restantes van sin capa y se pisan por orden de carga. Orden propuesto (de menor a mayor prioridad):</p>
+<div class="lyr" role="list">
+ <div role="listitem"><code>theme, base</code> — Tailwind / reset</div>
+ <div role="listitem"><code>cg-tokens</code> — <data-x data-es="tokens --cg-* y escalas" data-en="--cg-* tokens and scales">tokens --cg-* y escalas</data-x></div>
+ <div role="listitem"><code>legacy</code> — space.css, facilitation, therapist, accessAdmin… (<data-x data-es="importados con layer(legacy); se vacían pantalla a pantalla" data-en="imported with layer(legacy); emptied screen by screen">importados con layer(legacy); se vacían pantalla a pantalla</data-x>)</div>
+ <div role="listitem"><code>cg-frame</code> — shell.css (<data-x data-es="cabecera, barra, cuerpo, pie: único dueño de ancho y márgenes" data-en="header, sidebar, body, footer: sole owner of width and margins">cabecera, barra, cuerpo, pie: único dueño de ancho y márgenes</data-x>)</div>
+ <div role="listitem"><code>cg-components</code> — cartografia.css, pages.css</div>
+ <div role="listitem"><code>cg-screens</code> — <data-x data-es="estilos de pantalla: PROHIBIDO width, max-width, margin-inline y padding-inline en la raíz de página; se usa .cg-page--read|form|card|room|panel" data-en="screen styles: width, max-width, margin-inline and padding-inline FORBIDDEN on the page root; use .cg-page--read|form|card|room|panel">estilos de pantalla: PROHIBIDO width, max-width, margin-inline y padding-inline en la raíz de página; se usa .cg-page--read|form|card|room|panel</data-x></div>
+ <div role="listitem"><code>utilities</code> — Tailwind</div>
+</div>
+
+<h2 data-es="7 · Teclado y accesibilidad" data-en="7 · Keyboard and accessibility">7 · Teclado y accesibilidad</h2>
+<p data-es="Orden de Tab: «Saltar al contenido» → marca → navegación → idioma/tema → menú de usuario → contenido → pie. Foco único: 3 px de --cg-mark, desfase 3 px, en todas las pantallas (hoy hay 2 px #0369A1 en therapist.css:6 y 3 px de otros colores). La barra lateral con más ítems que la altura de la ventana se desplaza dentro de sí misma (overflow-y:auto; max-height: calc(100dvh − 2rem)), de modo que el último enlace siempre es alcanzable." data-en="Tab order: “Skip to content” → brand → navigation → language/theme → user menu → content → footer. One focus style: 3 px --cg-mark, 3 px offset, on every screen (today 2 px #0369A1 in therapist.css:6 and 3 px in other colours). A sidebar taller than the window scrolls inside itself (overflow-y:auto; max-height: calc(100dvh − 2rem)) so the last link is always reachable.">Orden de Tab: «Saltar al contenido» → marca → navegación → idioma/tema → menú de usuario → contenido → pie. Foco único: 3 px de --cg-mark, desfase 3 px, en todas las pantallas (hoy hay 2 px #0369A1 en therapist.css:6 y 3 px de otros colores). La barra lateral con más ítems que la altura de la ventana se desplaza dentro de sí misma (overflow-y:auto; max-height: calc(100dvh − 2rem)), de modo que el último enlace siempre es alcanzable.</p>
+
+<h2 data-es="8 · Decisiones que necesito de Mauricio o Alejo" data-en="8 · Decisions needed from Mauricio or Alejo">8 · Decisiones que necesito de Mauricio o Alejo</h2>
+<ol>
+ <li data-es="D-A. Chat: hilo alineado a la izquierda del contenido (recomendado, consistente) o centrado en el contenido (convención de apps de mensajería)." data-en="D-A. Chat: thread aligned to the left of the content (recommended, consistent) or centered in the content (messaging-app convention).">D-A. Chat: hilo alineado a la izquierda del contenido (recomendado, consistente) o centrado en el contenido (convención de apps de mensajería).</li>
+ <li data-es="D-B. El panel pasa de 1152 a 984 px útiles a 1440 px (la barra lateral deja de sumarse al ancho). ¿Se acepta, o se sube --cg-wrap a 1320 px?" data-en="D-B. The panel goes from 1152 to 984 usable px at 1440 px (the sidebar stops adding to the width). Accept, or raise --cg-wrap to 1320 px?">D-B. El panel pasa de 1152 a 984 px útiles a 1440 px (la barra lateral deja de sumarse al ancho). ¿Se acepta, o se sube --cg-wrap a 1320 px?</li>
+ <li data-es="D-C. Orden de migración: marco y capas primero (1 PR), luego tipos de página por grupos de pantallas." data-en="D-C. Migration order: frame and layers first (1 PR), then page types by screen group.">D-C. Orden de migración: marco y capas primero (1 PR), luego tipos de página por grupos de pantallas.</li>
+</ol>
+</main>
+<script>
+(function(){
+ var root=document.documentElement;
+ function setLang(l){root.lang=l;document.querySelectorAll('[data-es]').forEach(function(e){var v=e.getAttribute('data-'+l);if(v!==null)e.innerHTML=v});document.querySelectorAll('[data-lang]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.lang===l))});try{localStorage.setItem('mq_lang',l)}catch(e){}}
+ function setTheme(t){if(t==='auto')root.removeAttribute('data-theme');else root.setAttribute('data-theme',t);document.querySelectorAll('[data-theme-btn]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.themeBtn===t))});try{localStorage.setItem('mq_theme',t)}catch(e){}}
+ document.querySelectorAll('[data-lang]').forEach(function(b){b.addEventListener('click',function(){setLang(b.dataset.lang)})});
+ document.querySelectorAll('[data-theme-btn]').forEach(function(b){b.addEventListener('click',function(){setTheme(b.dataset.themeBtn)})});
+ var l='es',t='auto';try{l=localStorage.getItem('mq_lang')||(/^en/i.test(navigator.language)?'en':'es');t=localStorage.getItem('mq_theme')||'auto'}catch(e){}
+ setLang(l);setTheme(t);
+})();
+</script>
+</body>
+</html>

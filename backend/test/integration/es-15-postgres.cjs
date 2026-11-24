@@ -55,7 +55,7 @@ const { pathToFileURL } = require('node:url');
     assert.equal(calls.length, 0); check('real JWT owner A/B/admin/therapist/board: foreign read/edit/delete/chat references 404; anonymous 401; encrypted Unicode roundtrip');
     const updated = await req('PUT', `/api/diary/${id}`, tokens[0], { content: 'Synthetic selected marker ' + 'a'.repeat(2100) + ' OMITTED_TAIL' }); assert.equal(updated.status, 200);
     assert.equal(await Invalidation.count({ where: { sourceId: id, reason: 'edited' } }), 1);
-    const unselected = await req('POST', '/api/diary', tokens[0], { date: '2026-10-02', content: 'UNSELECTED_DIARY_MARKER' });
+    await req('POST', '/api/diary', tokens[0], { date: '2026-10-02', content: 'UNSELECTED_DIARY_MARKER' });
     const noContext = { message: 'Hello no diary', lang: 'en', requestId: 'es15-no-context-001' };
     assert.equal((await req('POST', '/api/chat', tokens[0], noContext)).status, 200); assert.ok(!calls.at(-1).system.includes('Synthetic selected marker')); assert.ok(!calls.at(-1).system.includes('UNSELECTED_DIARY_MARKER'));
     const withContext = { message: 'Hello selected diary', lang: 'en', requestId: 'es15-with-context-001', contextEntryIds: [id] };

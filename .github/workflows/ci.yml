@@ -82,7 +82,10 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      # Sin lint en el backend: se comprueba la sintaxis y se corren los tests (P1 del PR #2).
+      # ES-385 (etapa 1): ESLint con SOLO reglas de defecto como bloqueantes (backend/eslint.config.cjs); no-unused-vars va en «warn» y no bloquea (etapa 2: limpiar por lotes).
+      - name: ESLint (reglas de defecto)
+        run: npm run lint
+      # Además de lo anterior se comprueba la sintaxis y se corren los tests (P1 del PR #2).
       - name: Revisar sintaxis
         run: find . -name node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
       - run: npm test
@@ -91,6 +94,9 @@ jobs:
         env:
           ES14_TEST_DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
         run: node --test test/integration/es-14-postgres.cjs
+      # ES-395: arnés ES-44 en modo integración (30 casos, 60 llamadas simuladas) con el Postgres embebido desechable y el doble del proveedor: sin red ni IA real. Falla si el adaptador se desfasa de las rutas (p. ej. consentimientos).
+      - name: ES-44 — arnés en modo integración (30 casos, sin IA real)
+        run: node evaluation/es44/cli.cjs --mode=integration --max-cases=30 --max-calls=120
       - name: Verificar conexión y esquema contra Postgres real
         env:
           DATABASE_URL: postgres://elevation:elevation_ci@127.0.0.1:5432/elevation_ci
@@ -115,6 +121,58 @@ jobs:
       # Las moderadas no bloquean: se listan en docs/DESPLIEGUE-RAILWAY.md como riesgo aceptado.
       - name: Auditar dependencias (bloquea en alta o crítica)
         run: npm audit --omit=dev --audit-level=high
+
+  # ES-383: rendimiento APARTE de la corrección. Los techos de tiempo ya no están en las pruebas que bloquean (npm test y los scripts :pg solo los informan);
+  # aquí se ejecutan en modo estricto, con el techo escalado por la velocidad que mide la misma corrida. NO bloquea PR: un runner cargado no pone el PR en rojo
+  # (continue-on-error); el resultado se lee en el registro del job. Para que bloquee, quitar continue-on-error.
+  perf:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Rendimiento (PERF_STRICT=1; informa, no bloquea)
+        env:
+          ES85_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES179_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES180_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES216_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+          ES29_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+        run: |
+          set -o pipefail
+          npm run test:perf 2>&1 | tee "$RUNNER_TEMP/perf.log"
+      # ES-383 (O452-2): un perf en rojo con continue-on-error ya no obliga a abrir el registro: anotacion ::warning:: por cada prueba lenta y tabla en el resumen del job.
+      - name: Resumen de rendimiento (anotaciones y resumen del job)
+        if: always()
+        run: |
+          LOG="$RUNNER_TEMP/perf.log"
+          [ -f "$LOG" ] || { echo '### Rendimiento (test:perf)' >> "$GITHUB_STEP_SUMMARY"; echo 'No hubo registro (el paso previo no llego a ejecutarse).' >> "$GITHUB_STEP_SUMMARY"; exit 0; }
+          SLOW=$(grep -E 'PERF LENTO' "$LOG" | sed -E 's/^[# ]*//' | sort -u || true)
+          OKS=$(grep -cE 'PERF OK' "$LOG" || true)
+          { echo '### Rendimiento (test:perf) - informativo, no bloquea'; echo;
+            echo "Mediciones dentro del techo: ${OKS:-0}";
+            if [ -n "$SLOW" ]; then echo; echo '**Pruebas LENTAS (revisar; no bloquean el PR):**'; echo; echo '```'; echo "$SLOW"; echo '```'; else echo; echo 'Ninguna prueba lenta.'; fi; } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$SLOW" ]; then echo "$SLOW" | while IFS= read -r line; do echo "::warning title=Rendimiento lento (test:perf)::$line"; done; fi
+          if grep -qE '^# fail [1-9]|^not ok' "$LOG"; then echo '::warning title=test:perf fallo::Hay pruebas de rendimiento en rojo (ver el registro del paso anterior); no bloquea el PR.'; fi
 
   data-rights-postgres:
     runs-on: ubuntu-latest
@@ -220,6 +278,10 @@ jobs:
         run: npm run test:landing-concurrency:pg
         env:
           ES279_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: ES-378 textos públicos - el refresco del seed actualiza solo lo sembrado, respeta lo editado y es idempotente (PostgreSQL real)
+        run: npm run test:landing-seed-refresh:pg
+        env:
+          ES378_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
       - name: ES-283 purga - cada referencia del profesional bloquea, fallo real por paso revierte todo (PostgreSQL real)
         run: npm run test:purge-hardening:pg
         env:
@@ -471,6 +533,10 @@ jobs:
         run: npm run test:admin-unlock:pg
         env:
           ES217_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
+      - name: "ES-389 la crisis se detecta en diario crudo, turnos guardados, evidencia y puente aunque los espacios sean controles o invisibles (PostgreSQL real)"
+        run: npm run test:crisis-consumers:pg
+        env:
+          ES389_TEST_DATABASE_URL: postgres://postgres@127.0.0.1:5432/postgres
 
   # ES-351 (E343-3): guardia de accesibilidad de ES-290/ES-291 (axe label-content-name-mismatch y scrollable-region-focusable)
   # sobre 216 páginas con API simulada y datos sintéticos. Sin base de datos, sin secretos ni datos reales.
