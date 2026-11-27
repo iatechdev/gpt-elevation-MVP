@@ -64,7 +64,9 @@ function usePendingCounts() {
     const count = async (path: string) => {
       try {
         const r = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
-        const data = r.ok ? await r.json() : null
+        // D-15 (ES-412): en Chromium, un cuerpo que nadie lee de una respuesta con Cache-Control: no-store (toda la API) deja la petición «sin terminar».
+        if (!r.ok) { void r.text().catch(() => {}); return null }
+        const data = await r.json()
         return Array.isArray(data) ? data.length : null
       } catch { return null }
     }
@@ -121,7 +123,7 @@ function ValidationsTab({ onChanged }: { onChanged?: () => void }) {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async r => {
-        if (!r.ok) { setDocs([]); setForbidden(r.status === 403); setLoadError(r.status === 403 ? 'Solo superadministración puede revisar los documentos de validación.' : 'No se pudieron cargar los documentos.'); return }
+        if (!r.ok) { void r.text().catch(() => {}); setDocs([]); setForbidden(r.status === 403); setLoadError(r.status === 403 ? 'Solo superadministración puede revisar los documentos de validación.' : 'No se pudieron cargar los documentos.'); return }
         const data = await r.json()
         setDocs(Array.isArray(data) ? data : [])
       })

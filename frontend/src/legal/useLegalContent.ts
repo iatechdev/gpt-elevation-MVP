@@ -59,7 +59,8 @@ export function useLegalContent(doc: LegalDoc, lang: Lang): { content: LegalCont
     void (async () => {
       try {
         const res = await fetch(`${apiBase()}/api/legal/${doc}?lang=${lang}`, { signal: controller.signal, headers: { Accept: 'application/json' }, credentials: 'omit' })
-        if (!res.ok) return
+        // D-15 (ES-412): en Chromium, un cuerpo que nadie lee de una respuesta con Cache-Control: no-store (toda la API) deja la petición «sin terminar».
+        if (!res.ok) { void res.text().catch(() => {}); return }
         const value = remoteFromResponse(await res.json(), doc, lang)
         if (value && !controller.signal.aborted) setRemote({ doc, lang, value })
       } catch { /* sin respuesta o inválida: se queda el texto del repo */ } finally { window.clearTimeout(timer) }
