@@ -12,10 +12,10 @@ const ok = (c, m) => { if (!c) fails.push(m) }
     const ctx = await b.newContext({ viewport: { width: w, height: w < 500 ? 780 : 900 } }); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()) })
     await p.addInitScript(l => { try { localStorage.setItem('es408_lang', l) } catch (e) {} }, lang)
     await p.goto(url); await p.click(`[data-set="theme:${theme}"]`)
-    const list = [['portada', 'in'], ['portada', 'out']].concat(['vacio', 'errores', 'guardando', 'error', 'borrador', 'revisar', 'exito'].map(s => ['evidencia', s]))
+    const list = [['portada', 'sample'], ['portada', 'none'], ['cv', 'cv']].concat(['vacio', 'errores', 'guardando', 'error', 'borrador', 'revisar', 'exito'].map(s => ['evidencia', s]))
     for (const [view, v] of list) {
       await p.click(`[data-set="view:${view}"]`)
-      if (view === 'portada') await p.click(`[data-set="routes:${v}"]`); else await p.click(`[data-set="state:${v}"]`)
+      if (view === 'portada') await p.click(`[data-set="catalog:${v}"]`); else if (view === 'evidencia') await p.click(`[data-set="state:${v}"]`)
       scenes++
       const m = await p.evaluate(() => {
         const vw = document.documentElement.clientWidth
@@ -26,12 +26,13 @@ const ok = (c, m) => { if (!c) fails.push(m) }
       const id = `${w} ${lang} ${theme} ${view} ${v}`
       ok(m.ov <= 0, id + ' desborde ' + m.ov); ok(!m.small.length, id + ' pequeños ' + m.small.join('; ')); ok(!m.missing, id + ' clave sin texto'); ok(m.h1 === 1 || v === 'xx', id + ' h1=' + m.h1); ok(!m.pct, id + ' hay un porcentaje en pantalla'); ok(!m.tiny, id + ' texto < 13px: ' + m.tiny)
       if (AxeBuilder && (w === 1440 || w === 390) && lang === 'es') { axeRuns++; const r = await new AxeBuilder({ page: p }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).include('#app').analyze(); ok(!r.violations.length, id + ' axe ' + r.violations.map(x => x.id + 'x' + x.nodes.length + ' ' + x.nodes[0].target.join(' ')).join(', ')) }
-      if (out && ((lang === 'es' && theme === 'light') || (w === 390 && lang === 'en' && theme === 'dark')) && ['in', 'vacio', 'errores', 'revisar'].includes(v)) await p.screenshot({ path: path.join(out, `${view}-${v}_${lang}-${theme}_${w}.jpg`), type: 'jpeg', quality: 55, fullPage: true })
+      if (out && ((lang === 'es' && theme === 'light') || (w === 390 && lang === 'en' && theme === 'dark')) && ['sample', 'none', 'cv', 'vacio', 'errores', 'revisar'].includes(v)) await p.screenshot({ path: path.join(out, `${view}-${v}_${lang}-${theme}_${w}.jpg`), type: 'jpeg', quality: 55, fullPage: true })
     }
     ok(!errs.length, `${w} ${lang} ${theme} errores JS ${errs.join("|")}`); await ctx.close()
   }
   /* flujos con teclado y reglas del servidor */
-  const p = await b.newPage({ viewport: { width: 1024, height: 800 } }); await p.addInitScript(() => localStorage.setItem('es408_lang', 'es')); await p.goto(url); await p.click('[data-set="view:evidencia"]')
+  const p = await b.newPage({ viewport: { width: 1024, height: 800 } }); await p.addInitScript(() => localStorage.setItem('es408_lang', 'es')); await p.goto(url); await p.click('[data-set="view:portada"]'); const home = (await p.textContent('#app')).toLowerCase(); ok(home.includes('reconoce tu camino'), 'promesa'); ok(home.includes('mayores de 18'), '18+ en portada'); ok(!/\b(16|70)\b|\d+\s*a\s*\d+\s*años/.test(home), 'la portada no menciona 16, 70 ni rangos'); ok(!/consigue (un )?(trabajo|empleo)|conseguir(ás)? trabajo/.test(home.split('no garantizan').join('')), 'sin promesa de empleo')
+  await p.click('[data-set="view:evidencia"]')
   const txt = () => p.textContent('#app')
   await p.fill('#title', 'Prueba'); await p.click('[data-act="draft"]'); ok((await txt()).includes('Un borrador necesita'), 'borrador con solo título debe fallar')
   await p.click('[data-act="review"]'); ok((await p.locator('#summary li').count()) === 5, 'confirmar con solo título debe pedir 5 campos: ' + await p.locator('#summary li').count())

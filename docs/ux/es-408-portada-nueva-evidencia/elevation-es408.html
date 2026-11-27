@@ -89,6 +89,10 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
 
 /* ES-409: registro e invitación. Mismo patrón que TermsCheck (ac-check). */
 .authwrap{max-width:30rem;margin:1rem auto}.auth h1,.authwrap h1{font-size:2.2rem}.auth .field{margin:1rem 0}.agree{margin:1rem 0}.agree__row{display:flex;gap:.75rem;align-items:flex-start}.agree__row input{width:1.5rem;height:1.5rem;margin:.1rem 0 0;flex:none;accent-color:var(--cg-mark)}.agree__row label{font:600 1.0625rem/1.5 var(--cg-font-sans);text-transform:none;letter-spacing:0;min-height:var(--cg-touch);flex:1;cursor:pointer}.agree__help{margin:0 0 0 2.25rem;color:var(--cg-muted);font-size:.95rem}.agree .err{margin-left:2.25rem}.wide{width:100%}
+
+/* v2: rutas (marcadores de ejemplo) y propuesta de hoja de vida */
+.routes{grid-column:2/-1}.sample h4{margin:0 0 .4rem;font:700 1.1rem var(--cg-font-cond);text-transform:uppercase}.sample{border-style:dashed}.sample ul,.cvlist{list-style:none;padding:0;margin:0}.has,.hasnt{display:block;padding:.25rem 0 .25rem 1.5rem;position:relative}.has::before,.hasnt::before{content:"";position:absolute;left:0;top:.55rem;width:.8rem;height:.8rem;border-radius:50%;border:2px solid var(--cg-mark)}.has::before{background:var(--cg-mark)}.hasnt::before{border-style:dashed;border-color:var(--cg-muted)}.badge.wrapok{white-space:normal}.adults{font-weight:600;margin:.9rem 0 0}.cvlist>li{display:flex;flex-wrap:wrap;gap:.6rem 1rem;justify-content:space-between;align-items:center;padding:.8rem 0;border-bottom:1px solid var(--cg-line)}
+@media (max-width:1024px){.routes{grid-column:2}}@media (max-width:360px){.routes{grid-column:1}}
 </style>
 </head>
 <body>
@@ -102,7 +106,7 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
 (function (root) {
   var T = [
     /* ---------- pestaña y cabecera ---------- */
-    ['html.title', 'cambia', 'Elevation — Reconoce lo que sabes hacer', 'Elevation — Recognise what you know how to do'],
+    ["html.title", "cambia", "Elevation — Reconoce tu camino", "Elevation — Recognise your path"],
     ['landing.header.language', 'igual', 'Idioma', 'Language'],
     ['landing.nav.what', 'nuevo', 'Qué es', 'What it is'],
     ['landing.nav.journey', 'nuevo', 'Recorrido', 'The journey'],
@@ -114,12 +118,10 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
     ['landing.portada.cta_try', 'igual', 'Probar un ejemplo', 'Try an example'],
     /* ---------- 1 qué es y para quién (promesa y público: pendientes) ---------- */
     ['landing.portada.eyebrow', 'nuevo', 'Autoconocimiento y capacidades · acompañamiento no clínico', 'Self-knowledge and capabilities · non-clinical support'],
-    ['landing.portada.promise.p1', 'cambia', 'Reconoce lo que sabes hacer a partir de tu experiencia.', 'Recognise what you know how to do, based on your experience.'],
-    ['landing.portada.promise.p2', 'nuevo', 'Convierte lo que has vivido en el trabajo en un mapa de capacidades con evidencia.', 'Turn what you have lived at work into a capability map backed by evidence.'],
-    ['landing.portada.promise.p3', 'nuevo', 'Entiende qué sabes hacer y decide tu siguiente paso, a tu ritmo.', 'Understand what you know how to do and decide your next step, at your own pace.'],
-    ['landing.portada.audience.a1', 'nuevo', 'Para personas que están pensando en un cambio profesional.', 'For people considering a career change.'],
-    ['landing.portada.audience.a2', 'nuevo', 'Para quien quiere ordenar su experiencia antes de buscar su siguiente rol.', 'For anyone who wants to organise their experience before looking for their next role.'],
-    ['landing.portada.audience.a3', 'nuevo', 'Para las personas del piloto, en español o en inglés.', 'For the people in the pilot, in Spanish or English.'],
+    ["landing.portada.promise.p1", "cambia", "Reconoce tu camino", "Recognise your path"],
+    ["landing.portada.audience.a1", "nuevo", "Para personas que quieren y necesitan buscar trabajo.", "For people who want and need to look for work."],
+    ["landing.portada.adults", "nuevo", "El piloto es solo para mayores de 18 años.", "The pilot is only for people 18 or older."],
+    ["landing.portada.chip_nojob", "nuevo", "No promete empleo", "No job promises"],
     ['landing.portada.lead', 'cambia', 'Cuenta una situación real. Elevation te ayuda a ver qué capacidades aparecen en ella y qué evidencia las respalda. Tú decides qué guardas y qué compartes.', 'Describe a real situation. Elevation helps you see which capabilities show up in it and what evidence supports them. You decide what you keep and what you share.'],
     ['landing.portada.here', 'igual', 'Tú estás aquí', 'You are here'],
     ['landing.portada.chip_private', 'nuevo', 'Tu diario y tu chat no los lee tu profesional', 'Your professional does not read your journal or chat'],
@@ -146,10 +148,15 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
     ['landing.v2.journey.s4.t', 'nuevo', 'Decide qué cruza a lo profesional', 'Decide what crosses to the professional side'],
     ['landing.v2.journey.s4.b', 'nuevo', 'La Brújula profesional te deja elegir qué texto autorizas. Para una revisión profesional, autorizas qué evidencias ve la persona revisora, con un código.', 'The Career compass lets you choose which text you authorise. For a professional review, you authorise which evidence the reviewer sees, using a code.'],
     ['landing.v2.journey.s4.g', 'nuevo', 'Control sobre lo que sale de tu espacio privado.', 'Control over what leaves your private space.'],
-    ['landing.v2.journey.s5.t', 'nuevo', 'Explora rutas y prueba un experimento', 'Explore routes and try an experiment'],
-    ['landing.v2.journey.s5.b', 'nuevo', 'Vista preliminar: declaras tus restricciones, miras opciones del catálogo, eliges y anotas un experimento corto. Los recordatorios todavía no existen.', 'Preview: you state your constraints, look at catalogue options, choose, and note a short experiment. Reminders do not exist yet.'],
-    ['landing.v2.journey.s5.g', 'nuevo', 'Opciones para comparar. No hay porcentajes de empleabilidad ni promesas de empleo.', 'Options to compare. No employability percentages and no job promises.'],
-    ['landing.v2.journey.s5.synthetic', 'nuevo', 'En el entorno de pruebas el catálogo es de ejemplo y está marcado como sintético.', 'In the test environment the catalogue is sample content, labelled as synthetic.'],
+    ["landing.v2.journey.s5.t", "nuevo", "Mira caminos posibles y prueba un paso", "Look at possible paths and try one step"],
+    ["landing.v2.journey.s5.b", "nuevo", "Dices tus restricciones y ves rutas del catálogo, comparando lo que pide cada una con lo que ya respaldaste con evidencia. Eliges una y anotas un experimento corto. Los recordatorios todavía no existen.", "You state your constraints and see catalogue routes, comparing what each one asks for with what you have already backed with evidence. You choose one and note a short experiment. Reminders do not exist yet."],
+    ["landing.v2.journey.s5.g", "nuevo", "Opciones para comparar y ver qué te falta respaldar. Sin porcentajes ni promesas de empleo.", "Options to compare, and a view of what you have not backed yet. No percentages and no job promises."],
+    ["landing.v2.routes.sample_tag", "nuevo", "Ejemplo de la pantalla · no son rutas reales", "Example of the screen · these are not real routes"],
+    ["landing.v2.routes.sample_name", "nuevo", "Ruta de ejemplo {n}", "Example route {n}"],
+    ["landing.v2.routes.sample_have", "nuevo", "Capacidad de ejemplo: con evidencia tuya", "Example capability: backed by your evidence"],
+    ["landing.v2.routes.sample_missing", "nuevo", "Capacidad de ejemplo: aún sin evidencia", "Example capability: no evidence yet"],
+    ["landing.v2.routes.sample_source", "nuevo", "Fuente y fecha: aquí se mostrarán las del catálogo publicado.", "Source and date: those of the published catalogue will appear here."],
+    ["landing.v2.routes.unavailable", "nuevo", "El catálogo de rutas aún no está disponible. Mientras tanto puedes registrar evidencias: son la base para comparar rutas.", "The route catalogue is not available yet. Meanwhile you can record evidence: it is the basis for comparing routes."],
     /* ---------- 4 ejemplo ---------- */
     ['landing.portada.try_title', 'igual', 'Mira cómo funciona con un ejemplo', 'See how it works with an example'],
     ['landing.portada.try_example', 'igual', 'Ejemplo fijo · no se guarda', 'Fixed example · not saved'],
@@ -193,7 +200,7 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
     ['landing.today.compass', 'nuevo', 'Brújula profesional', 'Career compass'],
     ['landing.today.data', 'cambia', 'Mis datos (copia y eliminación)', 'My data (copy and deletion)'],
     ['landing.today.data_note', 'nuevo', 'Depende de que esa opción esté habilitada en el servidor.', 'Depends on that option being enabled on the server.'],
-    ['landing.today.routes', 'cambia', 'Rutas, experimentos y plan', 'Routes, experiments and plan'],
+    ["landing.today.routes", "cambia", "Rutas, experimentos y plan", "Routes, experiments and plan"],
     ['landing.today.exercises', 'nuevo', 'Ejercicios opcionales', 'Optional exercises'],
     ['landing.today.exercises_note', 'nuevo', 'La pantalla existe; todavía no hay ejercicios publicados.', 'The screen exists; no exercises have been published yet.'],
     ['landing.today.reminders', 'nuevo', 'Recordatorios del plan', 'Plan reminders'],
@@ -309,6 +316,16 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
     ['evidence.uncertain_write', 'igual', 'Tu texto sigue aquí. Reintenta y no se duplica.', 'Your text is still here. Retry and it will not be duplicated.'],
     ['evidence.retry', 'igual', 'Reintentar', 'Retry'],
     ['evidence.list', 'igual', 'Volver a mis evidencias', 'Back to my evidence'],
+    ["cv.proposal.tag", "nuevo", "Propuesta · función nueva, no construida", "Proposal · new feature, not built"],
+    ["cv.proposal.title", "nuevo", "Prepara tu hoja de vida con lo que puedes respaldar", "Prepare your résumé with what you can back up"],
+    ["cv.proposal.lead", "nuevo", "Compara lo que dice tu hoja de vida con tus evidencias. Tú decides qué cambias.", "Compare what your résumé says with your evidence. You decide what to change."],
+    ["cv.proposal.stated", "nuevo", "Tu hoja de vida declara", "Your résumé states"],
+    ["cv.proposal.sample", "nuevo", "Habilidad de ejemplo {n}", "Example skill {n}"],
+    ["cv.proposal.has", "nuevo", "Tienes una evidencia confirmada que la respalda", "You have confirmed evidence that supports it"],
+    ["cv.proposal.none", "nuevo", "Todavía no tiene evidencia", "It has no evidence yet"],
+    ["cv.proposal.use", "nuevo", "Ver la evidencia", "See the evidence"],
+    ["cv.proposal.add", "nuevo", "Contar una situación", "Describe a situation"],
+    ["cv.proposal.limit", "nuevo", "No puntúa tu hoja de vida ni garantiza que consigas trabajo.", "It does not score your résumé or guarantee that you will get a job."],
     /* ---------- ES-409: mayoría de edad (diseño aprobado, comentarios 13026/13027; el nombre final de las claves lo fija Dev) ---------- */
     ['access.adult_label', 'nuevo', 'Declaro que tengo 18 años o más.', 'I declare that I am 18 or older.'],
     ['access.adult_help', 'nuevo', 'El piloto es solo para mayores de 18 años. Es tu declaración: no verificamos tu identidad ni pedimos tu fecha de nacimiento.', 'The pilot is only for people 18 or older. This is your own declaration: we do not verify your identity or ask for your date of birth.'],
@@ -320,7 +337,7 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
   ]
   /* Claves que hoy se muestran en la portada y la propuesta deja de usar (revisar antes de borrar: el CMS las edita). */
   var RETIRAR = [
-    ['landing.portada.hero_pre / hero_em', 'Pasan a landing.portada.promise.p1 (mismo texto) mientras Alejo/Mauricio eligen promesa.'],
+    ['landing.portada.hero_pre / hero_em', 'Sustituidas por landing.portada.promise.p1 («Reconoce tu camino», decisión de Mauricio, ES-408).'],
     ['landing.portada.legend / leg1…leg4 / hero_alt', 'La leyenda del héroe se reemplaza por el recorrido; el relieve queda como ilustración.'],
     ['landing.portada.steps_title / steps_heading / st1…st3b / steps_note', 'Sustituidas por landing.v2.journey.*.'],
     ['landing.portada.try_own / see_rise / rise_alt / hint_q', 'El ejemplo se acorta; la entrada queda en el bloque final.'],
@@ -393,7 +410,7 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
 (function () {
   'use strict'
   var DICT = {}; window.ES408.T.forEach(function (r) { DICT[r[0]] = { es: r[2], en: r[3] } })
-  var S = { lang: 'es', view: 'registro', routes: 'in', promise: 'p1', audience: 'a1', theme: 'auto', hint: '', state: 'vacio', open: {}, draft: blank(), errors: [], reviewed: false, saveMode: 'ok', reg: window.ES408Access.blank(), regState: 'vacio', regErrors: {} }
+  var S = { lang: 'es', view: 'registro', catalog: 'sample', theme: 'auto', hint: '', state: 'vacio', open: {}, draft: blank(), errors: [], reviewed: false, saveMode: 'ok', reg: window.ES408Access.blank(), regState: 'vacio', regErrors: {} }
   try { S.lang = localStorage.getItem('es408_lang') || (/^en/i.test(navigator.language) ? 'en' : 'es') } catch (e) {}
   function blank() { return { title: '', situation: '', responsibility: '', actions: [''], delivered: '', effect: '', effectText: '', goal: '', alternatives: [], learning: '', autonomy: '', sample: '' } }
   function t(k, vars) { var v = DICT[k]; if (!v) return '⚠' + k; var s = v[S.lang]; if (vars) Object.keys(vars).forEach(function (n) { s = s.replace('{' + n + '}', vars[n]) }); return s }
@@ -419,16 +436,24 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
   function section(id, title, body, cls) { return '<section id="' + id + '" class="sec ' + (cls || '') + '" aria-labelledby="h-' + id + '"><h2 id="h-' + id + '">' + title + '</h2>' + body + '</section>' }
   function list(keys) { return '<ul class="bul">' + keys.map(function (k) { return '<li>' + t(k) + '</li>' }).join('') + '</ul>' }
 
+  function routesBlock(has) {
+    if (!has) return '<div class="routes"><p class="notice">' + t('landing.v2.routes.unavailable') + '</p></div>'
+    return '<div class="routes"><p class="badge badge--soon wrapok">' + t('landing.v2.routes.sample_tag') + '</p><div class="two">' + ['A', 'B'].map(function (n) { return '<div class="card sample"><h4>' + t('landing.v2.routes.sample_name', { n: n }) + '</h4><ul><li class="has">' + t('landing.v2.routes.sample_have') + '</li><li class="hasnt">' + t('landing.v2.routes.sample_missing') + '</li></ul><p class="muted small">' + t('landing.v2.routes.sample_source') + '</p></div>' }).join('') + '</div></div>'
+  }
+  function cvProposal() {
+    var items = [['A', true], ['B', false]].map(function (x) { return '<li><div><b>' + t('cv.proposal.sample', { n: x[0] }) + '</b><span class="' + (x[1] ? 'has' : 'hasnt') + '">' + t(x[1] ? 'cv.proposal.has' : 'cv.proposal.none') + '</span></div><button type="button" class="btn btn--ghost" data-noop>' + t(x[1] ? 'cv.proposal.use' : 'cv.proposal.add') + '</button></li>' }).join('')
+    return frame('', '', '<div class="stackex cv"><p class="badge badge--soon wrapok">' + t('cv.proposal.tag') + '</p><h1>' + t('cv.proposal.title') + '</h1><p class="lead">' + t('cv.proposal.lead') + '</p><div class="card"><h2>' + t('cv.proposal.stated') + '</h2><ul class="cvlist">' + items + '</ul></div><p class="notice">' + t('cv.proposal.limit') + '</p></div>', '<span>' + t('landing.not.1') + '</span>')
+  }
   function portada() {
-    var withRoutes = S.routes === 'in', steps = ['s1', 's2', 's3', 's4'].concat(withRoutes ? ['s5'] : [])
-    var hero = '<section class="hero" aria-labelledby="h-hero"><div class="hero__txt"><p class="tag">' + t('landing.portada.eyebrow') + '</p><h1 id="h-hero">' + t('landing.portada.promise.' + S.promise) + '</h1><p class="aud">' + t('landing.portada.audience.' + S.audience) + '</p><p>' + t('landing.portada.lead') + '</p><div class="row"><a class="btn btn--mark" href="#ejemplo" data-go="ejemplo">' + t('landing.portada.cta_try') + '</a><button type="button" class="btn btn--ghost" data-noop>' + t('landing.portada.cta_create') + '</button></div><ul class="chips"><li>' + t('landing.portada.chip_private') + '</li><li>' + t('landing.portada.chip_nonclinical') + '</li></ul></div><div class="hero__map" role="img" aria-label="' + esc(t('landing.portada.relief_alt')) + '">' + relief() + '</div></section>'
+    var hasCatalog = S.catalog === 'sample', steps = ['s1', 's2', 's3', 's4', 's5']
+    var hero = '<section class="hero" aria-labelledby="h-hero"><div class="hero__txt"><p class="tag">' + t('landing.portada.eyebrow') + '</p><h1 id="h-hero">' + t('landing.portada.promise.p1') + '</h1><p class="aud">' + t('landing.portada.audience.a1') + '</p><p>' + t('landing.portada.lead') + '</p><div class="row"><a class="btn btn--mark" href="#ejemplo" data-go="ejemplo">' + t('landing.portada.cta_try') + '</a><button type="button" class="btn btn--ghost" data-noop>' + t('landing.portada.cta_create') + '</button></div><ul class="chips"><li>' + t('landing.portada.chip_private') + '</li><li>' + t('landing.portada.chip_nonclinical') + '</li><li>' + t('landing.portada.chip_nojob') + '</li></ul><p class="adults">' + t('landing.portada.adults') + '</p></div><div class="hero__map" role="img" aria-label="' + esc(t('landing.portada.relief_alt')) + '">' + relief() + '</div></section>'
     var problem = section('que', t('landing.v2.problem.title'), '<div class="three">' + ['b1', 'b2', 'b3'].map(function (k) { return '<p class="card">' + t('landing.v2.problem.' + k) + '</p>' }).join('') + '</div>')
-    var journey = section('recorrido', t('landing.v2.journey.title'), '<p class="lead">' + t('landing.v2.journey.note') + '</p><ol class="journey">' + steps.map(function (s, i) { var pre = s === 's5'; return '<li class="jstep"><span class="num" aria-hidden="true">' + (i + 1) + '</span><div><h3>' + t('landing.v2.journey.' + s + '.t') + (pre ? ' <span class="badge badge--pre">' + t('landing.status.preview') + '</span>' : '') + '</h3><p>' + t('landing.v2.journey.' + s + '.b') + '</p>' + (pre ? '<p class="muted small">' + t('landing.v2.journey.s5.synthetic') + '</p>' : '') + '</div><p class="get"><span>' + t('landing.v2.journey.get') + '</span> ' + t('landing.v2.journey.' + s + '.g') + '</p></li>' }).join('') + '</ol>')
+    var journey = section('recorrido', t('landing.v2.journey.title'), '<p class="lead">' + t('landing.v2.journey.note') + '</p><ol class="journey">' + steps.map(function (s, i) { var pre = s === 's5'; return '<li class="jstep"><span class="num" aria-hidden="true">' + (i + 1) + '</span><div><h3>' + t('landing.v2.journey.' + s + '.t') + (pre ? ' <span class="badge badge--pre">' + t('landing.status.preview') + '</span>' : '') + '</h3><p>' + t('landing.v2.journey.' + s + '.b') + '</p>' + '</div><p class="get"><span>' + t('landing.v2.journey.get') + '</span> ' + t('landing.v2.journey.' + s + '.g') + '</p>' + (pre ? routesBlock(hasCatalog) : '') + '</li>' }).join('') + '</ol>')
     var hint = S.hint ? '<div class="card hint"><p class="tag">' + t('landing.portada.hint_title') + '</p><p>' + t('landing.portada.hint_body') + '</p>' + (S.hint === 'show' ? '<div class="row"><button class="btn" data-hint="yes">' + t('landing.portada.hint_yes') + '</button><button class="btn btn--ghost" data-hint="no">' + t('landing.portada.hint_no') + '</button></div>' : '<p><b>' + t(S.hint === 'yes' ? 'landing.portada.hint_ok' : 'landing.portada.hint_no_ok') + '</b></p>') + '</div>' : ''
     var example = section('ejemplo', t('landing.portada.try_title'), '<div class="stackex"><div class="card"><p class="tag">' + t('landing.portada.try_label') + ' · <b>' + t('landing.portada.try_example') + '</b></p><blockquote>' + t('landing.portada.try_value') + '</blockquote><p class="muted small">' + t('landing.portada.try_note') + '</p><button class="btn" data-hint="show">' + t('landing.portada.try_mark') + '</button></div><div aria-live="polite">' + hint + '</div></div>')
     var not = section('no-es', t('landing.not.title'), '<div class="two"><div>' + list(['landing.not.1', 'landing.not.2', 'landing.not.3', 'landing.not.4']) + '</div><div class="card risk"><h3>' + t('landing.trust.5.title') + '</h3><p>' + t('landing.trust.5.body') + '</p></div></div>')
     var privacy = section('privacidad', t('landing.privacy.title'), list(['landing.privacy.1', 'landing.privacy.2', 'landing.privacy.3', 'landing.privacy.4', 'landing.privacy.5']) + '<p class="notice">' + t('landing.privacy.pending') + ' <a href="#privacidad" data-noop>' + t('landing.trust.policy') + '</a></p>', 'band')
-    var rows = [['chat', 'ok'], ['journal', 'ok'], ['evidence', 'ok'], ['resume', 'ok'], ['map', 'ok'], ['compass', 'ok'], ['data', 'ok', 'landing.today.data_note'], ['routes', withRoutes ? 'pre' : 'soon'], ['exercises', 'soon', 'landing.today.exercises_note'], ['reminders', 'soon']]
+    var rows = [['chat', 'ok'], ['journal', 'ok'], ['evidence', 'ok'], ['resume', 'ok'], ['map', 'ok'], ['compass', 'ok'], ['data', 'ok', 'landing.today.data_note'], ['routes', hasCatalog ? 'pre' : 'soon'], ['exercises', 'soon', 'landing.today.exercises_note'], ['reminders', 'soon']]
     var lab = { ok: 'landing.status.available', soon: 'landing.status.soon', pre: 'landing.status.preview' }
     var today = section('hoy', t('landing.today.title'), '<ul class="today">' + rows.map(function (r) { return '<li><span>' + t('landing.today.' + r[0]) + (r[2] ? '<small>' + t(r[2]) + '</small>' : '') + '</span><span class="badge badge--' + r[1] + '">' + t(lab[r[1]]) + '</span></li>' }).join('') + '</ul><div class="card pilot"><h3>' + t('landing.next.pilot.title') + '</h3><p>' + t('landing.next.pilot.body') + '</p></div>')
     var faqs = ['q1', '_need', 'q2', 'q5', 'q6', 'q9', 'q10']
@@ -501,9 +526,9 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
   function bar() {
     var es = S.lang === 'es'
     function seg(label, key, opts) { return '<span class="ctl"><span>' + label + '</span><span class="seg" role="group" aria-label="' + label + '">' + opts.map(function (o) { return '<button data-set="' + key + ':' + o[0] + '" aria-pressed="' + (S[key] === o[0]) + '">' + o[1] + '</button>' }).join('') + '</span></span>' }
-    var common = seg(es ? 'Pantalla' : 'Screen', 'view', [['registro', es ? 'Registro (18+)' : 'Sign-up (18+)'], ['invitacion', es ? 'Invitación' : 'Invitation'], ['portada', es ? 'Portada' : 'Home'], ['evidencia', es ? 'Nueva evidencia' : 'New evidence']]) + seg(es ? 'Tema' : 'Theme', 'theme', [['auto', 'Auto'], ['light', es ? 'Claro' : 'Light'], ['dark', es ? 'Oscuro' : 'Dark']])
+    var common = seg(es ? 'Pantalla' : 'Screen', 'view', [['registro', es ? 'Registro (18+)' : 'Sign-up (18+)'], ['invitacion', es ? 'Invitación' : 'Invitation'], ['portada', es ? 'Portada' : 'Home'], ['evidencia', es ? 'Nueva evidencia' : 'New evidence'], ['cv', es ? 'Hoja de vida (propuesta)' : 'Résumé (proposal)']]) + seg(es ? 'Tema' : 'Theme', 'theme', [['auto', 'Auto'], ['light', es ? 'Claro' : 'Light'], ['dark', es ? 'Oscuro' : 'Dark']])
     var isReg = S.view === 'registro' || S.view === 'invitacion'
-    var extra = isReg ? seg(es ? 'Estado' : 'State', 'regState', [['vacio', es ? 'Vacío' : 'Empty'], ['sinedad', es ? 'Sin la casilla 18+' : '18+ unticked'], ['errores', es ? 'Todo vacío' : 'All empty'], ['rechazo', es ? 'Rechazo servidor' : 'Server rejects'], ['enviando', es ? 'Enviando' : 'Sending'], ['exito', es ? 'Éxito' : 'Success'], ['existente', es ? 'Cuentas existentes' : 'Existing accounts']]) : S.view === 'portada' ? seg(es ? 'Rutas en el piloto' : 'Routes in pilot', 'routes', [['in', es ? 'Sí' : 'Yes'], ['out', 'No']]) + seg(es ? 'Promesa (pendiente)' : 'Promise (pending)', 'promise', [['p1', 'P1'], ['p2', 'P2'], ['p3', 'P3']]) + seg(es ? 'Público (pendiente)' : 'Audience (pending)', 'audience', [['a1', 'A1'], ['a2', 'A2'], ['a3', 'A3']])
+    var extra = S.view === 'cv' ? '' : isReg ? seg(es ? 'Estado' : 'State', 'regState', [['vacio', es ? 'Vacío' : 'Empty'], ['sinedad', es ? 'Sin la casilla 18+' : '18+ unticked'], ['errores', es ? 'Todo vacío' : 'All empty'], ['rechazo', es ? 'Rechazo servidor' : 'Server rejects'], ['enviando', es ? 'Enviando' : 'Sending'], ['exito', es ? 'Éxito' : 'Success'], ['existente', es ? 'Cuentas existentes' : 'Existing accounts']]) : S.view === 'portada' ? seg(es ? 'Catálogo de rutas' : 'Route catalogue', 'catalog', [['sample', es ? 'Con catálogo (ejemplo)' : 'With catalogue (example)'], ['none', es ? 'Aún no disponible' : 'Not available yet']])
       : seg(es ? 'Estado' : 'State', 'state', [['vacio', es ? 'Vacío' : 'Empty'], ['errores', es ? 'Errores' : 'Errors'], ['guardando', es ? 'Guardando' : 'Saving'], ['error', es ? 'Falla' : 'Save fail'], ['borrador', es ? 'Borrador' : 'Draft'], ['revisar', es ? 'Revisar' : 'Review'], ['exito', es ? 'Éxito' : 'Success']])
     return '<div class="wrap"><b>ES-408 · ' + (es ? 'diseño, no es producto' : 'design, not product') + '</b>' + common + extra + '</div>'
   }
@@ -526,7 +551,7 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
     if (S.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', S.theme)
     document.documentElement.lang = S.lang
     document.title = t('html.title') + ' · ES-408'
-    $('#bar').innerHTML = bar(); $('#app').innerHTML = S.view === 'portada' ? portada() : S.view === 'evidencia' ? evidencia() : frame('', '', window.ES408Access(S, t, esc), '<span>' + t('landing.not.1') + '</span>')
+    $('#bar').innerHTML = bar(); $('#app').innerHTML = S.view === 'portada' ? portada() : S.view === 'evidencia' ? evidencia() : S.view === 'cv' ? cvProposal() : frame('', '', window.ES408Access(S, t, esc), '<span>' + t('landing.not.1') + '</span>')
     window.scrollTo(0, y)
     var el = focus ? $(focus) : (act ? document.getElementById(act) : null)
     if (el) el.focus({ preventScroll: !focus })
