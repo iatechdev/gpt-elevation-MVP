@@ -86,6 +86,9 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
 .stackex{display:grid;gap:1rem;max-width:48rem}
 @media (min-width:901px){.band .bul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2.5rem}}
 .field>.muted.small{display:block;margin:0 0 .2rem}
+
+/* ES-409: registro e invitación. Mismo patrón que TermsCheck (ac-check). */
+.authwrap{max-width:30rem;margin:1rem auto}.auth h1,.authwrap h1{font-size:2.2rem}.auth .field{margin:1rem 0}.agree{margin:1rem 0}.agree__row{display:flex;gap:.75rem;align-items:flex-start}.agree__row input{width:1.5rem;height:1.5rem;margin:.1rem 0 0;flex:none;accent-color:var(--cg-mark)}.agree__row label{font:600 1.0625rem/1.5 var(--cg-font-sans);text-transform:none;letter-spacing:0;min-height:var(--cg-touch);flex:1;cursor:pointer}.agree__help{margin:0 0 0 2.25rem;color:var(--cg-muted);font-size:.95rem}.agree .err{margin-left:2.25rem}.wide{width:100%}
 </style>
 </head>
 <body>
@@ -305,7 +308,15 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
     ['evidence.error', 'igual', 'No pudimos guardar. Tus cambios siguen en esta pantalla.', 'We could not save. Your changes are still on this screen.'],
     ['evidence.uncertain_write', 'igual', 'Tu texto sigue aquí. Reintenta y no se duplica.', 'Your text is still here. Retry and it will not be duplicated.'],
     ['evidence.retry', 'igual', 'Reintentar', 'Retry'],
-    ['evidence.list', 'igual', 'Volver a mis evidencias', 'Back to my evidence']
+    ['evidence.list', 'igual', 'Volver a mis evidencias', 'Back to my evidence'],
+    /* ---------- ES-409: mayoría de edad (diseño aprobado, comentarios 13026/13027; el nombre final de las claves lo fija Dev) ---------- */
+    ['access.adult_label', 'nuevo', 'Declaro que tengo 18 años o más.', 'I declare that I am 18 or older.'],
+    ['access.adult_help', 'nuevo', 'El piloto es solo para mayores de 18 años. Es tu declaración: no verificamos tu identidad ni pedimos tu fecha de nacimiento.', 'The pilot is only for people 18 or older. This is your own declaration: we do not verify your identity or ask for your date of birth.'],
+    ['access.err_adult', 'nuevo', 'Para crear tu cuenta debes declarar que tienes 18 años o más.', 'To create your account you need to declare that you are 18 or older.'],
+    ['access.err_adult_version', 'nuevo', 'La declaración de edad cambió. Recarga la página y vuelve a marcarla.', 'The age declaration changed. Reload the page and tick it again.'],
+    ['export.adult_version', 'nuevo', 'Declaración de mayoría de edad (versión)', 'Age declaration (version)'],
+    ['export.adult_date', 'nuevo', 'Fecha de la declaración de edad', 'Age declaration date'],
+    ['export.adult_none', 'nuevo', 'Sin declaración registrada', 'No declaration recorded']
   ]
   /* Claves que hoy se muestran en la portada y la propuesta deja de usar (revisar antes de borrar: el CMS las edita). */
   var RETIRAR = [
@@ -325,11 +336,64 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
   else root.ES408 = api
 })(this)
 </script>
+<script>/* ES-409 dentro de ES-408 · Registro e invitación con la declaración de mayoría de edad. DISEÑO, no es producto.
+   Textos de la casilla: IDÉNTICOS al diseño aprobado (ES-409, comentarios 13026 y 13027). REF = textos que YA existen hoy
+   (accessCopy.ts, interfaceCopy y shared/landing-content.json); se muestran para dar contexto y no cambian. */
+(function () {
+  'use strict'
+  var REF = {
+    register: ['Crear cuenta', 'Create account'], subtitle: ['Tu acompañamiento no clínico y tu mapa de capacidades.', 'Your non-clinical support and your capability map.'],
+    invite_title: ['Crea tu cuenta', 'Create your account'], invite_intro: ['Te invitaron a Elevation. Elige cómo te llamas y una contraseña.', 'You were invited to Elevation. Choose your name and a password.'],
+    name: ['Nombre', 'Name'], email: ['Correo electrónico', 'Email address'], password: ['Contraseña', 'Password'], show: ['Mostrar', 'Show'], hide: ['Ocultar', 'Hide'],
+    err_name: ['Escribe tu nombre.', 'Enter your name.'], err_email: ['Escribe un correo válido, por ejemplo nombre@ejemplo.com.', 'Enter a valid email, for example name@example.com.'], err_password: ['Escribe tu contraseña.', 'Enter your password.'],
+    err_terms: ['Para crear tu cuenta necesitas aceptar el aviso de privacidad y los términos.', 'To create your account you need to accept the privacy notice and the terms.'],
+    terms_a: ['He leído y acepto el ', 'I have read and accept the '], terms_privacy: ['aviso de privacidad', 'privacy notice'], terms_and: [' y los ', ' and the '], terms_terms: ['términos de uso', 'terms of use'], new_tab: ['se abre en una pestaña nueva', 'opens in a new tab'],
+    no_payment: ['Por ahora no hay pago en línea: crear una cuenta no te cobra nada.', 'There is no online payment for now: creating an account does not charge you anything.'],
+    submitting: ['Enviando…', 'Submitting…'], invite_busy: ['Creando tu cuenta…', 'Creating your account…'], done_title: ['Cuenta creada', 'Account created'], done: ['Tu cuenta está lista. Inicia sesión para entrar.', 'Your account is ready. Sign in to get in.'],
+    have: ['¿Ya tienes cuenta?', 'Already have an account?'], signin: ['Iniciar sesión', 'Sign in']
+  }
+  window.ES408Access = function (S, t, esc) {
+    var r = function (k) { return REF[k][S.lang === 'en' ? 1 : 0] }
+    var invite = S.view === 'invitacion', f = S.reg, st = S.regState, E = S.regErrors
+    if (st === 'existente') {
+      var es = S.lang === 'es'
+      return '<div class="authwrap"><div class="card"><p class="badge badge--soon">' + (es ? 'Nota de diseño · no es una pantalla' : 'Design note · not a screen') + '</p><h1>' + (es ? 'Cuentas que ya existen' : 'Existing accounts') + '</h1><ul class="bul"><li>' + (es ? 'Entran igual que hoy: no hay pantalla nueva, aviso ni bloqueo (decisión de ES-409, opción A).' : 'They sign in as today: no new screen, notice or block (ES-409 decision, option A).') + '</li><li>' + (es ? 'No se les inventa una declaración: queda vacía en la base.' : 'No declaration is made up for them: it stays empty in the database.') + '</li><li>' + (es ? 'Condición de salida al piloto: desplegar antes de invitar y volver a crear cualquier cuenta de participante anterior.' : 'Pilot exit condition: deploy before inviting and recreate any earlier participant account.') + '</li></ul><h2>' + (es ? 'En la copia de «Mis datos» (propuesta)' : 'In the “My data” copy (proposal)') + '</h2><dl class="review"><dt>' + t('export.adult_version') + '</dt><dd>' + t('export.adult_none') + '</dd><dt>' + t('export.adult_date') + '</dt><dd>' + t('export.adult_none') + '</dd></dl></div></div>'
+    }
+    if (st === 'exito') return '<div class="authwrap"><div class="done" role="status"><h1 id="done" tabindex="-1">✓ ' + r('done_title') + '</h1><p>' + r('done') + '</p><div class="row"><button class="btn" data-reg="vacio">' + r('signin') + '</button></div></div></div>'
+    var busy = st === 'enviando'
+    function input(k, type, auto) {
+      var e = E[k]
+      return '<div class="field"><label for="reg-' + k + '">' + r(k) + '</label><input id="reg-' + k + '" data-rf="' + k + '" type="' + type + '" autocomplete="' + auto + '" value="' + esc(f[k]) + '"' + (busy ? ' disabled' : '') + (e ? ' aria-invalid="true" aria-describedby="reg-' + k + '-err"' : '') + '>' + (e ? '<p class="err" id="reg-' + k + '-err" role="alert">' + r('err_' + k) + '</p>' : '') + '</div>'
+    }
+    var adultMsg = E.adult === 'version' ? t('access.err_adult_version') : t('access.err_adult')
+    var adult = '<div class="agree"><div class="agree__row"><input type="checkbox" id="access-adult" data-rc="adult"' + (f.adult ? ' checked' : '') + (busy ? ' disabled' : '') + ' aria-describedby="access-adult-help' + (E.adult ? ' access-adult-error' : '') + '"' + (E.adult ? ' aria-invalid="true"' : '') + '><label for="access-adult">' + t('access.adult_label') + '</label></div><p class="agree__help" id="access-adult-help">' + t('access.adult_help') + '</p>' + (E.adult ? '<p class="err" id="access-adult-error" role="alert">' + adultMsg + '</p>' : '') + '</div>'
+    var link = function (k) { return '<a href="#" data-noop>' + r(k) + '<span class="sr"> (' + r('new_tab') + ')</span></a>' }
+    var terms = '<div class="agree"><div class="agree__row"><input type="checkbox" id="access-terms" data-rc="terms"' + (f.terms ? ' checked' : '') + (busy ? ' disabled' : '') + (E.terms ? ' aria-invalid="true" aria-describedby="access-terms-error"' : '') + '><label for="access-terms">' + r('terms_a') + link('terms_privacy') + r('terms_and') + link('terms_terms') + '.</label></div>' + (E.terms ? '<p class="err" id="access-terms-error" role="alert">' + r('err_terms') + '</p>' : '') + '</div>'
+    return '<div class="authwrap"><div class="card auth"><h1>' + r(invite ? 'invite_title' : 'register') + '</h1><p>' + r(invite ? 'invite_intro' : 'subtitle') + '</p><form novalidate data-regform aria-busy="' + busy + '">' + input('name', 'text', 'name') + (invite ? '' : input('email', 'email', 'email')) + input('password', 'password', 'new-password') +
+      '<p class="muted small">' + (S.lang === 'es' ? '[Aquí van los requisitos de contraseña de hoy, sin cambios]' : '[Today’s password requirements go here, unchanged]') + '</p>' + adult + terms + (invite ? '' : '<p class="muted small">' + r('no_payment') + '</p>') +
+      '<button type="submit" class="btn btn--mark wide"' + (busy ? ' disabled' : '') + '>' + (busy ? r(invite ? 'invite_busy' : 'submitting') : r('register')) + '</button></form>' + (invite ? '' : '<p class="muted">' + r('have') + ' <button type="button" class="link" data-noop>' + r('signin') + '</button></p>') + '</div></div>'
+  }
+  window.ES408Access.blank = function () { return { name: '', email: '', password: '', adult: false, terms: false } }
+  window.ES408Access.filled = function () { return { name: 'Persona de ejemplo', email: 'persona@example.test', password: 'Ejemplo-1234', adult: true, terms: true } }
+  /* orden de foco del diseño aprobado: nombre, correo, contraseña, edad, términos */
+  window.ES408Access.validate = function (S) {
+    var f = S.reg, E = {}
+    if (!f.name.trim()) E.name = true
+    if (S.view === 'registro' && f.email.indexOf('@') < 1) E.email = true
+    if (!f.password) E.password = true
+    if (!f.adult) E.adult = true
+    if (!f.terms) E.terms = true
+    S.regErrors = E
+    var first = ['name', 'email', 'password', 'adult', 'terms'].filter(function (k) { return E[k] })[0]
+    return first ? (first === 'adult' || first === 'terms' ? '#access-' + first : '#reg-' + first) : null
+  }
+})()
+</script>
 <script>/* ES-408 · Prototipo de DISEÑO. No es código de producto. Textos: textos.js (fuente única). Nada se envía ni se guarda. */
 (function () {
   'use strict'
   var DICT = {}; window.ES408.T.forEach(function (r) { DICT[r[0]] = { es: r[2], en: r[3] } })
-  var S = { lang: 'es', view: 'portada', routes: 'in', promise: 'p1', audience: 'a1', theme: 'auto', hint: '', state: 'vacio', open: {}, draft: blank(), errors: [], reviewed: false, saveMode: 'ok' }
+  var S = { lang: 'es', view: 'registro', routes: 'in', promise: 'p1', audience: 'a1', theme: 'auto', hint: '', state: 'vacio', open: {}, draft: blank(), errors: [], reviewed: false, saveMode: 'ok', reg: window.ES408Access.blank(), regState: 'vacio', regErrors: {} }
   try { S.lang = localStorage.getItem('es408_lang') || (/^en/i.test(navigator.language) ? 'en' : 'es') } catch (e) {}
   function blank() { return { title: '', situation: '', responsibility: '', actions: [''], delivered: '', effect: '', effectText: '', goal: '', alternatives: [], learning: '', autonomy: '', sample: '' } }
   function t(k, vars) { var v = DICT[k]; if (!v) return '⚠' + k; var s = v[S.lang]; if (vars) Object.keys(vars).forEach(function (n) { s = s.replace('{' + n + '}', vars[n]) }); return s }
@@ -437,8 +501,9 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
   function bar() {
     var es = S.lang === 'es'
     function seg(label, key, opts) { return '<span class="ctl"><span>' + label + '</span><span class="seg" role="group" aria-label="' + label + '">' + opts.map(function (o) { return '<button data-set="' + key + ':' + o[0] + '" aria-pressed="' + (S[key] === o[0]) + '">' + o[1] + '</button>' }).join('') + '</span></span>' }
-    var common = seg(es ? 'Pantalla' : 'Screen', 'view', [['portada', es ? 'Portada' : 'Home'], ['evidencia', es ? 'Nueva evidencia' : 'New evidence']]) + seg(es ? 'Tema' : 'Theme', 'theme', [['auto', 'Auto'], ['light', es ? 'Claro' : 'Light'], ['dark', es ? 'Oscuro' : 'Dark']])
-    var extra = S.view === 'portada' ? seg(es ? 'Rutas en el piloto' : 'Routes in pilot', 'routes', [['in', es ? 'Sí' : 'Yes'], ['out', 'No']]) + seg(es ? 'Promesa (pendiente)' : 'Promise (pending)', 'promise', [['p1', 'P1'], ['p2', 'P2'], ['p3', 'P3']]) + seg(es ? 'Público (pendiente)' : 'Audience (pending)', 'audience', [['a1', 'A1'], ['a2', 'A2'], ['a3', 'A3']])
+    var common = seg(es ? 'Pantalla' : 'Screen', 'view', [['registro', es ? 'Registro (18+)' : 'Sign-up (18+)'], ['invitacion', es ? 'Invitación' : 'Invitation'], ['portada', es ? 'Portada' : 'Home'], ['evidencia', es ? 'Nueva evidencia' : 'New evidence']]) + seg(es ? 'Tema' : 'Theme', 'theme', [['auto', 'Auto'], ['light', es ? 'Claro' : 'Light'], ['dark', es ? 'Oscuro' : 'Dark']])
+    var isReg = S.view === 'registro' || S.view === 'invitacion'
+    var extra = isReg ? seg(es ? 'Estado' : 'State', 'regState', [['vacio', es ? 'Vacío' : 'Empty'], ['sinedad', es ? 'Sin la casilla 18+' : '18+ unticked'], ['errores', es ? 'Todo vacío' : 'All empty'], ['rechazo', es ? 'Rechazo servidor' : 'Server rejects'], ['enviando', es ? 'Enviando' : 'Sending'], ['exito', es ? 'Éxito' : 'Success'], ['existente', es ? 'Cuentas existentes' : 'Existing accounts']]) : S.view === 'portada' ? seg(es ? 'Rutas en el piloto' : 'Routes in pilot', 'routes', [['in', es ? 'Sí' : 'Yes'], ['out', 'No']]) + seg(es ? 'Promesa (pendiente)' : 'Promise (pending)', 'promise', [['p1', 'P1'], ['p2', 'P2'], ['p3', 'P3']]) + seg(es ? 'Público (pendiente)' : 'Audience (pending)', 'audience', [['a1', 'A1'], ['a2', 'A2'], ['a3', 'A3']])
       : seg(es ? 'Estado' : 'State', 'state', [['vacio', es ? 'Vacío' : 'Empty'], ['errores', es ? 'Errores' : 'Errors'], ['guardando', es ? 'Guardando' : 'Saving'], ['error', es ? 'Falla' : 'Save fail'], ['borrador', es ? 'Borrador' : 'Draft'], ['revisar', es ? 'Revisar' : 'Review'], ['exito', es ? 'Éxito' : 'Success']])
     return '<div class="wrap"><b>ES-408 · ' + (es ? 'diseño, no es producto' : 'design, not product') + '</b>' + common + extra + '</div>'
   }
@@ -449,12 +514,19 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
     if (s === 'errores') { S.draft = blank(); S.draft.title = t('evidence.ex1.title'); S.errors = REQUIRED.map(function (k) { return { k: k, msg: 'evidence.err.required' } }) }
     if (s === 'guardando' || s === 'error' || s === 'borrador' || s === 'revisar' || s === 'exito') S.draft = SAMPLE()
   }
+  function applyReg(s) {
+    var A = window.ES408Access; S.regState = s; S.regErrors = {}
+    S.reg = s === 'vacio' || s === 'errores' ? A.blank() : A.filled()
+    if (s === 'sinedad') { S.reg.adult = false; A.validate(S) }
+    if (s === 'errores') A.validate(S)
+    if (s === 'rechazo') S.regErrors = { adult: 'version' }
+  }
   function render(focus) {
     var y = window.scrollY, act = document.activeElement && document.activeElement.id
     if (S.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', S.theme)
     document.documentElement.lang = S.lang
     document.title = t('html.title') + ' · ES-408'
-    $('#bar').innerHTML = bar(); $('#app').innerHTML = S.view === 'portada' ? portada() : evidencia()
+    $('#bar').innerHTML = bar(); $('#app').innerHTML = S.view === 'portada' ? portada() : S.view === 'evidencia' ? evidencia() : frame('', '', window.ES408Access(S, t, esc), '<span>' + t('landing.not.1') + '</span>')
     window.scrollTo(0, y)
     var el = focus ? $(focus) : (act ? document.getElementById(act) : null)
     if (el) el.focus({ preventScroll: !focus })
@@ -474,7 +546,7 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-set],[data-lang],[data-go],[data-hint],[data-act],[data-guide],[data-rm],[data-rmalt],[data-focus],[data-noop]'); if (!el) return
     var ds = el.dataset
-    if (ds.set) { var p = ds.set.split(':'); S[p[0]] = p[1]; if (p[0] === 'state') applyState(p[1]); if (p[0] === 'view') { window.scrollTo(0, 0); S.state = 'vacio'; applyState('vacio') } render(); return }
+    if (ds.set) { var p = ds.set.split(':'); S[p[0]] = p[1]; if (p[0] === 'state') applyState(p[1]); if (p[0] === 'view') { window.scrollTo(0, 0); S.state = 'vacio'; applyState('vacio'); applyReg('vacio') } if (p[0] === 'regState') applyReg(p[1]); render(); return }
     if (ds.lang) { S.lang = ds.lang; try { localStorage.setItem('es408_lang', S.lang) } catch (x) {} if (S.view === 'evidencia' && S.state !== 'vacio') applyState(S.state); render(); return }
     if (ds.go) { e.preventDefault(); var s = document.getElementById(ds.go); if (s) { s.setAttribute('tabindex', '-1'); s.scrollIntoView({ block: 'start' }); s.focus({ preventScroll: true }) } return }
     if (ds.focus) { e.preventDefault(); var f = document.getElementById(ds.focus); f && f.focus(); return }
@@ -503,7 +575,16 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
     if (e.target.hasAttribute('data-reviewed')) { S.reviewed = e.target.checked; render(); var b = document.querySelector('[data-reviewed]'); b && b.focus() }
   })
   document.addEventListener('toggle', function (e) { var k = e.target.getAttribute && e.target.getAttribute('data-faq'); if (k) S.open[k] = e.target.open }, true)
-  document.addEventListener('submit', function (e) { e.preventDefault() })
+  document.addEventListener('submit', function (e) {
+    e.preventDefault()
+    if (!e.target.hasAttribute('data-regform')) return
+    var first = window.ES408Access.validate(S)
+    if (first) { S.regState = 'errores'; render(first); return }
+    S.regState = 'enviando'; render(); setTimeout(function () { if (S.regState === 'enviando') { S.regState = 'exito'; render('#done') } }, 1200)
+  })
+  document.addEventListener('input', function (e) { var k = e.target.getAttribute('data-rf'); if (k) S.reg[k] = e.target.value })
+  document.addEventListener('change', function (e) { var k = e.target.getAttribute('data-rc'); if (k) { S.reg[k] = e.target.checked; if (e.target.checked && S.regErrors[k]) { delete S.regErrors[k]; render('#access-' + k) } } })
+  document.addEventListener('click', function (e) { var el = e.target.closest('[data-reg]'); if (el) { applyReg(el.getAttribute('data-reg')); render() } })
   render()
 })()
 </script>

@@ -2,7 +2,7 @@
 
 [UX/UI-Claude] Generado desde `textos.js` con `node build.cjs` (misma fuente que el prototipo). Estado: **igual** (existe hoy y no cambia en su sentido), **cambia**, **nuevo**. Las claves nuevas son propuestas de nombre. Los textos EN y los «igual» deben cotejarse contra `shared/landing-content.json` y `evidence/copy.ts` al implementar: el EN de las claves existentes se escribió para el prototipo.
 
-Total: 196 · igual 79 · cambia 11 · nuevo 106 · grupos a retirar 10
+Total: 203 · igual 79 · cambia 11 · nuevo 113 · grupos a retirar 10
 
 | Clave | Estado | ES | EN |
 |---|---|---|---|
@@ -202,6 +202,13 @@ Total: 196 · igual 79 · cambia 11 · nuevo 106 · grupos a retirar 10
 | `evidence.uncertain_write` | igual | Tu texto sigue aquí. Reintenta y no se duplica. | Your text is still here. Retry and it will not be duplicated. |
 | `evidence.retry` | igual | Reintentar | Retry |
 | `evidence.list` | igual | Volver a mis evidencias | Back to my evidence |
+| `access.adult_label` | nuevo | Declaro que tengo 18 años o más. | I declare that I am 18 or older. |
+| `access.adult_help` | nuevo | El piloto es solo para mayores de 18 años. Es tu declaración: no verificamos tu identidad ni pedimos tu fecha de nacimiento. | The pilot is only for people 18 or older. This is your own declaration: we do not verify your identity or ask for your date of birth. |
+| `access.err_adult` | nuevo | Para crear tu cuenta debes declarar que tienes 18 años o más. | To create your account you need to declare that you are 18 or older. |
+| `access.err_adult_version` | nuevo | La declaración de edad cambió. Recarga la página y vuelve a marcarla. | The age declaration changed. Reload the page and tick it again. |
+| `export.adult_version` | nuevo | Declaración de mayoría de edad (versión) | Age declaration (version) |
+| `export.adult_date` | nuevo | Fecha de la declaración de edad | Age declaration date |
+| `export.adult_none` | nuevo | Sin declaración registrada | No declaration recorded |
 
 ## Retirar (de la portada; confirmar antes de borrar claves del CMS)
 

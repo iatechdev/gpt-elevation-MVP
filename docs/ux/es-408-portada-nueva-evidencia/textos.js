@@ -210,7 +210,15 @@
     ['evidence.error', 'igual', 'No pudimos guardar. Tus cambios siguen en esta pantalla.', 'We could not save. Your changes are still on this screen.'],
     ['evidence.uncertain_write', 'igual', 'Tu texto sigue aquí. Reintenta y no se duplica.', 'Your text is still here. Retry and it will not be duplicated.'],
     ['evidence.retry', 'igual', 'Reintentar', 'Retry'],
-    ['evidence.list', 'igual', 'Volver a mis evidencias', 'Back to my evidence']
+    ['evidence.list', 'igual', 'Volver a mis evidencias', 'Back to my evidence'],
+    /* ---------- ES-409: mayoría de edad (diseño aprobado, comentarios 13026/13027; el nombre final de las claves lo fija Dev) ---------- */
+    ['access.adult_label', 'nuevo', 'Declaro que tengo 18 años o más.', 'I declare that I am 18 or older.'],
+    ['access.adult_help', 'nuevo', 'El piloto es solo para mayores de 18 años. Es tu declaración: no verificamos tu identidad ni pedimos tu fecha de nacimiento.', 'The pilot is only for people 18 or older. This is your own declaration: we do not verify your identity or ask for your date of birth.'],
+    ['access.err_adult', 'nuevo', 'Para crear tu cuenta debes declarar que tienes 18 años o más.', 'To create your account you need to declare that you are 18 or older.'],
+    ['access.err_adult_version', 'nuevo', 'La declaración de edad cambió. Recarga la página y vuelve a marcarla.', 'The age declaration changed. Reload the page and tick it again.'],
+    ['export.adult_version', 'nuevo', 'Declaración de mayoría de edad (versión)', 'Age declaration (version)'],
+    ['export.adult_date', 'nuevo', 'Fecha de la declaración de edad', 'Age declaration date'],
+    ['export.adult_none', 'nuevo', 'Sin declaración registrada', 'No declaration recorded']
   ]
   /* Claves que hoy se muestran en la portada y la propuesta deja de usar (revisar antes de borrar: el CMS las edita). */
   var RETIRAR = [

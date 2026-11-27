@@ -13,6 +13,6 @@ md += '\n\n## Retirar (de la portada; confirmar antes de borrar claves del CMS)\
 fs.writeFileSync('TEXTOS.md', md)
 let css = fs.readFileSync('styles.css', 'utf8').replace(/url\((\.\.\/auditoria-diagramacion\/prototipo\/fonts\/[^)]+\.woff2)\)/g, (m, p) => 'url(data:font/woff2;base64,' + fs.readFileSync(p).toString('base64') + ')')
 const inline = f => '<script>' + fs.readFileSync(f, 'utf8').split('</scr' + 'ipt>').join('<\\/scr' + 'ipt>') + '</scr' + 'ipt>'
-const html = fs.readFileSync('index.html', 'utf8').replace('<link rel="stylesheet" href="styles.css">', () => '<style>' + css + '</style>').replace('<script src="textos.js"></script>', () => inline('textos.js')).replace('<script src="app.js"></script>', () => inline('app.js'))
+const html = fs.readFileSync('index.html', 'utf8').replace('<link rel="stylesheet" href="styles.css">', () => '<style>' + css + '</style>').replace('<script src="textos.js"></script>', () => inline('textos.js')).replace('<script src="registro.js"></script>', () => inline('registro.js')).replace('<script src="app.js"></script>', () => inline('app.js'))
 fs.writeFileSync('elevation-es408.html', html)
 console.log('TEXTOS.md', T.length, 'claves ·', 'elevation-es408.html', Math.round(html.length / 1024), 'KB')

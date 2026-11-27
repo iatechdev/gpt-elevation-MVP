@@ -2,7 +2,7 @@
 (function () {
   'use strict'
   var DICT = {}; window.ES408.T.forEach(function (r) { DICT[r[0]] = { es: r[2], en: r[3] } })
-  var S = { lang: 'es', view: 'portada', routes: 'in', promise: 'p1', audience: 'a1', theme: 'auto', hint: '', state: 'vacio', open: {}, draft: blank(), errors: [], reviewed: false, saveMode: 'ok' }
+  var S = { lang: 'es', view: 'registro', routes: 'in', promise: 'p1', audience: 'a1', theme: 'auto', hint: '', state: 'vacio', open: {}, draft: blank(), errors: [], reviewed: false, saveMode: 'ok', reg: window.ES408Access.blank(), regState: 'vacio', regErrors: {} }
   try { S.lang = localStorage.getItem('es408_lang') || (/^en/i.test(navigator.language) ? 'en' : 'es') } catch (e) {}
   function blank() { return { title: '', situation: '', responsibility: '', actions: [''], delivered: '', effect: '', effectText: '', goal: '', alternatives: [], learning: '', autonomy: '', sample: '' } }
   function t(k, vars) { var v = DICT[k]; if (!v) return '⚠' + k; var s = v[S.lang]; if (vars) Object.keys(vars).forEach(function (n) { s = s.replace('{' + n + '}', vars[n]) }); return s }
@@ -110,8 +110,9 @@
   function bar() {
     var es = S.lang === 'es'
     function seg(label, key, opts) { return '<span class="ctl"><span>' + label + '</span><span class="seg" role="group" aria-label="' + label + '">' + opts.map(function (o) { return '<button data-set="' + key + ':' + o[0] + '" aria-pressed="' + (S[key] === o[0]) + '">' + o[1] + '</button>' }).join('') + '</span></span>' }
-    var common = seg(es ? 'Pantalla' : 'Screen', 'view', [['portada', es ? 'Portada' : 'Home'], ['evidencia', es ? 'Nueva evidencia' : 'New evidence']]) + seg(es ? 'Tema' : 'Theme', 'theme', [['auto', 'Auto'], ['light', es ? 'Claro' : 'Light'], ['dark', es ? 'Oscuro' : 'Dark']])
-    var extra = S.view === 'portada' ? seg(es ? 'Rutas en el piloto' : 'Routes in pilot', 'routes', [['in', es ? 'Sí' : 'Yes'], ['out', 'No']]) + seg(es ? 'Promesa (pendiente)' : 'Promise (pending)', 'promise', [['p1', 'P1'], ['p2', 'P2'], ['p3', 'P3']]) + seg(es ? 'Público (pendiente)' : 'Audience (pending)', 'audience', [['a1', 'A1'], ['a2', 'A2'], ['a3', 'A3']])
+    var common = seg(es ? 'Pantalla' : 'Screen', 'view', [['registro', es ? 'Registro (18+)' : 'Sign-up (18+)'], ['invitacion', es ? 'Invitación' : 'Invitation'], ['portada', es ? 'Portada' : 'Home'], ['evidencia', es ? 'Nueva evidencia' : 'New evidence']]) + seg(es ? 'Tema' : 'Theme', 'theme', [['auto', 'Auto'], ['light', es ? 'Claro' : 'Light'], ['dark', es ? 'Oscuro' : 'Dark']])
+    var isReg = S.view === 'registro' || S.view === 'invitacion'
+    var extra = isReg ? seg(es ? 'Estado' : 'State', 'regState', [['vacio', es ? 'Vacío' : 'Empty'], ['sinedad', es ? 'Sin la casilla 18+' : '18+ unticked'], ['errores', es ? 'Todo vacío' : 'All empty'], ['rechazo', es ? 'Rechazo servidor' : 'Server rejects'], ['enviando', es ? 'Enviando' : 'Sending'], ['exito', es ? 'Éxito' : 'Success'], ['existente', es ? 'Cuentas existentes' : 'Existing accounts']]) : S.view === 'portada' ? seg(es ? 'Rutas en el piloto' : 'Routes in pilot', 'routes', [['in', es ? 'Sí' : 'Yes'], ['out', 'No']]) + seg(es ? 'Promesa (pendiente)' : 'Promise (pending)', 'promise', [['p1', 'P1'], ['p2', 'P2'], ['p3', 'P3']]) + seg(es ? 'Público (pendiente)' : 'Audience (pending)', 'audience', [['a1', 'A1'], ['a2', 'A2'], ['a3', 'A3']])
       : seg(es ? 'Estado' : 'State', 'state', [['vacio', es ? 'Vacío' : 'Empty'], ['errores', es ? 'Errores' : 'Errors'], ['guardando', es ? 'Guardando' : 'Saving'], ['error', es ? 'Falla' : 'Save fail'], ['borrador', es ? 'Borrador' : 'Draft'], ['revisar', es ? 'Revisar' : 'Review'], ['exito', es ? 'Éxito' : 'Success']])
     return '<div class="wrap"><b>ES-408 · ' + (es ? 'diseño, no es producto' : 'design, not product') + '</b>' + common + extra + '</div>'
   }
@@ -122,12 +123,19 @@
     if (s === 'errores') { S.draft = blank(); S.draft.title = t('evidence.ex1.title'); S.errors = REQUIRED.map(function (k) { return { k: k, msg: 'evidence.err.required' } }) }
     if (s === 'guardando' || s === 'error' || s === 'borrador' || s === 'revisar' || s === 'exito') S.draft = SAMPLE()
   }
+  function applyReg(s) {
+    var A = window.ES408Access; S.regState = s; S.regErrors = {}
+    S.reg = s === 'vacio' || s === 'errores' ? A.blank() : A.filled()
+    if (s === 'sinedad') { S.reg.adult = false; A.validate(S) }
+    if (s === 'errores') A.validate(S)
+    if (s === 'rechazo') S.regErrors = { adult: 'version' }
+  }
   function render(focus) {
     var y = window.scrollY, act = document.activeElement && document.activeElement.id
     if (S.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', S.theme)
     document.documentElement.lang = S.lang
     document.title = t('html.title') + ' · ES-408'
-    $('#bar').innerHTML = bar(); $('#app').innerHTML = S.view === 'portada' ? portada() : evidencia()
+    $('#bar').innerHTML = bar(); $('#app').innerHTML = S.view === 'portada' ? portada() : S.view === 'evidencia' ? evidencia() : frame('', '', window.ES408Access(S, t, esc), '<span>' + t('landing.not.1') + '</span>')
     window.scrollTo(0, y)
     var el = focus ? $(focus) : (act ? document.getElementById(act) : null)
     if (el) el.focus({ preventScroll: !focus })
@@ -147,7 +155,7 @@
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-set],[data-lang],[data-go],[data-hint],[data-act],[data-guide],[data-rm],[data-rmalt],[data-focus],[data-noop]'); if (!el) return
     var ds = el.dataset
-    if (ds.set) { var p = ds.set.split(':'); S[p[0]] = p[1]; if (p[0] === 'state') applyState(p[1]); if (p[0] === 'view') { window.scrollTo(0, 0); S.state = 'vacio'; applyState('vacio') } render(); return }
+    if (ds.set) { var p = ds.set.split(':'); S[p[0]] = p[1]; if (p[0] === 'state') applyState(p[1]); if (p[0] === 'view') { window.scrollTo(0, 0); S.state = 'vacio'; applyState('vacio'); applyReg('vacio') } if (p[0] === 'regState') applyReg(p[1]); render(); return }
     if (ds.lang) { S.lang = ds.lang; try { localStorage.setItem('es408_lang', S.lang) } catch (x) {} if (S.view === 'evidencia' && S.state !== 'vacio') applyState(S.state); render(); return }
     if (ds.go) { e.preventDefault(); var s = document.getElementById(ds.go); if (s) { s.setAttribute('tabindex', '-1'); s.scrollIntoView({ block: 'start' }); s.focus({ preventScroll: true }) } return }
     if (ds.focus) { e.preventDefault(); var f = document.getElementById(ds.focus); f && f.focus(); return }
@@ -176,6 +184,15 @@
     if (e.target.hasAttribute('data-reviewed')) { S.reviewed = e.target.checked; render(); var b = document.querySelector('[data-reviewed]'); b && b.focus() }
   })
   document.addEventListener('toggle', function (e) { var k = e.target.getAttribute && e.target.getAttribute('data-faq'); if (k) S.open[k] = e.target.open }, true)
-  document.addEventListener('submit', function (e) { e.preventDefault() })
+  document.addEventListener('submit', function (e) {
+    e.preventDefault()
+    if (!e.target.hasAttribute('data-regform')) return
+    var first = window.ES408Access.validate(S)
+    if (first) { S.regState = 'errores'; render(first); return }
+    S.regState = 'enviando'; render(); setTimeout(function () { if (S.regState === 'enviando') { S.regState = 'exito'; render('#done') } }, 1200)
+  })
+  document.addEventListener('input', function (e) { var k = e.target.getAttribute('data-rf'); if (k) S.reg[k] = e.target.value })
+  document.addEventListener('change', function (e) { var k = e.target.getAttribute('data-rc'); if (k) { S.reg[k] = e.target.checked; if (e.target.checked && S.regErrors[k]) { delete S.regErrors[k]; render('#access-' + k) } } })
+  document.addEventListener('click', function (e) { var el = e.target.closest('[data-reg]'); if (el) { applyReg(el.getAttribute('data-reg')); render() } })
   render()
 })()

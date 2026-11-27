@@ -80,3 +80,6 @@ input:not([type=radio]):not([type=checkbox]),textarea,select{width:100%;min-heig
 .stackex{display:grid;gap:1rem;max-width:48rem}
 @media (min-width:901px){.band .bul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2.5rem}}
 .field>.muted.small{display:block;margin:0 0 .2rem}
+
+/* ES-409: registro e invitación. Mismo patrón que TermsCheck (ac-check). */
+.authwrap{max-width:30rem;margin:1rem auto}.auth h1,.authwrap h1{font-size:2.2rem}.auth .field{margin:1rem 0}.agree{margin:1rem 0}.agree__row{display:flex;gap:.75rem;align-items:flex-start}.agree__row input{width:1.5rem;height:1.5rem;margin:.1rem 0 0;flex:none;accent-color:var(--cg-mark)}.agree__row label{font:600 1.0625rem/1.5 var(--cg-font-sans);text-transform:none;letter-spacing:0;min-height:var(--cg-touch);flex:1;cursor:pointer}.agree__help{margin:0 0 0 2.25rem;color:var(--cg-muted);font-size:.95rem}.agree .err{margin-left:2.25rem}.wide{width:100%}
