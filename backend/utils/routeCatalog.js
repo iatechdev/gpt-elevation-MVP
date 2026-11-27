@@ -435,4 +435,5 @@ async function getPublishedRouteCatalog({ now = new Date(), policy = defaultPoli
 
 module.exports = {
   CatalogError, FORBIDDEN_PHRASES, KINDS, KEY_RE, list, get, createDraft, upsertItem, removeItem, publish, getPublishedRouteCatalog, normalizeItem, missingFor,
+  crossRefs, DRAFT_CAPS, // ES-410: los usa el validador local de la plantilla (scripts/catalog-template)
 };

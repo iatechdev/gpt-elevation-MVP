@@ -86,6 +86,8 @@
     "test:perf": "node scripts/test-perf.cjs",
     "test:session-version:pg": "node --test test/integration/es-366-postgres.cjs",
     "test:admin-unlock:pg": "node --test test/integration/es-217-postgres.cjs",
+    "catalog:template": "node scripts/catalog-template/cli.cjs template",
+    "catalog:validate": "node scripts/catalog-template/cli.cjs validate",
     "test:routecatalog:pg": "node --test test/integration/es-31-postgres.cjs",
     "test:route-skill-labels:pg": "node --test test/integration/es-260-postgres.cjs",
     "test:routecatalog-items:pg": "node --test test/integration/es-187-postgres.cjs",
