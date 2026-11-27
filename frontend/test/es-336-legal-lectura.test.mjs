@@ -56,7 +56,7 @@ test('ES-336: la página usa el hook (respaldo siempre), sin HTML en bruto, y lo
 
 test('ES-336: ante error, 404, tiempo agotado o respuesta inválida el hook deja el texto del repo (nunca vacío)', () => {
   const hook = read('../src/legal/useLegalContent.ts')
-  assert.match(hook, /if \(!res\.ok\) return/) // 404 not_published y 5xx
+  assert.ok(hook.includes('if (!res.ok) { void res.text().catch(() => {}); return }'), '404 not_published y 5xx: se queda el texto del repo (y el cuerpo se lee, ES-412)')
   assert.match(hook, /catch \{ \/\* sin respuesta o inválida: se queda el texto del repo \*\/ \}/)
   assert.match(hook, /window\.setTimeout\(\(\) => controller\.abort\(\), TIMEOUT_MS\)/)
   for (const lang of ['es', 'en']) for (const doc of ['privacy', 'terms']) { const c = LEGAL[lang][doc]; assert.ok(c.title && c.sections.length > 0, `${doc}/${lang} empaquetado y no vacío`) }
